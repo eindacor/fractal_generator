@@ -7,8 +7,10 @@ matrix_creator::matrix_creator()
 	boost::uniform_real<float> random_in_scope(-1.0f, 1.0f);
 	in_scope_generator = new boost::variate_generator<boost::mt19937, boost::uniform_real<float> >(rng, random_in_scope);
 
-	boost::uniform_real<float> random(0.0f, 1.0f);
-	uniform_generator = new boost::variate_generator<boost::mt19937, boost::uniform_real<float> >(rng, random);
+	boost::mt19937 u_rng;
+	u_rng.seed(clock());
+	boost::uniform_real<float> random_range(0.0f, 1.0f);
+	uniform_generator = new boost::variate_generator<boost::mt19937, boost::uniform_real<float> >(u_rng, random_range);
 }
 
 mat4 matrix_creator::getRandomTranslation() const
@@ -67,4 +69,9 @@ float matrix_creator::getRandomFloatInRange(const float &min, const float &max) 
 	float difference = max - min;
 
 	return min + ((*uniform_generator)() * max);
+}
+
+float matrix_creator::getRandomUniform() const
+{
+	return (*uniform_generator)();
 }

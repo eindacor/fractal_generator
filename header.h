@@ -20,5 +20,24 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/variate_generator.hpp>
 #include <boost/random/normal_distribution.hpp>
+#include "jeploot.h"
+
+using jep::ogl_context;
+using jep::ogl_camera;
+using jep::key_handler;
+using jep::text_handler;
+using jep::texture_handler;
+using jep::ogl_camera_free;
+
+using boost::shared_ptr;
+
+using glm::mat4;
+using glm::vec3;
+using glm::vec4;
+
+typedef std::pair<bool, float> random_switch;
+
+class matrix_creator;
+class point_generator;
 
 #endif

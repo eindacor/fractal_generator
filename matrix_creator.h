@@ -5,12 +5,6 @@
 
 #include "header.h"
 
-using glm::mat4;
-using glm::vec3;
-using glm::vec4;
-
-typedef std::pair<bool, float> random_switch;
-
 class matrix_creator
 {
 public:
@@ -29,6 +23,7 @@ public:
 
 	float getRandomFloat() const;
 	float getRandomFloatInRange(const float &min, const float &max) const;
+	float getRandomUniform() const;
 
 	boost::variate_generator<boost::mt19937, boost::uniform_real<float> > *in_scope_generator;
 	boost::variate_generator<boost::mt19937, boost::uniform_real<float> > *uniform_generator;
