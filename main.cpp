@@ -4,8 +4,8 @@
 
 int main()
 {
-	//string data_path = "c:\\Users\\jpollack\\documents\\visual studio 2015\\Projects\\fractal_generator\\fractal_generator\\";
-	string data_path = "j:\\Github\\fractal_generator\\";
+	string data_path = "c:\\Users\\jpollack\\documents\\github\\fractal_generator\\";
+	//string data_path = "j:\\Github\\fractal_generator\\";
 	string vert_file = data_path + "VertexShader.glsl";
 	string frag_file = data_path + "PixelShader.glsl";
 
@@ -16,11 +16,25 @@ int main()
 	shared_ptr<ogl_camera_free> camera(new ogl_camera_free(keys, context, vec3(0.0f, eye_level, 1.0f), 45.0f));
 
 	matrix_creator mc;
-	point_generator pg(4, 1, 1, 1);
+	point_generator pg(8, 1, 1, 1);
 
-	vector<float> vertex_data = pg.getPoints(vec3(mc.getRandomFloat(), mc.getRandomFloat(), mc.getRandomFloat()), 300000);
+	vector<vec3> point_sequence = {
+		vec3(0.0f, 0.0f, 0.0f),
+		vec3(0.0f, 0.1f, 0.0f),
+		vec3(0.0f, 0.2f, 0.0f),
+		vec3(0.0f, 0.3f, 0.0f),
+		vec3(0.0f, 0.4f, 0.0f),
+		vec3(0.0f, 0.5f, 0.0f),
+		vec3(0.1f, 0.0f, 0.0f),
+		vec3(0.2f, 0.0f, 0.0f),
+		vec3(0.3f, 0.0f, 0.0f),
+		vec3(0.4f, 0.0f, 0.0f),
+		vec3(0.5f, 0.0f, 0.0f),
+		vec3(0.6f, 0.0f, 0.0f),
+	};
 
-	cout << vertex_data.size() << endl;
+	//vector<float> vertex_data = pg.getPoints(vec3(mc.getRandomFloat(), mc.getRandomFloat(), mc.getRandomFloat()), 300000);
+	vector<float> vertex_data = pg.getPoints(point_sequence, 300000);
 
 	// create/bind Vertex Array Object
 	GLuint VAO;
@@ -54,7 +68,7 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-	glEnable(GL_PROGRAM_POINT_SIZE);
+	//glEnable(GL_PROGRAM_POINT_SIZE);
 
 	context->setBackgroundColor(vec4(0.0, 0.0, 0.0, 0.0));
 

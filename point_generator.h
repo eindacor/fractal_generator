@@ -13,6 +13,7 @@ public:
 	~point_generator() {};
 
 	vector<float> getPoints(const vec3 &origin, const int &num_points);
+	vector<float> getPoints(const vector<vec3> &point_sequence, const int &num_points);
 	void setMatrices(const int &num_matrices, const int &translate, const int &rotate, const int &scale);
 
 private:
