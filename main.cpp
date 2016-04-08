@@ -11,7 +11,7 @@ int main()
 	string frag_file = data_path + "PixelShader.glsl";
 
 	float eye_level = 0.0f;
-	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vert_file.c_str(), frag_file.c_str(), 900, 900));
+	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vert_file.c_str(), frag_file.c_str(), 1080, 720));
 	shared_ptr<key_handler> keys(new key_handler(context));
 	shared_ptr<texture_handler> textures(new texture_handler(data_path));
 	shared_ptr<ogl_camera_free> camera(new ogl_camera_free(keys, context, vec3(0.0f, eye_level, 1.0f), 45.0f));
@@ -34,8 +34,8 @@ int main()
 		vec3(0.6f, 0.0f, 0.0f),
 	};
 
-	vector<float> vertex_data = pg.getPoints(point_sequence, 300000);
-	//vector<float> vertex_data = pg.getPoints(vec3(mc.getRandomFloat(), mc.getRandomFloat(), mc.getRandomFloat()), 10000);
+	//vector<float> vertex_data = pg.getPoints(point_sequence, 100000);
+	vector<float> vertex_data = pg.getPoints(vec3(mc.getRandomFloat(), mc.getRandomFloat(), mc.getRandomFloat()), 1000000);
 
 	// create/bind Vertex Array Object
 	GLuint VAO;
@@ -49,6 +49,7 @@ int main()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertex_data.size(), &vertex_data[0], GL_STATIC_DRAW);
 
 	// stride is the total size of each vertex's attribute data (position + color + size)
+	// change this to 7 for triangle bug
 	int stride = 8 * sizeof(float);
 
 	// load position data
@@ -70,7 +71,8 @@ int main()
 	glBindVertexArray(0);
 
 	glEnable(GL_PROGRAM_POINT_SIZE);
-	glDepthRange(0, 10000);
+	glEnable(GL_DEPTH_CLAMP);
+	glDepthRange(0.0, 1.0);
 	context->setBackgroundColor(vec4(0.0, 0.0, 0.0, 0.0));
 
 	glfwSetTime(0);
@@ -78,6 +80,7 @@ int main()
 	bool finished = false;
 	clock_t start = clock();
 	int frame_counter = 0;
+	bool size_enabled = true;
 
 	while (!finished)
 	{
@@ -114,6 +117,16 @@ int main()
 			//TODO see why this only works when include_hold is enabled
 			if (keys->checkPress(GLFW_KEY_ESCAPE))
 				finished = true;
+
+			if (keys->checkPress(GLFW_KEY_P, false))
+			{
+				size_enabled = !size_enabled;
+
+				if (size_enabled)
+					glEnable(GL_PROGRAM_POINT_SIZE);
+
+				else glDisable(GL_PROGRAM_POINT_SIZE);
+			}
 
 			context->swapBuffers();
 			glfwSetTime(0.0f);
