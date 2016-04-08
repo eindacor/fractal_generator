@@ -16,7 +16,7 @@ int main()
 	shared_ptr<ogl_camera_free> camera(new ogl_camera_free(keys, context, vec3(0.0f, eye_level, 1.0f), 45.0f));
 
 	matrix_creator mc;
-	point_generator pg(8, 1, 1, 1);
+	point_generator pg(4, 1, 1, 1);
 
 	vector<float> vertex_data = pg.getPoints(vec3(mc.getRandomFloat(), mc.getRandomFloat(), mc.getRandomFloat()), 300000);
 
@@ -33,8 +33,8 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertex_data.size(), &vertex_data[0], GL_STATIC_DRAW);
 
-	// stride is the total size of each vertex's attribute data (position + color)
-	int stride = 6 * sizeof(float);
+	// stride is the total size of each vertex's attribute data (position + color + size)
+	int stride = 7 * sizeof(float);
 
 	// load position data
 	glEnableVertexAttribArray(0);
@@ -44,10 +44,17 @@ int main()
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
 
+	// load point size
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float)));
+
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+
+	glEnable(GL_PROGRAM_POINT_SIZE);
 
 	context->setBackgroundColor(vec4(0.0, 0.0, 0.0, 0.0));
 
@@ -74,12 +81,14 @@ int main()
 			glBindVertexArray(VAO);
 			glEnableVertexAttribArray(0);
 			glEnableVertexAttribArray(1);
+			glEnableVertexAttribArray(2);
 
 			// draw type, offset, number of vertices
-			glDrawArrays(GL_POINTS, 0, vertex_data.size() / 6);
+			glDrawArrays(GL_POINTS, 0, vertex_data.size() / 7);
 
 			glDisableVertexAttribArray(0);
 			glDisableVertexAttribArray(1);
+			glDisableVertexAttribArray(2);
 			glBindVertexArray(0);
 
 			//TODO see why this only works when include_hold is enabled

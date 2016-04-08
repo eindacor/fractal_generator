@@ -18,6 +18,7 @@ public:
 private:
 	vector<mat4> matrices;
 	vector<vec4> colors;
+	vector<float> sizes;
 	matrix_creator mc;
 };
 
