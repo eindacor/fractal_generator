@@ -5,37 +5,38 @@
 int main()
 {
 	jep::init();
-	string data_path = "c:\\Users\\jpollack\\documents\\github\\fractal_generator\\";
-	//string data_path = "j:\\Github\\fractal_generator\\";
+	//string data_path = "c:\\Users\\jpollack\\documents\\github\\fractal_generator\\";
+	string data_path = "j:\\Github\\fractal_generator\\";
 	string vert_file = data_path + "VertexShader.glsl";
 	string frag_file = data_path + "PixelShader.glsl";
 
 	float eye_level = 0.0f;
-	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vert_file.c_str(), frag_file.c_str(), 1080, 720));
+	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vert_file.c_str(), frag_file.c_str(), 1920, 1080));
 	shared_ptr<key_handler> keys(new key_handler(context));
 	shared_ptr<texture_handler> textures(new texture_handler(data_path));
 	shared_ptr<ogl_camera_free> camera(new ogl_camera_free(keys, context, vec3(0.0f, eye_level, 1.0f), 45.0f));
 
 	matrix_creator mc;
-	point_generator pg(4, 1, 1, 1);
+	bool two_dimensional = true;
+	point_generator pg(4, 3, 1, 1, two_dimensional);
 
-	vector<vec3> point_sequence = {
-		vec3(0.0f, 0.0f, 0.0f),
-		vec3(0.0f, 0.1f, 0.0f),
-		vec3(0.0f, 0.2f, 0.0f),
-		vec3(0.0f, 0.3f, 0.0f),
-		vec3(0.0f, 0.4f, 0.0f),
-		vec3(0.0f, 0.5f, 0.0f),
-		vec3(0.1f, 0.0f, 0.0f),
-		vec3(0.2f, 0.0f, 0.0f),
-		vec3(0.3f, 0.0f, 0.0f),
-		vec3(0.4f, 0.0f, 0.0f),
-		vec3(0.5f, 0.0f, 0.0f),
-		vec3(0.6f, 0.0f, 0.0f),
+	vector<vec4> point_sequence = {
+		vec4(0.0f, 0.0f, 0.0f, 1.0f),
+		vec4(0.0f, 0.1f, 0.0f, 1.0f),
+		vec4(0.0f, 0.2f, 0.0f, 1.0f),
+		vec4(0.0f, 0.3f, 0.0f, 1.0f),
+		vec4(0.0f, 0.4f, 0.0f, 1.0f),
+		vec4(0.0f, 0.5f, 0.0f, 1.0f),
+		vec4(0.1f, 0.0f, 0.0f, 1.0f),
+		vec4(0.2f, 0.0f, 0.0f, 1.0f),
+		vec4(0.3f, 0.0f, 0.0f, 1.0f),
+		vec4(0.4f, 0.0f, 0.0f, 1.0f),
+		vec4(0.5f, 0.0f, 0.0f, 1.0f),
+		vec4(0.6f, 0.0f, 0.0f, 1.0f),
 	};
 
-	//vector<float> vertex_data = pg.getPoints(point_sequence, 100000);
-	vector<float> vertex_data = pg.getPoints(vec3(mc.getRandomFloat(), mc.getRandomFloat(), mc.getRandomFloat()), 1000000);
+	//vector<float> vertex_data = pg.getPoints(point_sequence, 300000);
+	vector<float> vertex_data = pg.getPoints(vec4(mc.getRandomFloat(), mc.getRandomFloat(), mc.getRandomFloat(), 1.0f), 300000);
 
 	// create/bind Vertex Array Object
 	GLuint VAO;
@@ -50,19 +51,19 @@ int main()
 
 	// stride is the total size of each vertex's attribute data (position + color + size)
 	// change this to 7 for triangle bug
-	int stride = 8 * sizeof(float);
+	int stride = 9 * sizeof(float);
 
 	// load position data
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, stride, (void*)0);
 
 	// load color data
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, stride, (void*)(4 * sizeof(float)));
 
 	// load point size
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, stride, (void*)(7 * sizeof(float)));
+	glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, stride, (void*)(8 * sizeof(float)));
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
@@ -96,7 +97,7 @@ int main()
 
 			camera->setMVP(context, mat4(1.0f), jep::NORMAL);
 
-			glUniform1i(context->getShaderGLint("enable_growth_animation"), 0);
+			glUniform1i(context->getShaderGLint("enable_growth_animation"), 1);
 			glUniform1i(context->getShaderGLint("frame_count"), frame_counter);
 			frame_counter++;
 
@@ -107,7 +108,7 @@ int main()
 			glEnableVertexAttribArray(2);
 
 			// draw type, offset, number of vertices
-			glDrawArrays(GL_POINTS, 0, vertex_data.size() / 7);
+			glDrawArrays(GL_POINTS, 0, vertex_data.size() / 9);
 
 			glDisableVertexAttribArray(0);
 			glDisableVertexAttribArray(1);

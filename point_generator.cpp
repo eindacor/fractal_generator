@@ -1,11 +1,11 @@
 #include "point_generator.h"
 
-point_generator::point_generator(const int &num_matrices, const int &translate, const int &rotate, const int &scale)
+point_generator::point_generator(const int &num_matrices, const int &translate, const int &rotate, const int &scale, bool two_dimensional)
 {
-	setMatrices(num_matrices, translate, rotate, scale);
+	setMatrices(num_matrices, translate, rotate, scale, two_dimensional);
 }
 
-void point_generator::setMatrices(const int &num_matrices, const int &translate, const int &rotate, const int &scale)
+void point_generator::setMatrices(const int &num_matrices, const int &translate, const int &rotate, const int &scale, bool two_dimensional)
 {
 	matrices.clear();
 
@@ -20,22 +20,23 @@ void point_generator::setMatrices(const int &num_matrices, const int &translate,
 		string matrix_type = jep::catRoll<string>(matrix_map);
 		cout << "adding " << matrix_type << " matrix" << endl;
 
+		mat4 matrix_to_add;
+
 		if (matrix_type == "translate")
-			matrices.push_back(mc.getRandomTranslation());
+			matrix_to_add = two_dimensional ? mc.getRandomTranslation2D() : mc.getRandomTranslation();
 
 		else if (matrix_type == "rotate")
-			matrices.push_back(mc.getRandomRotation());
+			matrix_to_add = two_dimensional ? mc.getRandomRotation2D() : mc.getRandomRotation();
 
 		else if (matrix_type == "scale")
-			matrices.push_back(mc.getRandomScale());
+			matrix_to_add = two_dimensional ? mc.getRandomScale2D() : mc.getRandomScale();
 
+		matrices.push_back(matrix_to_add);
 		colors.push_back(vec4(mc.getRandomUniform(), mc.getRandomUniform(), mc.getRandomUniform(), mc.getRandomUniform()));
 		sizes.push_back(mc.getRandomUniform() * 5.0);
-	}
 
-	for (const auto &matrix : matrices)
-	{
-		cout << glm::to_string(matrix) << endl;
+		cout << glm::to_string(matrix_to_add) << endl;
+		cout << "----------" << endl;
 	}
 }
 
@@ -78,49 +79,78 @@ void point_generator::setMatrices(const int &num_matrices, const int &translate,
 //	return points;
 //}
 
-vector<float> point_generator::getPoints(const vector<vec3> &point_sequence, const int &num_points)
+vector<float> point_generator::getPoints(vector<vec4> point_sequence, const int &num_points)
 {
 	vector<float> points;
-	points.reserve(num_points * 7);
+	points.reserve(num_points * 9);
 
 	int num_matrices = matrices.size();
 
-	if (point_sequence.size() == 0)
-		return points;
+	vec4 point_color(0.5f, 0.5f, 0.5f, 0.5f);
+	float starting_size = 10.0;
 
-	for (int n = 0; n < point_sequence.size() && num_matrices > 0; n++)
+	for (int i = 0; i < num_points / point_sequence.size() && num_matrices > 0 && point_sequence.size() > 0; i++)
 	{
-		vec3 origin = point_sequence.at(n);
-		vec4 point_color(0.5f, 0.5f, 0.5f, 0.5f);
-		vec4 new_point = vec4(origin, 1.0f);
-		float starting_size = 10.0;
+		int random_index = (int)(mc.getRandomUniform() * num_matrices);
+		mat4 random_matrix = matrices.at(random_index);
+		vec4 matrix_color = colors.at(random_index);
+		float matrix_size = sizes.at(random_index);
 
-		for (int i = 0; i < num_points / point_sequence.size(); i++)
+		if (i < 10)
+			continue;
+
+		for (int n = 0; n < point_sequence.size(); n++)
 		{
-			int random_index = (int)(mc.getRandomUniform() * num_matrices);
-			mat4 random_matrix = matrices.at(random_index);
-			vec4 matrix_color = colors.at(random_index);
-			float matrix_size = sizes.at(random_index);
-
-			if (i < 10)
-				continue;
-
-			addNewPoint(new_point, point_color, starting_size, random_index, random_matrix, matrix_color, matrix_size, points);
+			vec4* new_point = &point_sequence.at(n);
+			addNewPoint(*new_point, point_color, starting_size, random_index, random_matrix, matrix_color, matrix_size, points);
 		}
 	}
 
 	return points;
 }
 
-vector<float> point_generator::getPoints(const vec3 &origin, const int &num_points)
+//vector<float> point_generator::getPoints(const vector<vec3> &point_sequence, const int &num_points)
+//{
+//	vector<float> points;
+//	points.reserve(num_points * 8);
+//
+//	int num_matrices = matrices.size();
+//
+//	if (point_sequence.size() == 0)
+//		return points;
+//
+//	for (int n = 0; n < point_sequence.size() && num_matrices > 0; n++)
+//	{
+//		vec3 origin = point_sequence.at(n);
+//		vec4 point_color(0.5f, 0.5f, 0.5f, 0.5f);
+//		vec4 new_point = vec4(origin, 1.0f);
+//		float starting_size = 10.0;
+//
+//		for (int i = 0; i < num_points / point_sequence.size(); i++)
+//		{
+//			int random_index = (int)(mc.getRandomUniform() * num_matrices);
+//			mat4 random_matrix = matrices.at(random_index);
+//			vec4 matrix_color = colors.at(random_index);
+//			float matrix_size = sizes.at(random_index);
+//
+//			if (i < 10)
+//				continue;
+//
+//			addNewPoint(new_point, point_color, starting_size, random_index, random_matrix, matrix_color, matrix_size, points);
+//		}
+//	}
+//
+//	return points;
+//}
+
+vector<float> point_generator::getPoints(vec4 origin, const int &num_points)
 {
 	vector<float> points;
-	points.reserve(num_points * 7);
+	points.reserve(num_points * 9);
 
 	int num_matrices = matrices.size();
 
 	vec4 point_color(0.5f, 0.5f, 0.5f, 0.5f);
-	vec4 new_point = vec4(origin, 1.0f);
 	float starting_size = 10.0;
 
 	for (int i = 0; i < num_points && num_matrices > 0; i++)
@@ -133,7 +163,7 @@ vector<float> point_generator::getPoints(const vec3 &origin, const int &num_poin
 		if (i < 10)
 			continue;
 
-		addNewPoint(new_point, point_color, starting_size, random_index, random_matrix, matrix_color, matrix_size, points);
+		addNewPoint(origin, point_color, starting_size, random_index, random_matrix, matrix_color, matrix_size, points);
 	}
 
 	return points;
@@ -156,6 +186,7 @@ void point_generator::addNewPoint(
 	points.push_back((float)starting_point.x);
 	points.push_back((float)starting_point.y);
 	points.push_back((float)starting_point.z);
+	points.push_back((float)starting_point.w);
 	points.push_back((float)starting_color.r);
 	points.push_back((float)starting_color.g);
 	points.push_back((float)starting_color.b);

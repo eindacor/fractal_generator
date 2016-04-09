@@ -9,12 +9,12 @@
 class point_generator
 {
 public:
-	point_generator(const int &num_matrices, const int &translate, const int &rotate, const int &scale);
+	point_generator(const int &num_matrices, const int &translate, const int &rotate, const int &scale, bool two_dimensional = false);
 	~point_generator() {};
 
-	vector<float> getPoints(const vec3 &origin, const int &num_points);
-	vector<float> getPoints(const vector<vec3> &point_sequence, const int &num_points);
-	void setMatrices(const int &num_matrices, const int &translate, const int &rotate, const int &scale);
+	vector<float> getPoints(vec4 origin, const int &num_points);
+	vector<float> getPoints(vector<vec4> point_sequence, const int &num_points);
+	void setMatrices(const int &num_matrices, const int &translate, const int &rotate, const int &scale, bool two_dimensional);
 
 	vector<mat4> generateMatrixSequence(const vector<int> &matrix_indices) const;
 	vector<mat4> generateMatrixSequence(const int &sequence_size) const;
