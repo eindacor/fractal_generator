@@ -16,8 +16,14 @@ int main()
 	shared_ptr<texture_handler> textures(new texture_handler(data_path));
 	shared_ptr<ogl_camera_free> camera(new ogl_camera_free(keys, context, vec3(0.0f, eye_level, 1.0f), 45.0f));
 
+	/*
+	SEEDS
+	f6ujfV4rTtvN991MBr5gOCiaQ6TrAPaJ
+	3LE1GoVEb1W9jV1GwrTyfMLVMYs8ipYT
+	*/
+
 	bool two_dimensional = false;
-	//fractal_generator fg("Like Joe Pollack's prom date", context, two_dimensional);
+	//fractal_generator fg("f6ujfV4rTtvN991MBr5gOCiaQ6TrAPaJ", context, two_dimensional);
 	fractal_generator fg(context, two_dimensional);
 
 	vector<vec4> point_sequence = {
@@ -83,9 +89,6 @@ int main()
 			if (keys->checkPress(GLFW_KEY_J, false))
 				show_animation = !show_animation;
 
-			if (keys->checkPress(GLFW_KEY_I, false))
-				fg.invertColors();
-
 			if (keys->checkPress(GLFW_KEY_G, false))
 			{
 				if (counter_increment != 100)
@@ -100,9 +103,6 @@ int main()
 
 			if (keys->checkPress(GLFW_KEY_H, false))
 				reverse = !reverse;
-
-			if (keys->checkPress(GLFW_KEY_N, false))
-				fg.generateFractal(num_points);
 
 			if (keys->checkPress(GLFW_KEY_R, false))
 			{

@@ -56,6 +56,8 @@ public:
 
 	void invertColor(vec4 &original);
 	void invertColors();
+	void fractal_generator::newColors();
+	void regenerateFractal();
 
 	//takes value from -1 to 1
 	void adjustBrightness(vec4 &color, float degree);
@@ -72,7 +74,6 @@ private:
 	bool inverted = false;
 	vector<float> sizes;
 	matrix_creator mc;
-	bool is_2D;
 
 	// rendering parameters
 	float line_width = 1.0f;
@@ -82,6 +83,14 @@ private:
 	bool show_points = true;
 	bool enable_triangles = false;
 	bool enable_lines = false;
+
+	// current gen parameters, included for 
+	bool refresh_loaded;
+	int refresh_value;
+	bool is_2D;
+	vec4 origin;
+	bool sequence_loaded;
+	vector<vec4> preloaded_sequence;
 
 	float fractal_scale = 1.0f;
 	mat4 fractal_scale_matrix;

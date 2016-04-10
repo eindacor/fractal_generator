@@ -12,10 +12,10 @@ fractal_generator::fractal_generator(
 
 	mc.seed(random_seed);
 
-	int num_matrices = int(mc.getRandomFloatInRange(3, 6));
-	int translate = int(mc.getRandomFloatInRange(2, 6));
-	int rotate = int(mc.getRandomFloatInRange(1, 4));
-	int scale = int(mc.getRandomFloatInRange(1, 3));
+	int num_matrices = int(mc.getRandomFloatInRange(3, 8));
+	int translate = int(mc.getRandomFloatInRange(1, 6));
+	int rotate = int(mc.getRandomFloatInRange(1, 6));
+	int scale = int(mc.getRandomFloatInRange(1, 6));
 
 	context = con;
 	is_2D = two_dimensional;
@@ -99,8 +99,8 @@ fractal_generator::fractal_generator(
 void fractal_generator::bufferData(const vector<float> &vertex_data)
 {
 	vertex_count = vertex_data.size() / vertex_size;
-	enable_triangles = vertex_count > 3;
-	enable_lines = vertex_count > 2;
+	enable_triangles = vertex_count >= 3;
+	enable_lines = vertex_count >= 2;
 
 	if (initialized)
 	{
@@ -150,15 +150,14 @@ void fractal_generator::drawFractal() const
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 
-	// draw type, offset, number of vertices
+	if (enable_triangles && triangle_mode != 0)
+		glDrawArrays(triangle_mode, 0, vertex_count);
+
 	if (enable_lines && line_mode != 0)
 		glDrawArrays(line_mode, 0, vertex_count);
 
 	if (show_points)
 		glDrawArrays(GL_POINTS, 0, vertex_count);
-
-	if (enable_triangles && triangle_mode != 0)
-		glDrawArrays(triangle_mode, 0, vertex_count);
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
@@ -235,8 +234,13 @@ void fractal_generator::generateFractal(const int &num_points, const int &transf
 	generateFractal(mc.getRandomVec4(), num_points, transformation_refresh);
 }
 
-void fractal_generator::generateFractal(vec4 origin, const int &num_points, const int &transformation_refresh)
+void fractal_generator::generateFractal(vec4 or, const int &num_points, const int &transformation_refresh)
 {
+	refresh_loaded = true;
+	refresh_value = transformation_refresh;
+	origin = or;
+	sequence_loaded = false;
+
 	vector<float> points;
 	points.reserve(num_points * vertex_size);
 
@@ -245,7 +249,7 @@ void fractal_generator::generateFractal(vec4 origin, const int &num_points, cons
 	for (int i = 0; i < num_points && num_matrices > 0; i++)
 	{
 		vec4 point_color(0.0f, 0.0f, 0.0f, 0.0f);
-		vec4 new_point = origin;
+		vec4 new_point = or;
 		float new_size = 0.0f;
 
 		for (int n = 0; n < transformation_refresh; n++)
@@ -272,6 +276,11 @@ void fractal_generator::generateFractal(vec4 origin, const int &num_points, cons
 
 void fractal_generator::generateFractal(vector<vec4> point_sequence, const int &num_points, const int &transformation_refresh)
 {
+	refresh_loaded = true;
+	refresh_value = transformation_refresh;
+	sequence_loaded = true;
+	preloaded_sequence = point_sequence;
+
 	vector<float> points;
 
 	if (point_sequence.size() == 0)
@@ -320,6 +329,10 @@ void fractal_generator::generateFractal(vector<vec4> point_sequence, const int &
 
 void fractal_generator::generateFractal(vector<vec4> point_sequence, const int &num_points)
 {
+	refresh_loaded = false;
+	sequence_loaded = true;
+	preloaded_sequence = point_sequence;
+
 	vector<float> points;
 
 	if (point_sequence.size() == 0)
@@ -352,8 +365,12 @@ void fractal_generator::generateFractal(vector<vec4> point_sequence, const int &
 	bufferData(points);
 }
 
-void fractal_generator::generateFractal(vec4 origin, const int &num_points)
+void fractal_generator::generateFractal(vec4 or, const int &num_points)
 {
+	refresh_loaded = false;
+	origin = or;
+	sequence_loaded = false;
+
 	vector<float> points;
 	points.reserve(num_points * vertex_size);
 
@@ -465,16 +482,20 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		}
 	}
 
-	if (keys->checkPress(GLFW_KEY_K, false) && enable_triangles)
+	if (keys->checkPress(GLFW_KEY_K, false) && enable_triangles && !is_2D)
 	{
 		switch (triangle_mode)
 		{
 		case 0: triangle_mode = GL_TRIANGLES; break;
 		case GL_TRIANGLES: triangle_mode = GL_TRIANGLE_STRIP; break;
-		case GL_TRIANGLE_STRIP: triangle_mode = 0; break;
+		case GL_TRIANGLE_STRIP: triangle_mode = GL_TRIANGLE_FAN; break;
+		case GL_TRIANGLE_FAN: triangle_mode = 0; break;
 		default: break;
 		}
 	}
+
+	if (keys->checkPress(GLFW_KEY_M, false))
+		newColors();
 
 	if (keys->checkPress(GLFW_KEY_P, false))
 		show_points = !show_points;
@@ -521,6 +542,12 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		fractal_scale_matrix = glm::scale(mat4(1.0f), vec3(fractal_scale, fractal_scale, fractal_scale));
 		glUniformMatrix4fv(context->getShaderGLint("fractal_scale"), 1, GL_FALSE, &fractal_scale_matrix[0][0]);
 	}
+
+	if (keys->checkPress(GLFW_KEY_I, false))
+		invertColors();
+
+	if (keys->checkPress(GLFW_KEY_N, false))
+		regenerateFractal();
 }
 
 void fractal_generator::invertColor(vec4 &original)
@@ -537,8 +564,38 @@ void fractal_generator::invertColors()
 
 	inverted = !inverted;
 
+	regenerateFractal();
+}
+
+void fractal_generator::newColors()
+{
+	for (auto &color : colors)
+	{
+		color = mc.getRandomVec4();
+	}
+
+	regenerateFractal();
+}
+
+void fractal_generator::regenerateFractal()
+{
+	if (refresh_loaded)
+	{
+		if (sequence_loaded)
+			generateFractal(preloaded_sequence, vertex_count, refresh_value);
+
+		else generateFractal(origin, vertex_count, refresh_value);
+	}
+
+	else
+	{
+		if (sequence_loaded)
+			generateFractal(preloaded_sequence, vertex_count);
+
+		else generateFractal(origin, vertex_count);
+	}
+
 	applyBackground(2);
-	generateFractal(vertex_count);
 }
 
 void fractal_generator::applyBackground(const int &num_samples)
