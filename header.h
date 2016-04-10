@@ -38,6 +38,6 @@ using glm::vec4;
 typedef std::pair<bool, float> random_switch;
 
 class matrix_creator;
-class point_generator;
+class fractal_generator;
 
 #endif

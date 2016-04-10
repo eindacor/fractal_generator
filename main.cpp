@@ -1,6 +1,6 @@
 #include "header.h"
 #include "matrix_creator.h"
-#include "point_generator.h"
+#include "fractal_generator.h"
 
 int main()
 {
@@ -17,71 +17,30 @@ int main()
 	shared_ptr<ogl_camera_free> camera(new ogl_camera_free(keys, context, vec3(0.0f, eye_level, 1.0f), 45.0f));
 
 	matrix_creator mc;
-	bool two_dimensional = true;
-	point_generator pg(4, 3, 1, 1, two_dimensional);
+	bool two_dimensional = false;
+	fractal_generator pg(context, 3, 3, 1, 1, two_dimensional);
 
 	vector<vec4> point_sequence = {
 		vec4(0.0f, 0.0f, 0.0f, 1.0f),
-		vec4(0.0f, 0.1f, 0.0f, 1.0f),
-		vec4(0.0f, 0.2f, 0.0f, 1.0f),
-		vec4(0.0f, 0.3f, 0.0f, 1.0f),
-		vec4(0.0f, 0.4f, 0.0f, 1.0f),
-		vec4(0.0f, 0.5f, 0.0f, 1.0f),
-		vec4(0.1f, 0.0f, 0.0f, 1.0f),
-		vec4(0.2f, 0.0f, 0.0f, 1.0f),
-		vec4(0.3f, 0.0f, 0.0f, 1.0f),
-		vec4(0.4f, 0.0f, 0.0f, 1.0f),
-		vec4(0.5f, 0.0f, 0.0f, 1.0f),
+		vec4(0.0f, 0.6f, 0.0f, 1.0f),
+		vec4(0.0f, 0.0f, 0.0f, 1.0f),
 		vec4(0.6f, 0.0f, 0.0f, 1.0f),
 	};
 
-	//vector<float> vertex_data = pg.getPoints(point_sequence, 300000);
-	vector<float> vertex_data = pg.getPoints(vec4(mc.getRandomFloat(), mc.getRandomFloat(), mc.getRandomFloat(), 1.0f), 300000);
+	int num_points = 300000;
 
-	// create/bind Vertex Array Object
-	GLuint VAO;
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-	// create/bind Vertex Buffer Object
-	GLuint VBO;
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertex_data.size(), &vertex_data[0], GL_STATIC_DRAW);
-
-	// stride is the total size of each vertex's attribute data (position + color + size)
-	// change this to 7 for triangle bug
-	int stride = 9 * sizeof(float);
-
-	// load position data
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, stride, (void*)0);
-
-	// load color data
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, stride, (void*)(4 * sizeof(float)));
-
-	// load point size
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, stride, (void*)(8 * sizeof(float)));
-
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
-	glEnable(GL_PROGRAM_POINT_SIZE);
-	glEnable(GL_DEPTH_CLAMP);
-	glDepthRange(0.0, 1.0);
-	context->setBackgroundColor(vec4(0.0, 0.0, 0.0, 0.0));
+	//pg.generateFractal(point_sequence, num_points);
+	pg.generateFractal(mc.getRandomVec4(), num_points);
 
 	glfwSetTime(0);
 	float render_fps = 60.0f;
 	bool finished = false;
 	clock_t start = clock();
-	int frame_counter = 0;
-	bool size_enabled = true;
+	unsigned int frame_counter = 0;
+	unsigned int counter_increment = 1;
+	bool show_animation = true;
+	bool smooth_lines = true;
+	bool paused = false;
 
 	while (!finished)
 	{
@@ -94,48 +53,57 @@ int main()
 			context->clearBuffers();
 
 			camera->updateCamera();
-
 			camera->setMVP(context, mat4(1.0f), jep::NORMAL);
 
-			glUniform1i(context->getShaderGLint("enable_growth_animation"), 1);
+			glUniform1i(context->getShaderGLint("enable_growth_animation"), show_animation ? 1 : 0);
 			glUniform1i(context->getShaderGLint("frame_count"), frame_counter);
-			frame_counter++;
 
-			// bind target VAO
-			glBindVertexArray(VAO);
-			glEnableVertexAttribArray(0);
-			glEnableVertexAttribArray(1);
-			glEnableVertexAttribArray(2);
+			if (!paused && show_animation)
+				frame_counter+= counter_increment;
 
-			// draw type, offset, number of vertices
-			glDrawArrays(GL_POINTS, 0, vertex_data.size() / 9);
-
-			glDisableVertexAttribArray(0);
-			glDisableVertexAttribArray(1);
-			glDisableVertexAttribArray(2);
-			glBindVertexArray(0);
+			pg.drawFractal();
+			pg.checkKeys(keys);
 
 			//TODO see why this only works when include_hold is enabled
 			if (keys->checkPress(GLFW_KEY_ESCAPE))
 				finished = true;
 
-			if (keys->checkPress(GLFW_KEY_P, false))
+			if (keys->checkPress(GLFW_KEY_I, false))
+				show_animation = !show_animation;
+
+			if (keys->checkPress(GLFW_KEY_G, false))
 			{
-				size_enabled = !size_enabled;
+				if (counter_increment == 100)
+					counter_increment = 11;
 
-				if (size_enabled)
-					glEnable(GL_PROGRAM_POINT_SIZE);
-
-				else glDisable(GL_PROGRAM_POINT_SIZE);
+				else counter_increment *= 10;
 			}
+
+			if (keys->checkPress(GLFW_KEY_F, false))
+			{
+				if (counter_increment == 1)
+					counter_increment = 100;
+
+				else counter_increment /= 10;
+			}
+
+			if (keys->checkPress(GLFW_KEY_N, false))
+				pg.generateFractal(mc.getRandomVec4(), num_points);
+
+			if (keys->checkPress(GLFW_KEY_R, false))
+			{
+				frame_counter = 0;
+				show_animation = true;
+				paused = false;
+			}
+
+			if (keys->checkPress(GLFW_KEY_T, false))
+				paused = !paused;
 
 			context->swapBuffers();
 			glfwSetTime(0.0f);
 		}
 	}
-
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
 
 	return 0;
 }

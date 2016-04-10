@@ -31,6 +31,8 @@ public:
 	float getRandomFloatInRange(const float &min, const float &max) const;
 	float getRandomUniform() const;
 
+	vec4 getRandomVec4() const { return vec4(getRandomFloat(), getRandomFloat(), getRandomFloat(), 1.0f); }
+
 	boost::variate_generator<boost::mt19937, boost::uniform_real<float> > *in_scope_generator;
 	boost::variate_generator<boost::mt19937, boost::uniform_real<float> > *uniform_generator;
 };
