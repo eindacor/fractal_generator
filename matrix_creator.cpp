@@ -9,14 +9,7 @@ matrix_creator::matrix_creator()
 
 matrix_creator::matrix_creator(const string &seed_string)
 {
-	boost::hash<std::string> string_hash;
-	unsigned int hashed_string = string_hash(seed_string);
-
-	cout << hashed_string << endl;
-
-	rng.seed(hashed_string);
-	boost::uniform_real<> random_range(0, 1);
-	uniform_generator = new boost::variate_generator<boost::mt19937&, boost::uniform_real<> >(rng, random_range);
+	seed(seed_string);
 }
 
 mat4 matrix_creator::getRandomTranslation() const
@@ -119,4 +112,40 @@ float matrix_creator::getRandomFloatInRange(const float &min, const float &max) 
 float matrix_creator::getRandomUniform() const
 {
 	return (*uniform_generator)();
+}
+
+void matrix_creator::seed(const string &seed_string)
+{
+	if (nullptr != uniform_generator)
+		delete uniform_generator;
+
+	boost::hash<std::string> string_hash;
+	unsigned int hashed_string = string_hash(seed_string);
+
+	rng.seed(hashed_string);
+	boost::uniform_real<> random_range(0, 1);
+	uniform_generator = new boost::variate_generator<boost::mt19937&, boost::uniform_real<> >(rng, random_range);
+}
+
+string matrix_creator::generateAlphanumericString(int num_chars, bool print_values)
+{
+	string random_string;
+
+	const char charset[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+	const size_t set_size = sizeof(charset) - 1;
+
+	for (int i = 0; i < num_chars; i++)
+	{
+		unsigned short random_index = getRandomUniform() * (float)set_size;
+		random_string += charset[random_index];
+
+		if (print_values)
+			cout << random_index << " ";
+	}
+
+	if (print_values)
+		cout << endl;
+
+	return random_string;
 }

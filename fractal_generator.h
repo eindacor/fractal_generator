@@ -10,8 +10,12 @@ class fractal_generator
 {
 public:
 	fractal_generator(
+		const shared_ptr<jep::ogl_context> &con,
+		bool two_dimensional = false);
+
+	fractal_generator(
 		const string &randomization_seed,
-		const shared_ptr<jep::ogl_context> &con, 
+		const shared_ptr<jep::ogl_context> &con,
 		bool two_dimensional = false);
 
 	fractal_generator(
@@ -42,20 +46,30 @@ public:
 	void generateFractal(vector<vec4> point_sequence, const int &num_points);
 	void generateFractal(vector<vec4> point_sequence, const int &num_points, const int &transformation_refresh);
 
-	vector<mat4> generateMatrixSequence(const vector<int> &matrix_indices) const;
-	vector<mat4> generateMatrixSequence(const int &sequence_size) const;
+	//vector<mat4> generateMatrixSequence(const vector<int> &matrix_indices) const;
+	//vector<mat4> generateMatrixSequence(const int &sequence_size) const;
 
-	void setMatrices(const vector<mat4> &new_matrices) { matrices.clear(); matrices = new_matrices; }
-
-	vec4 getSampleColor(const int &samples) const;
-
+	void setMatrices(const vector< pair<string, mat4> > &new_matrices) { matrices.clear(); matrices = new_matrices; }
+	void applyBackground(const int &num_samples);
 	void checkKeys(const shared_ptr<key_handler> &keys);
-
 	void drawFractal() const;
 
+	void invertColor(vec4 &original);
+	void invertColors();
+
+	//takes value from -1 to 1
+	void adjustBrightness(vec4 &color, float degree);
+
+	vec4 getSampleColor(const int &samples, const vector<vec4> &color_pool) const;
+
+	void printMatrices() const;
+
 private:
-	vector<mat4> matrices;
+	vector< pair<string, mat4> > matrices;
+	//vector<mat4> matrices;
 	vector<vec4> colors;
+	vec4 background_color;
+	bool inverted = false;
 	vector<float> sizes;
 	matrix_creator mc;
 	bool is_2D;
@@ -64,10 +78,14 @@ private:
 	float line_width = 1.0f;
 	bool size_enabled = true;
 	GLenum line_mode = GL_LINES;
+	GLenum triangle_mode = 0;
 	bool show_points = true;
+	bool enable_triangles = false;
+	bool enable_lines = false;
 
 	float fractal_scale = 1.0f;
 	mat4 fractal_scale_matrix;
+	unsigned short discard_count = 50;
 
 	bool initialized = false;
 

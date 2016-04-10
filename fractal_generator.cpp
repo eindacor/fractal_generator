@@ -1,10 +1,17 @@
 #include "fractal_generator.h"
 
 fractal_generator::fractal_generator(
-	const string &randomization_seed,
 	const shared_ptr<ogl_context> &con,
-	bool two_dimensional) : mc(randomization_seed)
+	bool two_dimensional)
 {
+	cout << "generating seed..." << endl;
+
+	string random_seed = mc.generateAlphanumericString(32, true);
+
+	cout << endl << "seed: " << random_seed << endl << endl;
+
+	mc.seed(random_seed);
+
 	int num_matrices = int(mc.getRandomFloatInRange(3, 6));
 	int translate = int(mc.getRandomFloatInRange(2, 6));
 	int rotate = int(mc.getRandomFloatInRange(1, 4));
@@ -15,7 +22,31 @@ fractal_generator::fractal_generator(
 	setMatrices(num_matrices, translate, rotate, scale);
 	initialized = false;
 
-	context->setBackgroundColor(getSampleColor(2) * 0.2f);
+	applyBackground(2);
+
+	glEnable(GL_PROGRAM_POINT_SIZE);
+	glEnable(GL_DEPTH_CLAMP);
+	glDepthRange(0.0, 1.0);
+}
+
+fractal_generator::fractal_generator(
+	const string &randomization_seed,
+	const shared_ptr<ogl_context> &con,
+	bool two_dimensional) : mc(randomization_seed)
+{
+	cout << "seed: " << randomization_seed << endl << endl;
+
+	int num_matrices = int(mc.getRandomFloatInRange(3, 6));
+	int translate = int(mc.getRandomFloatInRange(2, 6));
+	int rotate = int(mc.getRandomFloatInRange(1, 4));
+	int scale = int(mc.getRandomFloatInRange(1, 3));
+
+	context = con;
+	is_2D = two_dimensional;
+	setMatrices(num_matrices, translate, rotate, scale);
+	initialized = false;
+
+	applyBackground(2);
 
 	glEnable(GL_PROGRAM_POINT_SIZE);
 	glEnable(GL_DEPTH_CLAMP);
@@ -31,12 +62,14 @@ fractal_generator::fractal_generator(
 	const int &scale, 
 	bool two_dimensional) : mc(randomization_seed)
 {
+	cout << "seed: " << randomization_seed << endl << endl;
+
 	context = con;
 	is_2D = two_dimensional;
 	setMatrices(num_matrices, translate, rotate, scale);
 	initialized = false;
 
-	context->setBackgroundColor(getSampleColor(2) * 0.2f);
+	applyBackground(2);
 
 	glEnable(GL_PROGRAM_POINT_SIZE);
 	glEnable(GL_DEPTH_CLAMP);
@@ -56,7 +89,7 @@ fractal_generator::fractal_generator(
 	setMatrices(num_matrices, translate, rotate, scale);
 	initialized = false;
 
-	context->setBackgroundColor(getSampleColor(2) * 0.2f);
+	applyBackground(2);
 
 	glEnable(GL_PROGRAM_POINT_SIZE);
 	glEnable(GL_DEPTH_CLAMP);
@@ -66,6 +99,8 @@ fractal_generator::fractal_generator(
 void fractal_generator::bufferData(const vector<float> &vertex_data)
 {
 	vertex_count = vertex_data.size() / vertex_size;
+	enable_triangles = vertex_count > 3;
+	enable_lines = vertex_count > 2;
 
 	if (initialized)
 	{
@@ -116,11 +151,14 @@ void fractal_generator::drawFractal() const
 	glEnableVertexAttribArray(2);
 
 	// draw type, offset, number of vertices
-	if (line_mode != 0)
+	if (enable_lines && line_mode != 0)
 		glDrawArrays(line_mode, 0, vertex_count);
 
 	if (show_points)
 		glDrawArrays(GL_POINTS, 0, vertex_count);
+
+	if (enable_triangles && triangle_mode != 0)
+		glDrawArrays(triangle_mode, 0, vertex_count);
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
@@ -148,35 +186,59 @@ void fractal_generator::setMatrices(const int &num_matrices, const int &translat
 
 		else matrix_type = 2;
 
+		string matrix_category;
 		mat4 matrix_to_add(1.0f);
 
 		switch (matrix_type)
 		{
 		case 0: 
 			matrix_to_add = is_2D ? mc.getRandomTranslation2D() : mc.getRandomTranslation(); 
-			cout << "adding translation matrix" << endl;
+			matrix_category = "translate";
 			break;
 		case 1: matrix_to_add = is_2D ? mc.getRandomRotation2D() : mc.getRandomRotation();
-			cout << "adding rotation matrix" << endl;
+			matrix_category = "rotate";
 			break;
 		case 2: matrix_to_add = is_2D ? mc.getRandomScale2D() : mc.getRandomScale();
-			cout << "adding scale matrix" << endl;
+			matrix_category = "scale";
 			break;
 		default: break;
 		}		
 
-		matrices.push_back(matrix_to_add);
+		matrices.push_back(pair<string, mat4>(matrix_category, matrix_to_add));
 		colors.push_back(vec4(mc.getRandomUniform(), mc.getRandomUniform(), mc.getRandomUniform(), mc.getRandomUniform()));
 		sizes.push_back(mc.getRandomUniform() * 5.0);
+	}
 
-		cout << glm::to_string(matrix_to_add) << endl;
+	cout << endl;
+	printMatrices();
+	cout << endl;
+}
+
+void fractal_generator::printMatrices() const
+{
+	cout << "-----matrices-----" << endl;
+	for (const auto &matrix_pair : matrices)
+	{
+		cout << matrix_pair.first << endl;
+		cout << glm::to_string(matrix_pair.second) << endl;
 		cout << "----------" << endl;
 	}
+}
+
+void fractal_generator::generateFractal(const int &num_points)
+{
+	generateFractal(mc.getRandomVec4(), num_points);
+}
+
+void fractal_generator::generateFractal(const int &num_points, const int &transformation_refresh)
+{
+	generateFractal(mc.getRandomVec4(), num_points, transformation_refresh);
 }
 
 void fractal_generator::generateFractal(vec4 origin, const int &num_points, const int &transformation_refresh)
 {
 	vector<float> points;
+	points.reserve(num_points * vertex_size);
 
 	int num_matrices = matrices.size();
 
@@ -189,7 +251,7 @@ void fractal_generator::generateFractal(vec4 origin, const int &num_points, cons
 		for (int n = 0; n < transformation_refresh; n++)
 		{
 			int random_index = (int)(mc.getRandomUniform() * num_matrices);
-			mat4 random_matrix = matrices.at(random_index);
+			mat4 random_matrix = matrices.at(random_index).second;
 			vec4 matrix_color = colors.at(random_index);
 			float matrix_size = sizes.at(random_index);
 
@@ -208,11 +270,6 @@ void fractal_generator::generateFractal(vec4 origin, const int &num_points, cons
 	bufferData(points);
 }
 
-void fractal_generator::generateFractal(const int &num_points, const int &transformation_refresh)
-{
-	generateFractal(mc.getRandomVec4(), transformation_refresh);
-}
-
 void fractal_generator::generateFractal(vector<vec4> point_sequence, const int &num_points, const int &transformation_refresh)
 {
 	vector<float> points;
@@ -220,7 +277,7 @@ void fractal_generator::generateFractal(vector<vec4> point_sequence, const int &
 	if (point_sequence.size() == 0)
 		return;
 
-	points.reserve(num_points * 9);
+	points.reserve(num_points * vertex_size);
 
 	int num_matrices = matrices.size();
 
@@ -232,7 +289,7 @@ void fractal_generator::generateFractal(vector<vec4> point_sequence, const int &
 		for (int n = 0; n < transformation_refresh; n++)
 		{
 			int random_index = (int)(mc.getRandomUniform() * num_matrices);
-			mat4 random_matrix = matrices.at(random_index);
+			mat4 random_matrix = matrices.at(random_index).second;
 			vec4 matrix_color = colors.at(random_index);
 			float matrix_size = sizes.at(random_index);
 
@@ -268,21 +325,21 @@ void fractal_generator::generateFractal(vector<vec4> point_sequence, const int &
 	if (point_sequence.size() == 0)
 		return;
 
-	points.reserve(num_points * 9);
+	points.reserve((num_points / point_sequence.size()) * vertex_size);
 
 	int num_matrices = matrices.size();
 
 	vec4 point_color(0.5f, 0.5f, 0.5f, 0.5f);
 	float starting_size = 10.0;
 
-	for (int i = 0; i < num_points / point_sequence.size() && num_matrices > 0 && point_sequence.size() > 0; i++)
+	for (int i = 0; i < (num_points / point_sequence.size()) + discard_count && num_matrices > 0 && point_sequence.size() > 0; i++)
 	{
 		int random_index = (int)(mc.getRandomUniform() * num_matrices);
-		mat4 random_matrix = matrices.at(random_index);
+		mat4 random_matrix = matrices.at(random_index).second;
 		vec4 matrix_color = colors.at(random_index);
 		float matrix_size = sizes.at(random_index);
 
-		if (i < 10)
+		if (i < discard_count)
 			continue;
 
 		for (int n = 0; n < point_sequence.size(); n++)
@@ -298,32 +355,27 @@ void fractal_generator::generateFractal(vector<vec4> point_sequence, const int &
 void fractal_generator::generateFractal(vec4 origin, const int &num_points)
 {
 	vector<float> points;
-	points.reserve(num_points * 9);
+	points.reserve(num_points * vertex_size);
 
 	int num_matrices = matrices.size();
 
 	vec4 point_color(0.5f, 0.5f, 0.5f, 0.5f);
 	float starting_size = 10.0;
 
-	for (int i = 0; i < num_points && num_matrices > 0; i++)
+	for (int i = 0; i < num_points + discard_count && num_matrices > 0; i++)
 	{
 		int random_index = (int)(mc.getRandomUniform() * num_matrices);
-		mat4 random_matrix = matrices.at(random_index);
+		mat4 random_matrix = matrices.at(random_index).second;
 		vec4 matrix_color = colors.at(random_index);
 		float matrix_size = sizes.at(random_index);
 
-		if (i < 10)
+		if (i < discard_count)
 			continue;
 
 		addNewPointAndIterate(origin, point_color, starting_size, random_matrix, matrix_color, matrix_size, points);
 	}
 
 	bufferData(points);
-}
-
-void fractal_generator::generateFractal(const int &num_points)
-{
-	generateFractal(mc.getRandomVec4(), num_points);
 }
 
 void fractal_generator::addNewPointAndIterate(
@@ -367,9 +419,9 @@ void fractal_generator::addNewPoint(
 	points.push_back(size);
 }
 
-vec4 fractal_generator::getSampleColor(const int &samples) const
+vec4 fractal_generator::getSampleColor(const int &samples, const vector<vec4> &color_pool) const
 {
-	if (samples > colors.size())
+	if (samples > color_pool.size())
 	{
 		cout << "color samples requested are greater than the number of colors in the targeted generator" << endl;
 		return vec4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -382,8 +434,8 @@ vec4 fractal_generator::getSampleColor(const int &samples) const
 
 	for (int i = 0; i < samples; i++)
 	{
-		int random_index = (int)(mc.getRandomUniform() * colors.size());
-		out_color += colors.at(random_index);
+		int random_index = (int)(mc.getRandomUniform() * color_pool.size());
+		out_color += color_pool.at(random_index);
 	}
 
 	out_color /= (float)samples;
@@ -402,7 +454,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		else glDisable(GL_PROGRAM_POINT_SIZE);
 	}
 
-	if (keys->checkPress(GLFW_KEY_L, false))
+	if (keys->checkPress(GLFW_KEY_L, false) && enable_lines)
 	{
 		switch (line_mode)
 		{
@@ -413,17 +465,28 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		}
 	}
 
+	if (keys->checkPress(GLFW_KEY_K, false) && enable_triangles)
+	{
+		switch (triangle_mode)
+		{
+		case 0: triangle_mode = GL_TRIANGLES; break;
+		case GL_TRIANGLES: triangle_mode = GL_TRIANGLE_STRIP; break;
+		case GL_TRIANGLE_STRIP: triangle_mode = 0; break;
+		default: break;
+		}
+	}
+
 	if (keys->checkPress(GLFW_KEY_P, false))
 		show_points = !show_points;
 
 	if (keys->checkPress(GLFW_KEY_1, false))
-		context->setBackgroundColor(getSampleColor(1) * 0.2f);
+		applyBackground(1);
 
 	if (keys->checkPress(GLFW_KEY_2, false))
-		context->setBackgroundColor(getSampleColor(2) * 0.2f);
+		applyBackground(2);
 
 	if (keys->checkPress(GLFW_KEY_3, false))
-		context->setBackgroundColor(getSampleColor(3) * 0.2f);
+		applyBackground(3);
 
 	if (keys->checkPress(GLFW_KEY_PERIOD, false))
 	{
@@ -457,5 +520,47 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		fractal_scale /= 1.1f;
 		fractal_scale_matrix = glm::scale(mat4(1.0f), vec3(fractal_scale, fractal_scale, fractal_scale));
 		glUniformMatrix4fv(context->getShaderGLint("fractal_scale"), 1, GL_FALSE, &fractal_scale_matrix[0][0]);
+	}
+}
+
+void fractal_generator::invertColor(vec4 &original)
+{
+	original = 1.0f - original;
+}
+
+void fractal_generator::invertColors()
+{
+	for (auto &color : colors)
+	{
+		invertColor(color);
+	}
+
+	inverted = !inverted;
+
+	applyBackground(2);
+	generateFractal(vertex_count);
+}
+
+void fractal_generator::applyBackground(const int &num_samples)
+{
+	background_color = getSampleColor(num_samples, colors);
+
+	adjustBrightness(background_color, inverted ? 0.8f : -0.8f);
+
+	context->setBackgroundColor(background_color);
+}
+
+void fractal_generator::adjustBrightness(vec4 &color, float degree)
+{
+	degree = glm::clamp(degree, -1.0f, 1.0f);
+
+	if (degree < 0)
+		color = color * (1.0f + degree);
+
+	else
+	{
+		vec4 inverted_color = 1.0f - color;
+		vec4 adjustment_color = degree * inverted_color;
+		color += adjustment_color;
 	}
 }

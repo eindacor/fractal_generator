@@ -31,13 +31,14 @@ public:
 	float getRandomFloat() const;
 	float getRandomFloatInRange(const float &min, const float &max) const;
 	float getRandomUniform() const;
-
 	vec4 getRandomVec4() const { return vec4(getRandomFloat(), getRandomFloat(), getRandomFloat(), 1.0f); }
+	string generateAlphanumericString(int num_chars, bool print_values = false);
 
-	boost::variate_generator<boost::mt19937&, boost::uniform_real<> > *uniform_generator;
+	void seed(const string &seed_string);
 
 private:
 	boost::mt19937 rng;
+	boost::variate_generator<boost::mt19937&, boost::uniform_real<> > *uniform_generator = nullptr;
 };
 
 #endif

@@ -16,23 +16,26 @@ int main()
 	shared_ptr<texture_handler> textures(new texture_handler(data_path));
 	shared_ptr<ogl_camera_free> camera(new ogl_camera_free(keys, context, vec3(0.0f, eye_level, 1.0f), 45.0f));
 
-	string randomization_seed = "George Vincent Pollack";
-
 	bool two_dimensional = false;
-	//fractal_generator pg(randomization_seed, context, 4, 1, 1, 1, two_dimensional);
-	fractal_generator pg(randomization_seed, context, two_dimensional);
+	//fractal_generator fg("Like Joe Pollack's prom date", context, two_dimensional);
+	fractal_generator fg(context, two_dimensional);
 
 	vector<vec4> point_sequence = {
-		vec4(0.0f, 0.0f, 0.0f, 1.0f),
-		vec4(0.0f, 0.6f, 0.0f, 1.0f),
-		vec4(0.0f, 0.0f, 0.0f, 1.0f),
-		vec4(0.6f, 0.0f, 0.0f, 1.0f),
+		vec4(-1.0f, -1.0f, 0.0f, 1.0f),
+		vec4(-1.0f, 1.0f, 0.0f, 1.0f),
+		vec4(-1.0f, 1.0f, 0.0f, 1.0f),
+		vec4(1.0f, 1.0f, 0.0f, 1.0f),
+		vec4(1.0f, 1.0f, 0.0f, 1.0f),
+		vec4(1.0f, -1.0f, 0.0f, 1.0f),
+		vec4(1.0f, -1.0f, 0.0f, 1.0f),
+		vec4(-1.0f, -1.0f, 0.0f, 1.0f)
 	};
 
 	int num_points = 300000;
 
-	//pg.generateFractal(point_sequence, num_points);
-	pg.generateFractal(num_points);
+	//fg.generateFractal(point_sequence, num_points);
+	//fg.generateFractal(num_points, 5);
+	fg.generateFractal(num_points);
 
 	glfwSetTime(0);
 	float render_fps = 60.0f;
@@ -70,15 +73,18 @@ int main()
 					frame_counter += counter_increment;
 			}
 
-			pg.drawFractal();
-			pg.checkKeys(keys);
+			fg.drawFractal();
+			fg.checkKeys(keys);
 
 			//TODO see why this only works when include_hold is enabled
 			if (keys->checkPress(GLFW_KEY_ESCAPE))
 				finished = true;
 
-			if (keys->checkPress(GLFW_KEY_I, false))
+			if (keys->checkPress(GLFW_KEY_J, false))
 				show_animation = !show_animation;
+
+			if (keys->checkPress(GLFW_KEY_I, false))
+				fg.invertColors();
 
 			if (keys->checkPress(GLFW_KEY_G, false))
 			{
@@ -96,7 +102,7 @@ int main()
 				reverse = !reverse;
 
 			if (keys->checkPress(GLFW_KEY_N, false))
-				pg.generateFractal(num_points);
+				fg.generateFractal(num_points);
 
 			if (keys->checkPress(GLFW_KEY_R, false))
 			{
