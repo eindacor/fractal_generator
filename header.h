@@ -20,6 +20,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/variate_generator.hpp>
 #include <boost/random/normal_distribution.hpp>
+#include <boost/functional/hash.hpp>
 #include "jeploot.h"
 
 using jep::ogl_context;

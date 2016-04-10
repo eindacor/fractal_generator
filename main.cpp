@@ -16,9 +16,11 @@ int main()
 	shared_ptr<texture_handler> textures(new texture_handler(data_path));
 	shared_ptr<ogl_camera_free> camera(new ogl_camera_free(keys, context, vec3(0.0f, eye_level, 1.0f), 45.0f));
 
-	matrix_creator mc;
+	string randomization_seed = "George Vincent Pollack";
+
 	bool two_dimensional = false;
-	fractal_generator pg(context, 3, 3, 1, 1, two_dimensional);
+	//fractal_generator pg(randomization_seed, context, 4, 1, 1, 1, two_dimensional);
+	fractal_generator pg(randomization_seed, context, two_dimensional);
 
 	vector<vec4> point_sequence = {
 		vec4(0.0f, 0.0f, 0.0f, 1.0f),
@@ -30,7 +32,7 @@ int main()
 	int num_points = 300000;
 
 	//pg.generateFractal(point_sequence, num_points);
-	pg.generateFractal(mc.getRandomVec4(), num_points);
+	pg.generateFractal(num_points);
 
 	glfwSetTime(0);
 	float render_fps = 60.0f;
@@ -41,6 +43,7 @@ int main()
 	bool show_animation = true;
 	bool smooth_lines = true;
 	bool paused = false;
+	bool reverse = false;
 
 	while (!finished)
 	{
@@ -59,7 +62,13 @@ int main()
 			glUniform1i(context->getShaderGLint("frame_count"), frame_counter);
 
 			if (!paused && show_animation)
-				frame_counter+= counter_increment;
+			{
+				if (reverse && frame_counter > counter_increment)
+					frame_counter -= counter_increment;
+
+				else if (!reverse)
+					frame_counter += counter_increment;
+			}
 
 			pg.drawFractal();
 			pg.checkKeys(keys);
@@ -73,22 +82,21 @@ int main()
 
 			if (keys->checkPress(GLFW_KEY_G, false))
 			{
-				if (counter_increment == 100)
-					counter_increment = 11;
-
-				else counter_increment *= 10;
+				if (counter_increment != 100)
+					counter_increment *= 10;
 			}
 
 			if (keys->checkPress(GLFW_KEY_F, false))
 			{
-				if (counter_increment == 1)
-					counter_increment = 100;
-
-				else counter_increment /= 10;
+				if (counter_increment != 1)
+					counter_increment /= 10;
 			}
 
+			if (keys->checkPress(GLFW_KEY_H, false))
+				reverse = !reverse;
+
 			if (keys->checkPress(GLFW_KEY_N, false))
-				pg.generateFractal(mc.getRandomVec4(), num_points);
+				pg.generateFractal(num_points);
 
 			if (keys->checkPress(GLFW_KEY_R, false))
 			{

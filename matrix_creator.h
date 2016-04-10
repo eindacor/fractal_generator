@@ -10,7 +10,8 @@ class matrix_creator
 public:
 
 	matrix_creator();
-	~matrix_creator() { delete in_scope_generator; delete uniform_generator; }
+	matrix_creator(const string &seed_string);
+	~matrix_creator() { delete uniform_generator; }
 
 	mat4 getRandomTranslation() const;
 	mat4 getRandomTranslation2D() const;
@@ -33,8 +34,10 @@ public:
 
 	vec4 getRandomVec4() const { return vec4(getRandomFloat(), getRandomFloat(), getRandomFloat(), 1.0f); }
 
-	boost::variate_generator<boost::mt19937, boost::uniform_real<float> > *in_scope_generator;
-	boost::variate_generator<boost::mt19937, boost::uniform_real<float> > *uniform_generator;
+	boost::variate_generator<boost::mt19937&, boost::uniform_real<> > *uniform_generator;
+
+private:
+	boost::mt19937 rng;
 };
 
 #endif

@@ -9,12 +9,35 @@
 class fractal_generator
 {
 public:
-	fractal_generator(const shared_ptr<jep::ogl_context> &con, const int &num_matrices, const int &translate, const int &rotate, const int &scale, bool two_dimensional = false);
+	fractal_generator(
+		const string &randomization_seed,
+		const shared_ptr<jep::ogl_context> &con, 
+		bool two_dimensional = false);
+
+	fractal_generator(
+		const string &randomization_seed,
+		const shared_ptr<jep::ogl_context> &con, 
+		const int &num_matrices, 
+		const int &translate, 
+		const int &rotate, 
+		const int &scale, 
+		bool two_dimensional = false);
+
+	fractal_generator(
+		const shared_ptr<jep::ogl_context> &con, 
+		const int &num_matrices, 
+		const int &translate, 
+		const int &rotate, 
+		const int &scale, 
+		bool two_dimensional = false);
+
 	~fractal_generator() { glDeleteVertexArrays(1, &pg_VAO); glDeleteBuffers(1, &pg_VBO); }
 
 	void setMatrices(const int &num_matrices, const int &translate, const int &rotate, const int &scale);
 
+	void generateFractal(const int &num_points);
 	void generateFractal(vec4 origin, const int &num_points);
+	void generateFractal(const int &num_points, const int &transformation_refresh);
 	void generateFractal(vec4 origin, const int &num_points, const int &transformation_refresh);
 	void generateFractal(vector<vec4> point_sequence, const int &num_points);
 	void generateFractal(vector<vec4> point_sequence, const int &num_points, const int &transformation_refresh);

@@ -2,15 +2,21 @@
 
 matrix_creator::matrix_creator()
 {
-	boost::mt19937 rng;
 	rng.seed(clock());
-	boost::uniform_real<float> random_in_scope(-1.0f, 1.0f);
-	in_scope_generator = new boost::variate_generator<boost::mt19937, boost::uniform_real<float> >(rng, random_in_scope);
+	boost::uniform_real<> random_range(0, 1);
+	uniform_generator = new boost::variate_generator<boost::mt19937&, boost::uniform_real<> >(rng, random_range);
+}
 
-	boost::mt19937 u_rng;
-	u_rng.seed(clock());
-	boost::uniform_real<float> random_range(0.0f, 1.0f);
-	uniform_generator = new boost::variate_generator<boost::mt19937, boost::uniform_real<float> >(u_rng, random_range);
+matrix_creator::matrix_creator(const string &seed_string)
+{
+	boost::hash<std::string> string_hash;
+	unsigned int hashed_string = string_hash(seed_string);
+
+	cout << hashed_string << endl;
+
+	rng.seed(hashed_string);
+	boost::uniform_real<> random_range(0, 1);
+	uniform_generator = new boost::variate_generator<boost::mt19937&, boost::uniform_real<> >(rng, random_range);
 }
 
 mat4 matrix_creator::getRandomTranslation() const
@@ -97,7 +103,7 @@ mat4 matrix_creator::getRandomScale2D(const random_switch &x, const random_switc
 
 float matrix_creator::getRandomFloat() const 
 { 
-	return (*in_scope_generator)();
+	return ((*uniform_generator)() * 2.0) - 1.0f;
 }
 
 float matrix_creator::getRandomFloatInRange(const float &min, const float &max) const 
@@ -107,7 +113,7 @@ float matrix_creator::getRandomFloatInRange(const float &min, const float &max) 
 
 	float difference = max - min;
 
-	return min + ((*uniform_generator)() * max);
+	return min + ((*uniform_generator)() * difference);
 }
 
 float matrix_creator::getRandomUniform() const
