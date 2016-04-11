@@ -3,8 +3,8 @@
 matrix_creator::matrix_creator()
 {
 	rng.seed(clock());
-	boost::uniform_real<> random_range(0, 1);
-	uniform_generator = new boost::variate_generator<boost::mt19937&, boost::uniform_real<> >(rng, random_range);
+	boost::uniform_real<float> random_range(0, 1);
+	uniform_generator = new boost::variate_generator<boost::mt19937&, boost::uniform_real<float> >(rng, random_range);
 }
 
 matrix_creator::matrix_creator(const string &seed_string)
@@ -123,8 +123,8 @@ void matrix_creator::seed(const string &seed_string)
 	unsigned int hashed_string = string_hash(seed_string);
 
 	rng.seed(hashed_string);
-	boost::uniform_real<> random_range(0, 1);
-	uniform_generator = new boost::variate_generator<boost::mt19937&, boost::uniform_real<> >(rng, random_range);
+	boost::uniform_real<float> random_range(0, 1);
+	uniform_generator = new boost::variate_generator<boost::mt19937&, boost::uniform_real<float> >(rng, random_range);
 }
 
 string matrix_creator::generateAlphanumericString(int num_chars, bool print_values)

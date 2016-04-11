@@ -2,6 +2,62 @@
 #include "matrix_creator.h"
 #include "fractal_generator.h"
 
+void saveTGA(int width, int height)
+{
+	char cFileName[64];
+	FILE *fScreenshot;
+	int nSize = width * height * 3;
+
+
+	GLubyte *pixels = new GLubyte[nSize];
+	if (pixels == NULL) return;
+
+	int nShot = 0;
+
+	while (nShot < 64)
+	{
+		sprintf(cFileName, "screenshot_%d.tga", nShot);
+		fScreenshot = fopen(cFileName, "rb");
+		if (fScreenshot == NULL) break;
+		else fclose(fScreenshot);
+
+		++nShot;
+
+		if (nShot > 63)
+		{
+			cout << "Screenshot limit of 64 reached. Remove some shots if you want to take more." << endl;
+			return;
+		}
+	}
+
+	fScreenshot = fopen(cFileName, "wb");
+
+	glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
+	//convert to BGR format    
+	unsigned char temp;
+	int i = 0;
+	while (i < nSize)
+	{
+		temp = pixels[i];       //grab blue
+		pixels[i] = pixels[i + 2];//assign red to blue
+		pixels[i + 2] = temp;     //assign blue to red
+		i += 3;     //skip to next blue byte
+	}
+
+	unsigned char TGAheader[12] = { 0,0,2,0,0,0,0,0,0,0,0,0 };
+	unsigned char header[6] = { width % 256,width / 256, height % 256,height / 256,24,0 };
+
+	fwrite(TGAheader, sizeof(unsigned char), 12, fScreenshot);
+	fwrite(header, sizeof(unsigned char), 6, fScreenshot);
+	fwrite(pixels, sizeof(GLubyte), nSize, fScreenshot);
+	fclose(fScreenshot);
+
+	delete[] pixels;
+
+	return;
+}
+
 int main()
 {
 	jep::init();
@@ -11,7 +67,7 @@ int main()
 	string frag_file = data_path + "PixelShader.glsl";
 
 	float eye_level = 0.0f;
-	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vert_file.c_str(), frag_file.c_str(), 1920, 1080));
+	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vert_file.c_str(), frag_file.c_str(), 4000, 2000));
 	shared_ptr<key_handler> keys(new key_handler(context));
 	shared_ptr<texture_handler> textures(new texture_handler(data_path));
 	shared_ptr<ogl_camera_free> camera(new ogl_camera_free(keys, context, vec3(0.0f, eye_level, 1.0f), 45.0f));
@@ -23,7 +79,7 @@ int main()
 	*/
 
 	bool two_dimensional = false;
-	//fractal_generator fg("f6ujfV4rTtvN991MBr5gOCiaQ6TrAPaJ", context, two_dimensional);
+	//fractal_generator fg("mbaEQ8JUpjuk22uY3sBN46S9h9TX1K4k", context, two_dimensional);
 	fractal_generator fg(context, two_dimensional);
 
 	vector<vec4> point_sequence = {
@@ -37,7 +93,7 @@ int main()
 		vec4(-1.0f, -1.0f, 0.0f, 1.0f)
 	};
 
-	int num_points = 300000;
+	int num_points = 50000;
 
 	//fg.generateFractal(point_sequence, num_points);
 	//fg.generateFractal(num_points, 5);
@@ -113,6 +169,11 @@ int main()
 
 			if (keys->checkPress(GLFW_KEY_T, false))
 				paused = !paused;
+
+			if (keys->checkPress(GLFW_KEY_X, false))
+			{
+				saveTGA(context->getWindowWidth(), context->getWindowHeight());
+			}
 
 			context->swapBuffers();
 			glfwSetTime(0.0f);

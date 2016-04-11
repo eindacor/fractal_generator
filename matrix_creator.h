@@ -38,7 +38,7 @@ public:
 
 private:
 	boost::mt19937 rng;
-	boost::variate_generator<boost::mt19937&, boost::uniform_real<> > *uniform_generator = nullptr;
+	boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > *uniform_generator = nullptr;
 };
 
 #endif
