@@ -46,8 +46,10 @@ public:
 	void generateFractal(vector<vec4> point_sequence, const int &num_points);
 	void generateFractal(vector<vec4> point_sequence, const int &num_points, const int &transformation_refresh);
 
+	void renderFractal(const int &image_width, const int &image_height, const int &matrix_sequence_count);
+
 	//vector<mat4> generateMatrixSequence(const vector<int> &matrix_indices) const;
-	//vector<mat4> generateMatrixSequence(const int &sequence_size) const;
+	vector<mat4> generateMatrixSequence(const int &sequence_size) const;
 
 	void setMatrices(const vector< pair<string, mat4> > &new_matrices) { matrices.clear(); matrices = new_matrices; }
 	void applyBackground(const int &num_samples);

@@ -61,13 +61,13 @@ void saveTGA(int width, int height)
 int main()
 {
 	jep::init();
-	//string data_path = "c:\\Users\\jpollack\\documents\\github\\fractal_generator\\";
-	string data_path = "j:\\Github\\fractal_generator\\";
+	string data_path = "c:\\Users\\jpollack\\documents\\github\\fractal_generator\\";
+	//string data_path = "j:\\Github\\fractal_generator\\";
 	string vert_file = data_path + "VertexShader.glsl";
 	string frag_file = data_path + "PixelShader.glsl";
 
 	float eye_level = 0.0f;
-	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vert_file.c_str(), frag_file.c_str(), 4000, 2000));
+	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vert_file.c_str(), frag_file.c_str(), 1080, 720));
 	shared_ptr<key_handler> keys(new key_handler(context));
 	shared_ptr<texture_handler> textures(new texture_handler(data_path));
 	shared_ptr<ogl_camera_free> camera(new ogl_camera_free(keys, context, vec3(0.0f, eye_level, 1.0f), 45.0f));
@@ -79,8 +79,11 @@ int main()
 	*/
 
 	bool two_dimensional = false;
-	//fractal_generator fg("mbaEQ8JUpjuk22uY3sBN46S9h9TX1K4k", context, two_dimensional);
-	fractal_generator fg(context, two_dimensional);
+	fractal_generator fg("bdUUhVCQm5hLMzy85HPY30Ipzjv3S9uN", context, two_dimensional);
+	//fractal_generator fg(context, two_dimensional);
+
+	fg.renderFractal(1024, 1024, 10);
+	return 0;
 
 	vector<vec4> point_sequence = {
 		vec4(-1.0f, -1.0f, 0.0f, 1.0f),

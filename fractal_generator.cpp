@@ -395,6 +395,132 @@ void fractal_generator::generateFractal(vec4 or, const int &num_points)
 	bufferData(points);
 }
 
+void fractal_generator::renderFractal(const int &image_width, const int &image_height, const int &matrix_sequence_count)
+{
+	char cFileName[64];
+	FILE *fScreenshot;
+
+	int nSize = image_width * image_height * 3;
+	GLubyte *pixels = new GLubyte[nSize];
+	if (pixels == NULL) return;
+
+	int nShot = 0;
+
+	while (nShot < 64)
+	{
+		sprintf(cFileName, "screenshot_%d.tga", nShot);
+		fScreenshot = fopen(cFileName, "rb");
+		if (fScreenshot == NULL) break;
+		else fclose(fScreenshot);
+
+		++nShot;
+
+		if (nShot > 63)
+		{
+			cout << "Screenshot limit of 64 reached. Remove some shots if you want to take more." << endl;
+			return;
+		}
+	}
+
+	fScreenshot = fopen(cFileName, "wb");
+
+	vector<mat4> matrix_sequence = generateMatrixSequence(10);
+	map<int, int> calc_map;
+	vec4 white(1.0f, 1.0f, 1.0f, 1.0f);
+	mat4 scale_matrix = glm::scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f));
+
+	//convert to BGR format    
+	unsigned char temp;
+	for (int i = 0; i < nSize; i += 3)
+	{
+		unsigned int calc_counter = 0;
+		int x_coord = (i/3) % image_width;
+		int y_coord = (i/3) / image_width;
+		float x_pos = ((float)x_coord / (float)image_width);
+		float y_pos = ((float)y_coord / (float)image_height);
+		vec4 uv_point((x_pos * 2.0f) - 1.0f, (y_pos * 2.0f) - 1.0f, 0.0f, 1.0f);
+
+		float x = 0.0f;
+		float y = 0.0f;
+		while (x*x + y*y < 3 && calc_counter < 1000)
+		{
+			float x_temp = x*x - y*y + x_pos;
+			y = 2 * x * y + y_pos;
+			x = x_temp;
+			calc_counter++;
+		}
+
+		/*while (uv_point.x < 1.1f && uv_point.x > -1.1f  && uv_point.y < 1.1f  && uv_point.y > -1.1f)
+		{
+			mat4 current_matrix = scale_matrix * matrix_sequence.at(calc_counter % matrix_sequence.size());
+			uv_point = current_matrix * uv_point;
+
+			if (calc_counter == 1000)
+			{
+				cout << "1,000,000 calc limit reached" << endl;
+				break;
+			}
+
+			calc_counter++;
+		}*/
+
+		if (calc_map.find(calc_counter) == calc_map.end())
+			calc_map[calc_counter] = 1;
+
+		else calc_map[calc_counter] += 1;
+
+		//dependend on fractal seed, replace
+		int color_index = calc_counter / 100;
+		float color_value = (float)color_index / 10.0f;
+
+		pixels[i] = GLubyte(color_value * 255.0f);
+		pixels[i+1] = GLubyte(color_value * 255.0f);
+		pixels[i+2] = GLubyte((1.0f - color_value) * 255.0f);
+
+		calc_counter = 0;
+	}
+
+	for (const auto &calc_pair : calc_map)
+	{
+		cout << calc_pair.first << " calcs: " << calc_pair.second << endl;
+	}
+
+	unsigned char TGAheader[12] = { 0,0,2,0,0,0,0,0,0,0,0,0 };
+	unsigned char header[6] = { image_width % 256,image_width / 256, image_height % 256,image_height / 256,24,0 };
+
+	fwrite(TGAheader, sizeof(unsigned char), 12, fScreenshot);
+	fwrite(header, sizeof(unsigned char), 6, fScreenshot);
+	fwrite(pixels, sizeof(GLubyte), nSize, fScreenshot);
+	fclose(fScreenshot);
+
+	delete[] pixels;
+
+	return;
+}
+
+vector<mat4> fractal_generator::generateMatrixSequence(const int &sequence_size) const
+{
+	vector<mat4> matrix_sequence;
+
+	for (int i = 0; i < sequence_size; i++)
+	{
+		int random_index = mc.getRandomUniform() * (float)matrices.size();
+		matrix_sequence.push_back(matrices.at(random_index).second);
+	}
+
+	//return matrix_sequence;
+
+	vector<mat4> dummy_sequence = {
+		glm::translate(mat4(1.0f), vec3(0.01f, 0.01f, 0.0f)),
+		glm::rotate(mat4(1.0f), 0.05f, vec3(0.0f, 0.0f, 1.0f)),
+		glm::translate(mat4(1.0f), vec3(0.02f, -0.01f, 0.0f)),
+		glm::translate(mat4(1.0f), vec3(-0.01f, 0.02f, 0.0f)),
+		glm::rotate(mat4(1.0f), 0.02f, vec3(0.0f, 0.0f, 1.0f))
+	};
+
+	return dummy_sequence;
+}
+
 void fractal_generator::addNewPointAndIterate(
 	vec4 &starting_point,
 	vec4 &starting_color,
