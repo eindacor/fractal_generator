@@ -442,27 +442,23 @@ void fractal_generator::renderFractal(const int &image_width, const int &image_h
 
 		float x = 0.0f;
 		float y = 0.0f;
-		while (x*x + y*y < 3 && calc_counter < 1000)
+
+		//while distance from 0,0 origin is less than 2 and calcs < 1000
+		/*while (x*x + y*y < 2*2 && calc_counter < 1000)
 		{
 			float x_temp = x*x - y*y + x_pos;
 			y = 2 * x * y + y_pos;
 			x = x_temp;
 			calc_counter++;
-		}
+		}*/
 
-		/*while (uv_point.x < 1.1f && uv_point.x > -1.1f  && uv_point.y < 1.1f  && uv_point.y > -1.1f)
+		while (uv_point.x < 1.1f && uv_point.x > -1.1f  && uv_point.y < 1.1f  && uv_point.y > -1.1f && calc_counter < 1000)
 		{
 			mat4 current_matrix = scale_matrix * matrix_sequence.at(calc_counter % matrix_sequence.size());
 			uv_point = current_matrix * uv_point;
 
-			if (calc_counter == 1000)
-			{
-				cout << "1,000,000 calc limit reached" << endl;
-				break;
-			}
-
 			calc_counter++;
-		}*/
+		}
 
 		if (calc_map.find(calc_counter) == calc_map.end())
 			calc_map[calc_counter] = 1;
