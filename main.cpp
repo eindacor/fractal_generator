@@ -11,24 +11,10 @@ int main()
 	string frag_file = data_path + "PixelShader.glsl";
 
 	float eye_level = 0.0f;
-	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vert_file.c_str(), frag_file.c_str(), 800, 400));
+	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vert_file.c_str(), frag_file.c_str(), 512, 256));
 	shared_ptr<key_handler> keys(new key_handler(context));
 	shared_ptr<texture_handler> textures(new texture_handler(data_path));
 	shared_ptr<ogl_camera_free> camera(new ogl_camera_free(keys, context, vec3(0.0f, eye_level, 1.0f), 45.0f));
-
-	/*
-	SEEDS
-	f6ujfV4rTtvN991MBr5gOCiaQ6TrAPaJ
-	3LE1GoVEb1W9jV1GwrTyfMLVMYs8ipYT
-	bdUUhVCQm5hLMzy85HPY30Ipzjv3S9uN
-	*/
-
-	bool two_dimensional = false;
-	//fractal_generator fg("nQaaG4Gsi8d0FaSURNAjlzNdwbxP3sH5", context, two_dimensional);
-	fractal_generator fg(context, two_dimensional);
-
-	//fg.renderFractal(1024, 1024, 10);
-	//return 0;
 
 	vector<vec4> point_sequence = {
 		vec4(-1.0f, -1.0f, 0.0f, 1.0f),
@@ -41,11 +27,22 @@ int main()
 		vec4(-1.0f, -1.0f, 0.0f, 1.0f)
 	};
 
+	/*
+	SEEDS
+	f6ujfV4rTtvN991MBr5gOCiaQ6TrAPaJ
+	3LE1GoVEb1W9jV1GwrTyfMLVMYs8ipYT
+	bdUUhVCQm5hLMzy85HPY30Ipzjv3S9uN
+	*/
+
+	bool two_dimensional = false;
+	fractal_generator fg("f6ujfV4rTtvN991MBr5gOCiaQ6TrAPaJ", context, two_dimensional);
+	//fractal_generator fg(context, two_dimensional);
+
 	int num_points = 50000;
 
 	//fg.generateFractal(point_sequence, num_points);
-	//fg.generateFractal(num_points, 5);
-	fg.generateFractal(num_points);
+	fg.generateFractal(num_points, 5);
+	//fg.generateFractal(num_points);
 
 	glfwSetTime(0);
 	float render_fps = 60.0f;
@@ -121,7 +118,7 @@ int main()
 			context->swapBuffers();
 
 			if (keys->checkPress(GLFW_KEY_X, false))
-				saveImage(5.0f, fg, context);
+				saveImage(10.0f, fg, context);
 
 			glfwSetTime(0.0f);
 		}

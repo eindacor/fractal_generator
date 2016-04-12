@@ -67,6 +67,7 @@ public:
 	void adjustBrightness(vec4 &color, float degree);
 
 	vec4 getSampleColor(const int &samples, const vector<vec4> &color_pool) const;
+	float getLineWidth() const { return line_width; }
 
 	void printMatrices() const;
 

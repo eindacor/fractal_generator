@@ -166,7 +166,9 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	glDisable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST);
 
+	glLineWidth(image_scale * fg.getLineWidth());
 	fg.drawFractal();
+	glLineWidth(fg.getLineWidth());
 
 	string output_filename;
 	FILE *file_check;
@@ -246,5 +248,6 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 
 	glViewport(0, 0, context->getWindowWidth(), context->getWindowHeight());
 
+	cout << "file saved: " << output_filename << endl;
 	return true;
 }
