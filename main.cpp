@@ -3,17 +3,50 @@
 #include "fractal_generator.h"
 #include "screencap.h"
 
+const char* vertex_shader_string = "\
+#version 330\n\
+layout(location = 0) in vec4 position;\n\
+layout(location = 1) in vec4 color;\n\
+layout(location = 2) in float point_size;\n\
+uniform mat4 MVP;\n\
+uniform mat4 MV;\n\
+uniform mat4 model_matrix;\n\
+uniform mat4 view_matrix;\n\
+uniform mat4 fractal_scale = mat4(1.0f);\n\
+uniform int enable_growth_animation;\n\
+uniform int frame_count;\n\
+out vec4 fragment_color;\n\
+void main()\n\
+{\n\
+	gl_PointSize = point_size;\n\
+	gl_Position = MVP * fractal_scale * position;\n\
+	float alpha_value = (frame_count > gl_VertexID) || (enable_growth_animation == 0) ? color.a : 0.0f;\n\
+	fragment_color = vec4(color.rgb, alpha_value);\n\
+}\n\
+";
+
+const char* fragment_shader_string = "\
+#version 330\n\
+in vec4 fragment_color;\n\
+out vec4 output_color;\n\
+layout(location = 0) out vec4 color;\n\
+void main()\n\
+{\n\
+	output_color = fragment_color;\n\
+	color = fragment_color;\n\
+}\n\
+";
+
 int main()
 {
-	string data_path = "c:\\Users\\jpollack\\documents\\github\\fractal_generator\\";
+	//string data_path = "c:\\Users\\jpollack\\documents\\github\\fractal_generator\\";
 	//string data_path = "j:\\Github\\fractal_generator\\";
-	string vert_file = data_path + "VertexShader.glsl";
-	string frag_file = data_path + "PixelShader.glsl";
+	//string vert_file = data_path + "VertexShader.glsl";
+	//string frag_file = data_path + "PixelShader.glsl";
 
 	float eye_level = 0.0f;
-	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vert_file.c_str(), frag_file.c_str(), 512, 256));
+	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, 1024, 512, true));
 	shared_ptr<key_handler> keys(new key_handler(context));
-	shared_ptr<texture_handler> textures(new texture_handler(data_path));
 	shared_ptr<ogl_camera_free> camera(new ogl_camera_free(keys, context, vec3(0.0f, eye_level, 1.0f), 45.0f));
 
 	vector<vec4> point_sequence = {
@@ -32,17 +65,18 @@ int main()
 	f6ujfV4rTtvN991MBr5gOCiaQ6TrAPaJ
 	3LE1GoVEb1W9jV1GwrTyfMLVMYs8ipYT
 	bdUUhVCQm5hLMzy85HPY30Ipzjv3S9uN
+	fiUppj1hoBZyIZ2Vzq0NlGkdNUUKvcOM
 	*/
 
 	bool two_dimensional = false;
-	fractal_generator fg("f6ujfV4rTtvN991MBr5gOCiaQ6TrAPaJ", context, two_dimensional);
-	//fractal_generator fg(context, two_dimensional);
+	//fractal_generator fg("f6ujfV4rTtvN991MBr5gOCiaQ6TrAPaJ", context, two_dimensional);
+	fractal_generator fg(context, two_dimensional);
 
 	int num_points = 50000;
 
 	//fg.generateFractal(point_sequence, num_points);
-	fg.generateFractal(num_points, 5);
-	//fg.generateFractal(num_points);
+	//fg.generateFractal(num_points, 5);
+	fg.generateFractal(num_points);
 
 	glfwSetTime(0);
 	float render_fps = 60.0f;
@@ -118,7 +152,7 @@ int main()
 			context->swapBuffers();
 
 			if (keys->checkPress(GLFW_KEY_X, false))
-				saveImage(10.0f, fg, context);
+				saveImage(4.0f, fg, context);
 
 			glfwSetTime(0.0f);
 		}
