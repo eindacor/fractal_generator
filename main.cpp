@@ -44,6 +44,20 @@ int main()
 	//string vert_file = data_path + "VertexShader.glsl";
 	//string frag_file = data_path + "PixelShader.glsl";
 
+	string entered_seed;
+
+	cout << "enter seed: ";
+	std::getline(std::cin, entered_seed);
+	cout << endl;
+
+	entered_seed.erase(std::remove(entered_seed.begin(), entered_seed.end(), '\n'), entered_seed.end());
+
+	string refresh_enabled;
+	cout << "refresh enabled?: ";
+	std::getline(std::cin, refresh_enabled);
+	std::transform(refresh_enabled.begin(), refresh_enabled.end(), refresh_enabled.begin(), ::tolower);
+	cout << endl;
+
 	float eye_level = 0.0f;
 	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, 1024, 512, true));
 	shared_ptr<key_handler> keys(new key_handler(context));
@@ -69,14 +83,21 @@ int main()
 	*/
 
 	bool two_dimensional = false;
-	//fractal_generator fg("f6ujfV4rTtvN991MBr5gOCiaQ6TrAPaJ", context, two_dimensional);
-	fractal_generator fg(context, two_dimensional);
+	fractal_generator *generator;
+
+	if (entered_seed.size() == 0)
+		generator = new fractal_generator(context, two_dimensional);
+
+	else generator = new fractal_generator(entered_seed, context, two_dimensional);
 
 	int num_points = 50000;
 
-	//fg.generateFractal(point_sequence, num_points);
-	//fg.generateFractal(num_points, 5);
-	fg.generateFractal(num_points);
+	//generator->generateFractal(point_sequence, num_points);
+
+	if (refresh_enabled == "y" || refresh_enabled == "yes" || refresh_enabled == "true")
+		generator->generateFractal(num_points, 5);
+
+	else generator->generateFractal(num_points);
 
 	glfwSetTime(0);
 	float render_fps = 60.0f;
@@ -114,8 +135,8 @@ int main()
 					frame_counter += counter_increment;
 			}
 
-			fg.drawFractal();
-			fg.checkKeys(keys);
+			generator->drawFractal();
+			generator->checkKeys(keys);
 
 			//TODO see why this only works when include_hold is enabled
 			if (keys->checkPress(GLFW_KEY_ESCAPE))
@@ -152,11 +173,12 @@ int main()
 			context->swapBuffers();
 
 			if (keys->checkPress(GLFW_KEY_X, false))
-				saveImage(4.0f, fg, context);
+				saveImage(4.0f, *generator, context);
 
 			glfwSetTime(0.0f);
 		}
 	}
 
+	delete generator;
 	return 0;
 }
