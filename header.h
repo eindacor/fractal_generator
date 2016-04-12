@@ -23,6 +23,10 @@
 #include <boost/functional/hash.hpp>
 #include "jeploot.h"
 
+//for bitmap creation
+#include <Windows.h>
+#include <memory>
+
 using jep::ogl_context;
 using jep::ogl_camera;
 using jep::key_handler;

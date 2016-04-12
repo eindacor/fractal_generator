@@ -37,6 +37,8 @@ public:
 
 	~fractal_generator() { glDeleteVertexArrays(1, &pg_VAO); glDeleteBuffers(1, &pg_VBO); }
 
+	string getSeed() const { return seed; }
+
 	void setMatrices(const int &num_matrices, const int &translate, const int &rotate, const int &scale);
 
 	void generateFractal(const int &num_points);
@@ -69,6 +71,7 @@ public:
 	void printMatrices() const;
 
 private:
+	string seed;
 	vector< pair<string, mat4> > matrices;
 	//vector<mat4> matrices;
 	vector<vec4> colors;

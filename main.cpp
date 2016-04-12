@@ -1,144 +1,17 @@
 #include "header.h"
 #include "matrix_creator.h"
 #include "fractal_generator.h"
-
-void saveTGA(int width, int height)
-{
-	char cFileName[64];
-	FILE *fScreenshot;
-	int nSize = width * height * 3;
-
-	GLubyte *pixels = new GLubyte[nSize];
-	if (pixels == NULL) return;
-
-	int nShot = 0;
-
-	while (nShot < 64)
-	{
-		sprintf(cFileName, "screenshot_%d.tga", nShot);
-		fScreenshot = fopen(cFileName, "rb");
-		if (fScreenshot == NULL) break;
-		else fclose(fScreenshot);
-
-		++nShot;
-
-		if (nShot > 63)
-		{
-			cout << "Screenshot limit of 64 reached. Remove some shots if you want to take more." << endl;
-			return;
-		}
-	}
-
-	fScreenshot = fopen(cFileName, "wb");
-
-	glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
-
-	//convert to BGR format    
-	unsigned char temp;
-	int i = 0;
-	while (i < nSize)
-	{
-		temp = pixels[i];       //grab blue
-		pixels[i] = pixels[i + 2];//assign red to blue
-		pixels[i + 2] = temp;     //assign blue to red
-		i += 3;     //skip to next blue byte
-	}
-
-	unsigned char TGAheader[12] = { 0,0,2,0,0,0,0,0,0,0,0,0 };
-	unsigned char header[6] = { width % 256,width / 256, height % 256,height / 256,24,0 };
-
-	fwrite(TGAheader, sizeof(unsigned char), 12, fScreenshot);
-	fwrite(header, sizeof(unsigned char), 6, fScreenshot);
-	fwrite(pixels, sizeof(GLubyte), nSize, fScreenshot);
-	fclose(fScreenshot);
-
-	delete[] pixels;
-
-	return;
-}
-
-bool saveImage(int width, int height)
-{
-	GLuint FramebufferName = 0;
-	glGenFramebuffers(1, &FramebufferName);
-	glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-
-	// The texture we're going to render to
-	GLuint renderedTexture;
-	glGenTextures(1, &renderedTexture);
-
-	
-
-	char cFileName[64];
-	FILE *fScreenshot;
-	int nSize = width * height * 4;
-
-	GLubyte *texture_pixels = new GLubyte[nSize];
-	if (texture_pixels == NULL)
-		return false;
-
-	GLubyte *output_pixels = new GLubyte[width * height * 3];
-	if (output_pixels == NULL)
-		return false;
-
-	int nShot = 0;
-
-	while (nShot < 64)
-	{
-		sprintf(cFileName, "screenshot_%d.tga", nShot);
-		fScreenshot = fopen(cFileName, "rb");
-		if (fScreenshot == NULL) break;
-		else fclose(fScreenshot);
-
-		++nShot;
-
-		if (nShot > 63)
-		{
-			cout << "Screenshot limit of 64 reached. Remove some shots if you want to take more." << endl;
-			return false;
-		}
-	}
-
-	fScreenshot = fopen(cFileName, "wb");
-
-	//glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
-	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_pixels);
-
-	//convert to BGR format    
-	for (int i = 0; i < width * height; i++)
-	{
-		int texture_index = i * 4;
-		int output_index = i * 3;
-
-		output_pixels[output_index] = texture_pixels[texture_index + 2];
-		output_pixels[output_index + 1] = texture_pixels[texture_index + 1];
-		output_pixels[output_index + 2] = texture_pixels[texture_index];
-	}
-
-	unsigned char TGAheader[12] = { 0,0,2,0,0,0,0,0,0,0,0,0 };
-	unsigned char header[6] = { width % 256,width / 256, height % 256,height / 256,24,0 };
-
-	fwrite(TGAheader, sizeof(unsigned char), 12, fScreenshot);
-	fwrite(header, sizeof(unsigned char), 6, fScreenshot);
-	fwrite(output_pixels, sizeof(GLubyte), width * height * 3, fScreenshot);
-	fclose(fScreenshot);
-
-	delete[] output_pixels;
-	delete[] texture_pixels;
-
-	return true;
-}
+#include "screencap.h"
 
 int main()
 {
-	jep::init();
-	//string data_path = "c:\\Users\\jpollack\\documents\\github\\fractal_generator\\";
-	string data_path = "j:\\Github\\fractal_generator\\";
+	string data_path = "c:\\Users\\jpollack\\documents\\github\\fractal_generator\\";
+	//string data_path = "j:\\Github\\fractal_generator\\";
 	string vert_file = data_path + "VertexShader.glsl";
 	string frag_file = data_path + "PixelShader.glsl";
 
 	float eye_level = 0.0f;
-	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vert_file.c_str(), frag_file.c_str(), 1080, 720));
+	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vert_file.c_str(), frag_file.c_str(), 800, 400));
 	shared_ptr<key_handler> keys(new key_handler(context));
 	shared_ptr<texture_handler> textures(new texture_handler(data_path));
 	shared_ptr<ogl_camera_free> camera(new ogl_camera_free(keys, context, vec3(0.0f, eye_level, 1.0f), 45.0f));
@@ -151,7 +24,7 @@ int main()
 	*/
 
 	bool two_dimensional = false;
-	//fractal_generator fg("bdUUhVCQm5hLMzy85HPY30Ipzjv3S9uN", context, two_dimensional);
+	//fractal_generator fg("nQaaG4Gsi8d0FaSURNAjlzNdwbxP3sH5", context, two_dimensional);
 	fractal_generator fg(context, two_dimensional);
 
 	//fg.renderFractal(1024, 1024, 10);
@@ -245,14 +118,11 @@ int main()
 			if (keys->checkPress(GLFW_KEY_T, false))
 				paused = !paused;
 
-			if (keys->checkPress(GLFW_KEY_X, false))
-			{
-				//saveTGA(context->getWindowWidth(), context->getWindowHeight());
-				saveImage(4000, 2000);
-				return 0;
-			}
-
 			context->swapBuffers();
+
+			if (keys->checkPress(GLFW_KEY_X, false))
+				saveImage(5.0f, fg, context);
+
 			glfwSetTime(0.0f);
 		}
 	}

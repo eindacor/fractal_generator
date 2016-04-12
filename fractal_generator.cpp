@@ -5,12 +5,9 @@ fractal_generator::fractal_generator(
 	bool two_dimensional)
 {
 	cout << "generating seed..." << endl;
-
-	string random_seed = mc.generateAlphanumericString(32, true);
-
-	cout << endl << "seed: " << random_seed << endl << endl;
-
-	mc.seed(random_seed);
+	seed = mc.generateAlphanumericString(32, true);
+	mc.seed(seed);
+	cout << endl << "seed: " << seed << endl << endl;
 
 	int num_matrices = int(mc.getRandomFloatInRange(3, 8));
 	int translate = int(mc.getRandomFloatInRange(1, 6));
@@ -35,6 +32,7 @@ fractal_generator::fractal_generator(
 	bool two_dimensional) : mc(randomization_seed)
 {
 	cout << "seed: " << randomization_seed << endl << endl;
+	seed = randomization_seed;
 
 	int num_matrices = int(mc.getRandomFloatInRange(3, 6));
 	int translate = int(mc.getRandomFloatInRange(2, 6));
@@ -63,6 +61,7 @@ fractal_generator::fractal_generator(
 	bool two_dimensional) : mc(randomization_seed)
 {
 	cout << "seed: " << randomization_seed << endl << endl;
+	seed = randomization_seed;
 
 	context = con;
 	is_2D = two_dimensional;
@@ -84,6 +83,8 @@ fractal_generator::fractal_generator(
 	const int &scale, 
 	bool two_dimensional)
 {
+	seed = "unseeded";
+
 	context = con;
 	is_2D = two_dimensional;
 	setMatrices(num_matrices, translate, rotate, scale);
