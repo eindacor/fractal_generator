@@ -33,6 +33,7 @@ using jep::key_handler;
 using jep::text_handler;
 using jep::texture_handler;
 using jep::ogl_camera_free;
+using jep::ogl_camera_flying;
 
 using boost::shared_ptr;
 

@@ -166,9 +166,11 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	glDisable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST);
 
-	glLineWidth(image_scale * fg.getLineWidth());
+	glUniform1f(context->getShaderGLint("point_size_scale"), image_scale * 2.0f);
+	glLineWidth(image_scale * 2.0f * fg.getLineWidth());
 	fg.drawFractal();
 	glLineWidth(fg.getLineWidth());
+	glUniform1f(context->getShaderGLint("point_size_scale"), 1.0f);
 
 	string output_filename;
 	FILE *file_check;
@@ -216,7 +218,10 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 		texture_color.b = (float)texture_pixels[texture_index + 2] / 256.0f;
 		texture_color.a = (float)texture_pixels[texture_index + 3] / 256.0f;
 
-		vec4 final_color = (texture_color * texture_color.a) + (background_color * (1.0f - texture_color.a));
+		float texture_alpha = texture_color.a;
+		float modified_alpha = texture_alpha + ((1.0f - texture_alpha) * 0.9f);
+
+		vec4 final_color = (texture_color * modified_alpha) + (background_color * (1.0f - modified_alpha));
 
 		output_pixels[output_index] = GLubyte(final_color.b * 256.0f);
 		output_pixels[output_index + 1] = GLubyte(final_color.g * 256.0f);

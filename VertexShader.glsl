@@ -12,12 +12,13 @@ uniform mat4 fractal_scale = mat4(1.0f);
 
 uniform int enable_growth_animation;
 uniform int frame_count;
+uniform float point_size_scale = 1.0f;
 
 out vec4 fragment_color;
 
 void main()
 {
-	gl_PointSize = point_size;
+	gl_PointSize = point_size * point_size_scale;
 	gl_Position = MVP * fractal_scale * position;
 
 	float alpha_value = (frame_count > gl_VertexID) || (enable_growth_animation == 0) ? color.a : 0.0f;
