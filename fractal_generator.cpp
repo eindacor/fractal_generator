@@ -632,6 +632,12 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 	if (keys->checkPress(GLFW_KEY_3, false))
 		applyBackground(3);
 
+	if (keys->checkPress(GLFW_KEY_4, false))
+		adjustBackgroundBrightness(-0.1f);
+
+	if (keys->checkPress(GLFW_KEY_5, false))
+		adjustBackgroundBrightness(0.05f);
+
 	if (keys->checkPress(GLFW_KEY_PERIOD, false))
 	{
 		if (line_width == 5.0f)
@@ -680,14 +686,10 @@ void fractal_generator::invertColor(vec4 &original)
 
 void fractal_generator::invertColors()
 {
-	for (auto &color : colors)
-	{
-		invertColor(color);
-	}
-
 	inverted = !inverted;
+	glUniform1i(context->getShaderGLint("invert_colors"), inverted ? 1 : 0);
 
-	regenerateFractal();
+	applyBackground(1);
 }
 
 void fractal_generator::newColors()
@@ -723,10 +725,10 @@ void fractal_generator::regenerateFractal()
 
 void fractal_generator::applyBackground(const int &num_samples)
 {
-	background_color = getSampleColor(num_samples, colors);
+	background_color = inverted ? vec4(1.0f) - getSampleColor(num_samples, colors) : getSampleColor(num_samples, colors);
 
-	adjustBrightness(background_color, inverted ? 0.8f : -0.8f);
-
+	//adjustBrightness(background_color, inverted ? 0.8f : -0.8f);
+	adjustBrightness(background_color, jep::floatRoll(-1.0f, 1.0f, 2));
 	context->setBackgroundColor(background_color);
 }
 
@@ -743,4 +745,10 @@ void fractal_generator::adjustBrightness(vec4 &color, float degree)
 		vec4 adjustment_color = degree * inverted_color;
 		color += adjustment_color;
 	}
+}
+
+void fractal_generator::adjustBackgroundBrightness(float adjustment)
+{
+	adjustBrightness(background_color, adjustment);
+	context->setBackgroundColor(background_color);
 }

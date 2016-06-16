@@ -71,6 +71,9 @@ public:
 
 	void printMatrices() const;
 
+	vec4 getBackgroundColor() const { return background_color; }
+	void adjustBackgroundBrightness(float adjustment);
+
 private:
 	string seed;
 	vector< pair<string, mat4> > matrices;

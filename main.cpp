@@ -16,12 +16,18 @@ uniform mat4 fractal_scale = mat4(1.0f);\n\
 uniform int enable_growth_animation;\n\
 uniform int frame_count;\n\
 out vec4 fragment_color;\n\
+uniform float point_size_scale = 1.0f;\n\
+uniform int invert_colors;\n\
 void main()\n\
 {\n\
-	gl_PointSize = point_size;\n\
+	gl_PointSize = point_size * point_size_scale;\n\
 	gl_Position = MVP * fractal_scale * position;\n\
 	float alpha_value = (frame_count > gl_VertexID) || (enable_growth_animation == 0) ? color.a : 0.0f;\n\
-	fragment_color = vec4(color.rgb, alpha_value);\n\
+	if (invert_colors > 0)\n\
+	{\n\
+		fragment_color = vec4(vec3(1.0) - color.rgb, alpha_value); \n\
+	}\n\
+	else fragment_color = vec4(color.rgb, alpha_value);\n\
 }\n\
 ";
 
@@ -29,11 +35,9 @@ const char* fragment_shader_string = "\
 #version 330\n\
 in vec4 fragment_color;\n\
 out vec4 output_color;\n\
-layout(location = 0) out vec4 color;\n\
 void main()\n\
 {\n\
 	output_color = fragment_color;\n\
-	color = fragment_color;\n\
 }\n\
 ";
 
