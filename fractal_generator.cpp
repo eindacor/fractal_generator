@@ -368,6 +368,8 @@ void fractal_generator::generateFractal(vector<vec4> point_sequence, const int &
 
 void fractal_generator::generateFractal(vec4 or, const int &num_points)
 {
+
+
 	refresh_loaded = false;
 	origin = or;
 	sequence_loaded = false;
@@ -443,15 +445,6 @@ void fractal_generator::renderFractal(const int &image_width, const int &image_h
 
 		float x = 0.0f;
 		float y = 0.0f;
-
-		//while distance from 0,0 origin is less than 2 and calcs < 1000
-		/*while (x*x + y*y < 2*2 && calc_counter < 1000)
-		{
-			float x_temp = x*x - y*y + x_pos;
-			y = 2 * x * y + y_pos;
-			x = x_temp;
-			calc_counter++;
-		}*/
 
 		while (uv_point.x < 1.1f && uv_point.x > -1.1f  && uv_point.y < 1.1f  && uv_point.y > -1.1f && calc_counter < 1000)
 		{

@@ -18,10 +18,11 @@ uniform int frame_count;\n\
 out vec4 fragment_color;\n\
 uniform float point_size_scale = 1.0f;\n\
 uniform int invert_colors;\n\
+uniform mat4 interpolation_matrix;\n\
 void main()\n\
 {\n\
 	gl_PointSize = point_size * point_size_scale;\n\
-	gl_Position = MVP * fractal_scale * position;\n\
+	gl_Position = MVP * fractal_scale * interpolation_matrix * position;\n\
 	float alpha_value = (frame_count > gl_VertexID) || (enable_growth_animation == 0) ? color.a : 0.0f;\n\
 	if (invert_colors > 0)\n\
 	{\n\
@@ -53,7 +54,6 @@ int main()
 	cout << "enter seed: ";
 	std::getline(std::cin, entered_seed);
 	cout << endl;
-
 	entered_seed.erase(std::remove(entered_seed.begin(), entered_seed.end(), '\n'), entered_seed.end());
 
 	string refresh_enabled;
@@ -62,10 +62,28 @@ int main()
 	std::transform(refresh_enabled.begin(), refresh_enabled.end(), refresh_enabled.begin(), ::tolower);
 	cout << endl;
 
+	string two_dimensional_enabled;
+	cout << "2D?: ";
+	std::getline(std::cin, two_dimensional_enabled);
+	std::transform(refresh_enabled.begin(), refresh_enabled.end(), refresh_enabled.begin(), ::tolower);
+	cout << endl;
+	bool two_dimensional = (two_dimensional_enabled == "y" || two_dimensional_enabled == "yes" || two_dimensional_enabled == "true");
+
+	string point_count;
+	cout << "point count: ";
+	std::getline(std::cin, point_count);
+	cout << endl;
+	int num_points = std::stoi(point_count);
+
 	float eye_level = 0.0f;
 	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, 1024, 512, true));
 	shared_ptr<key_handler> keys(new key_handler(context));
 	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 1.0f), 45.0f));
+
+	mat4 first = glm::translate(mat4(1.0f), vec3(1.0f));
+	mat4 second = glm::translate(mat4(1.0f), vec3(0.0f));
+
+	mat4 interpolated;
 
 	vector<vec4> point_sequence = {
 		vec4(-1.0f, -1.0f, 0.0f, 1.0f),
@@ -85,16 +103,13 @@ int main()
 	bdUUhVCQm5hLMzy85HPY30Ipzjv3S9uN
 	fiUppj1hoBZyIZ2Vzq0NlGkdNUUKvcOM
 	*/
-
-	bool two_dimensional = false;
+		
 	fractal_generator *generator;
 
 	if (entered_seed.size() == 0)
 		generator = new fractal_generator(context, two_dimensional);
 
 	else generator = new fractal_generator(entered_seed, context, two_dimensional);
-
-	int num_points = 50000;
 
 	//generator->generateFractal(point_sequence, num_points);
 
@@ -114,6 +129,8 @@ int main()
 	bool paused = false;
 	bool reverse = false;
 
+	float inter_start = 0.0f;
+
 	while (!finished)
 	{
 		if (glfwGetTime() > 1.0f / render_fps)
@@ -124,11 +141,15 @@ int main()
 			glfwPollEvents();
 			context->clearBuffers();
 
+			interpolated = (first * inter_start) + (second *(1.0f - inter_start));
+
 			camera->updateCamera();
 			camera->setMVP(context, mat4(1.0f), jep::NORMAL);
 
 			glUniform1i(context->getShaderGLint("enable_growth_animation"), show_animation ? 1 : 0);
 			glUniform1i(context->getShaderGLint("frame_count"), frame_counter);
+
+			glUniformMatrix4fv(context->getShaderGLint("interpolation_matrix"), 1, GL_FALSE, &interpolated[0][0]);
 
 			if (!paused && show_animation)
 			{
@@ -178,6 +199,12 @@ int main()
 
 			if (keys->checkPress(GLFW_KEY_X, false))
 				saveImage(8.0f, *generator, context);
+
+			if (keys->checkPress(GLFW_KEY_EQUAL, true))
+				inter_start + 0.01f > 1.0f ? 1.0f : inter_start += 0.01f;
+
+			if (keys->checkPress(GLFW_KEY_MINUS, true))
+				inter_start - 0.01f < 0.0f ? 0.0f : inter_start -= 0.01f;
 
 			glfwSetTime(0.0f);
 		}
