@@ -73,7 +73,7 @@ int main()
 	cout << "point count: ";
 	std::getline(std::cin, point_count);
 	cout << endl;
-	int num_points = std::stoi(point_count);
+	int num_points = (point_count == "" || point_count == "\n" || std::stoi(point_count) <= 0) ? 50000 : std::stoi(point_count);
 
 	float eye_level = 0.0f;
 	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, 1024, 512, true));
@@ -105,16 +105,15 @@ int main()
 	*/
 		
 	fractal_generator *generator;
+	float inter_start = 0.0f;
 
 	if (entered_seed.size() == 0)
 		generator = new fractal_generator(context, two_dimensional);
 
 	else generator = new fractal_generator(entered_seed, context, two_dimensional);
 
-	//generator->generateFractal(point_sequence, num_points);
-
 	if (refresh_enabled == "y" || refresh_enabled == "yes" || refresh_enabled == "true")
-		generator->generateFractal(num_points, 5);
+		generator->generateFractalWithRefresh(num_points, 5);
 
 	else generator->generateFractal(num_points);
 
@@ -128,8 +127,6 @@ int main()
 	bool smooth_lines = true;
 	bool paused = false;
 	bool reverse = false;
-
-	float inter_start = 0.0f;
 
 	while (!finished)
 	{
@@ -200,11 +197,15 @@ int main()
 			if (keys->checkPress(GLFW_KEY_X, false))
 				saveImage(8.0f, *generator, context);
 
-			if (keys->checkPress(GLFW_KEY_EQUAL, true))
+			if (keys->checkPress(GLFW_KEY_EQUAL, true)) {
 				inter_start + 0.01f > 1.0f ? 1.0f : inter_start += 0.01f;
+				generator->generateFractal(vec4(1.0f), num_points, inter_start);
+			}
 
-			if (keys->checkPress(GLFW_KEY_MINUS, true))
+			if (keys->checkPress(GLFW_KEY_MINUS, true)) {
 				inter_start - 0.01f < 0.0f ? 0.0f : inter_start -= 0.01f;
+				generator->generateFractal(vec4(1.0f), num_points, inter_start);
+			}
 
 			glfwSetTime(0.0f);
 		}

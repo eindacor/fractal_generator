@@ -172,41 +172,45 @@ void fractal_generator::setMatrices(const int &num_matrices, const int &translat
 
 	int total_proportions = translate + rotate + scale;
 
-	for (int i = 0; i < num_matrices; i++)
-	{
-		int random_number = int(mc.getRandomUniform() * (float)total_proportions);
-
-		unsigned int matrix_type;
-
-		if (random_number < translate)
-			matrix_type = 0;
-
-		else if (random_number < translate + rotate)
-			matrix_type = 1;
-
-		else matrix_type = 2;
-
-		string matrix_category;
-		mat4 matrix_to_add(1.0f);
-
-		switch (matrix_type)
+	for (int n = 0; n < 2; n++) {
+		for (int i = 0; i < num_matrices; i++)
 		{
-		case 0: 
-			matrix_to_add = is_2D ? mc.getRandomTranslation2D() : mc.getRandomTranslation(); 
-			matrix_category = "translate";
-			break;
-		case 1: matrix_to_add = is_2D ? mc.getRandomRotation2D() : mc.getRandomRotation();
-			matrix_category = "rotate";
-			break;
-		case 2: matrix_to_add = is_2D ? mc.getRandomScale2D() : mc.getRandomScale();
-			matrix_category = "scale";
-			break;
-		default: break;
-		}		
+			int random_number = int(mc.getRandomUniform() * (float)total_proportions);
 
-		matrices.push_back(pair<string, mat4>(matrix_category, matrix_to_add));
-		colors.push_back(vec4(mc.getRandomUniform(), mc.getRandomUniform(), mc.getRandomUniform(), mc.getRandomUniform()));
-		sizes.push_back(mc.getRandomUniform() * 5.0);
+			unsigned int matrix_type;
+
+			if (random_number < translate)
+				matrix_type = 0;
+
+			else if (random_number < translate + rotate)
+				matrix_type = 1;
+
+			else matrix_type = 2;
+
+			string matrix_category;
+			mat4 matrix_to_add(1.0f);
+
+			switch (matrix_type)
+			{
+			case 0:
+				matrix_to_add = is_2D ? mc.getRandomTranslation2D() : mc.getRandomTranslation();
+				matrix_category = "translate";
+				break;
+			case 1:
+				matrix_to_add = is_2D ? mc.getRandomRotation2D() : mc.getRandomRotation();
+				matrix_category = "rotate";
+				break;
+			case 2:
+				matrix_to_add = is_2D ? mc.getRandomScale2D() : mc.getRandomScale();
+				matrix_category = "scale";
+				break;
+			default: break;
+			}
+
+			n == 0 ? matrices.push_back(pair<string, mat4>(matrix_category, matrix_to_add)) : matrices2.push_back(pair<string, mat4>(matrix_category, matrix_to_add));
+			n == 0 ? colors.push_back(vec4(mc.getRandomUniform(), mc.getRandomUniform(), mc.getRandomUniform(), mc.getRandomUniform())) : colors2.push_back(vec4(mc.getRandomUniform(), mc.getRandomUniform(), mc.getRandomUniform(), mc.getRandomUniform()));
+			n == 0 ? sizes.push_back(mc.getRandomUniform() * 5.0) : sizes2.push_back(mc.getRandomUniform() * 5.0);
+		}
 	}
 
 	cout << endl;
@@ -227,19 +231,102 @@ void fractal_generator::printMatrices() const
 
 void fractal_generator::generateFractal(const int &num_points)
 {
-	generateFractal(mc.getRandomVec4(), num_points);
+	generateFractal(mc.getRandomVec4(), num_points, 0.0f);
 }
 
-void fractal_generator::generateFractal(const int &num_points, const int &transformation_refresh)
+void fractal_generator::generateFractal(vector<vec4> point_sequence, const int &num_points, float interpolation_ratio)
 {
-	generateFractal(mc.getRandomVec4(), num_points, transformation_refresh);
+	mc.seed(seed);
+	refresh_loaded = false;
+	sequence_loaded = true;
+	preloaded_sequence = point_sequence;
+
+	vector<float> points;
+
+	if (point_sequence.size() == 0)
+		return;
+
+	points.reserve((num_points / point_sequence.size()) * vertex_size);
+
+	int num_matrices = matrices.size();
+
+	vec4 point_color(0.5f, 0.5f, 0.5f, 0.5f);
+	float starting_size = 10.0;
+
+	for (int i = 0; i < (num_points / point_sequence.size()) + discard_count && num_matrices > 0 && point_sequence.size() > 0; i++)
+	{
+		int random_index = (int)(mc.getRandomUniform() * num_matrices);
+		mat4 random_matrix = matrices.at(random_index).second;
+		mat4 random_matrix2 = matrices2.at(random_index).second;
+		vec4 matrix_color = colors.at(random_index);
+		vec4 matrix_color2 = colors2.at(random_index);
+		float matrix_size = sizes.at(random_index);
+		float matrix_size2 = sizes2.at(random_index);
+
+		mat4 transformation_matrix = (random_matrix * interpolation_ratio) + (random_matrix2 * (1.0f - interpolation_ratio));
+		vec4 transformation_color = (matrix_color * interpolation_ratio) + (matrix_color2 * (1.0f - interpolation_ratio));
+		float transformation_size = (matrix_size * interpolation_ratio) + (matrix_size2 * (1.0f - interpolation_ratio));
+
+		if (i < discard_count)
+			continue;
+
+		for (int n = 0; n < point_sequence.size(); n++)
+		{
+			vec4* new_point = &point_sequence.at(n);
+			addNewPointAndIterate(*new_point, point_color, starting_size, transformation_matrix, transformation_color, transformation_size, points);
+		}
+	}
+
+	bufferData(points);
 }
 
-void fractal_generator::generateFractal(vec4 or, const int &num_points, const int &transformation_refresh)
+void fractal_generator::generateFractal(vec4 or, const int &num_points, float interpolation_ratio)
+{
+	mc.seed(seed);
+	refresh_loaded = false;
+	origin = or;
+	sequence_loaded = false;
+
+	vector<float> points;
+	points.reserve(num_points * vertex_size);
+
+	int num_matrices = matrices.size();
+
+	vec4 point_color(0.5f, 0.5f, 0.5f, 0.5f);
+	float starting_size = 10.0;
+
+	for (int i = 0; i < num_points + discard_count && num_matrices > 0; i++)
+	{
+		int random_index = (int)(mc.getRandomUniform() * num_matrices);
+		mat4 random_matrix = matrices.at(random_index).second;
+		mat4 random_matrix2 = matrices2.at(random_index).second;
+		vec4 matrix_color = colors.at(random_index);
+		vec4 matrix_color2 = colors2.at(random_index);
+		float matrix_size = sizes.at(random_index);
+		float matrix_size2 = sizes2.at(random_index);
+
+		mat4 transformation_matrix = (random_matrix * interpolation_ratio) + (random_matrix2 * (1.0f - interpolation_ratio));
+		vec4 transformation_color = (matrix_color * interpolation_ratio) + (matrix_color2 * (1.0f - interpolation_ratio));
+		float transformation_size = (matrix_size * interpolation_ratio) + (matrix_size2 * (1.0f - interpolation_ratio));
+
+		if (i < discard_count)
+			continue;
+
+		addNewPointAndIterate(origin, point_color, starting_size, transformation_matrix, transformation_color, transformation_size, points);
+	}
+
+	bufferData(points);
+}
+void fractal_generator::generateFractalWithRefresh(const int &num_points, const int &transformation_refresh)
+{
+	generateFractalWithRefresh(mc.getRandomVec4(), num_points, transformation_refresh);
+}
+
+void fractal_generator::generateFractalWithRefresh(vec4 or , const int &num_points, const int &transformation_refresh)
 {
 	refresh_loaded = true;
 	refresh_value = transformation_refresh;
-	origin = or;
+	origin = or ;
 	sequence_loaded = false;
 
 	vector<float> points;
@@ -250,7 +337,7 @@ void fractal_generator::generateFractal(vec4 or, const int &num_points, const in
 	for (int i = 0; i < num_points && num_matrices > 0; i++)
 	{
 		vec4 point_color(0.0f, 0.0f, 0.0f, 0.0f);
-		vec4 new_point = or;
+		vec4 new_point = or ;
 		float new_size = 0.0f;
 
 		for (int n = 0; n < transformation_refresh; n++)
@@ -275,7 +362,7 @@ void fractal_generator::generateFractal(vec4 or, const int &num_points, const in
 	bufferData(points);
 }
 
-void fractal_generator::generateFractal(vector<vec4> point_sequence, const int &num_points, const int &transformation_refresh)
+void fractal_generator::generateFractalWithRefresh(vector<vec4> point_sequence, const int &num_points, const int &transformation_refresh)
 {
 	refresh_loaded = true;
 	refresh_value = transformation_refresh;
@@ -307,11 +394,11 @@ void fractal_generator::generateFractal(vector<vec4> point_sequence, const int &
 			{
 				vec4 *target_point = &point_sequence.at(c);
 				*target_point = random_matrix * *target_point;
-				
+
 			}
-			
+
 			point_color += matrix_color;
-				new_size += matrix_size;
+			new_size += matrix_size;
 		}
 
 		point_color /= (float)transformation_refresh;
@@ -328,75 +415,6 @@ void fractal_generator::generateFractal(vector<vec4> point_sequence, const int &
 	bufferData(points);
 }
 
-void fractal_generator::generateFractal(vector<vec4> point_sequence, const int &num_points)
-{
-	refresh_loaded = false;
-	sequence_loaded = true;
-	preloaded_sequence = point_sequence;
-
-	vector<float> points;
-
-	if (point_sequence.size() == 0)
-		return;
-
-	points.reserve((num_points / point_sequence.size()) * vertex_size);
-
-	int num_matrices = matrices.size();
-
-	vec4 point_color(0.5f, 0.5f, 0.5f, 0.5f);
-	float starting_size = 10.0;
-
-	for (int i = 0; i < (num_points / point_sequence.size()) + discard_count && num_matrices > 0 && point_sequence.size() > 0; i++)
-	{
-		int random_index = (int)(mc.getRandomUniform() * num_matrices);
-		mat4 random_matrix = matrices.at(random_index).second;
-		vec4 matrix_color = colors.at(random_index);
-		float matrix_size = sizes.at(random_index);
-
-		if (i < discard_count)
-			continue;
-
-		for (int n = 0; n < point_sequence.size(); n++)
-		{
-			vec4* new_point = &point_sequence.at(n);
-			addNewPointAndIterate(*new_point, point_color, starting_size, random_matrix, matrix_color, matrix_size, points);
-		}
-	}
-
-	bufferData(points);
-}
-
-void fractal_generator::generateFractal(vec4 or, const int &num_points)
-{
-
-
-	refresh_loaded = false;
-	origin = or;
-	sequence_loaded = false;
-
-	vector<float> points;
-	points.reserve(num_points * vertex_size);
-
-	int num_matrices = matrices.size();
-
-	vec4 point_color(0.5f, 0.5f, 0.5f, 0.5f);
-	float starting_size = 10.0;
-
-	for (int i = 0; i < num_points + discard_count && num_matrices > 0; i++)
-	{
-		int random_index = (int)(mc.getRandomUniform() * num_matrices);
-		mat4 random_matrix = matrices.at(random_index).second;
-		vec4 matrix_color = colors.at(random_index);
-		float matrix_size = sizes.at(random_index);
-
-		if (i < discard_count)
-			continue;
-
-		addNewPointAndIterate(origin, point_color, starting_size, random_matrix, matrix_color, matrix_size, points);
-	}
-
-	bufferData(points);
-}
 
 void fractal_generator::renderFractal(const int &image_width, const int &image_height, const int &matrix_sequence_count)
 {
@@ -702,15 +720,15 @@ void fractal_generator::regenerateFractal()
 		if (sequence_loaded)
 			generateFractal(preloaded_sequence, vertex_count, refresh_value);
 
-		else generateFractal(origin, vertex_count, refresh_value);
+		else generateFractalWithRefresh(origin, vertex_count, refresh_value);
 	}
 
 	else
 	{
 		if (sequence_loaded)
-			generateFractal(preloaded_sequence, vertex_count);
+			generateFractal(preloaded_sequence, vertex_count, 0.0f);
 
-		else generateFractal(origin, vertex_count);
+		else generateFractal(origin, vertex_count, 0.0f);
 	}
 
 	applyBackground(2);

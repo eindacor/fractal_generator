@@ -42,11 +42,12 @@ public:
 	void setMatrices(const int &num_matrices, const int &translate, const int &rotate, const int &scale);
 
 	void generateFractal(const int &num_points);
-	void generateFractal(vec4 origin, const int &num_points);
-	void generateFractal(const int &num_points, const int &transformation_refresh);
-	void generateFractal(vec4 origin, const int &num_points, const int &transformation_refresh);
-	void generateFractal(vector<vec4> point_sequence, const int &num_points);
-	void generateFractal(vector<vec4> point_sequence, const int &num_points, const int &transformation_refresh);
+	void generateFractal(vec4 origin, const int &num_points, float interpolation_ratio);
+	void generateFractal(vector<vec4> point_sequence, const int &num_points, float interpolation_ratio);
+
+	void generateFractalWithRefresh(const int &num_points, const int &transformation_refresh);
+	void generateFractalWithRefresh(vec4 origin, const int &num_points, const int &transformation_refresh);
+	void generateFractalWithRefresh(vector<vec4> point_sequence, const int &num_points, const int &transformation_refresh);
 
 	void renderFractal(const int &image_width, const int &image_height, const int &matrix_sequence_count);
 
@@ -77,11 +78,13 @@ public:
 private:
 	string seed;
 	vector< pair<string, mat4> > matrices;
-	//vector<mat4> matrices;
+	vector< pair<string, mat4> > matrices2;
 	vector<vec4> colors;
+	vector<vec4> colors2;
 	vec4 background_color;
 	bool inverted = false;
 	vector<float> sizes;
+	vector<float> sizes2;
 	matrix_creator mc;
 
 	// rendering parameters
