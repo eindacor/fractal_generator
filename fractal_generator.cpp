@@ -228,12 +228,6 @@ vector<vec4> fractal_generator::generateColorVector(const int &count) const
 
 	for (int i = 0; i < count; i++)
 	{
-		//light colors
-		//color_vector.push_back(vec4(mc_persistent_seed.getRandomUniform(), mc_persistent_seed.getRandomUniform(), mc_persistent_seed.getRandomUniform(), mc_persistent_seed.getRandomUniform()));
-
-		//color_vector.push_back( mc_persistent_seed.getRandomVec4AlphaClamp(0.5f, 1.0f)) ;
-		//color_vector.push_back(mc_persistent_seed.getRandomVec4());
-
 		color_vector.push_back(mc_persistent_seed.getRandomVec4FromColorRanges(
 			0.5f, 1.0f,		// red range
 			0.5f, 1.0f,		// green range
