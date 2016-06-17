@@ -45,13 +45,13 @@ public:
 	vec4 generateInterpolatedColor(int index) const;
 	float generateInterpolatedSize(int index) const;
 
-	void generateFractal(const int &num_points);
-	void generateFractal(vec4 origin, const int &num_points);
-	void generateFractal(vector<vec4> point_sequence, const int &num_points);
+	void generateFractal(const int &num_points, bool smooth);
+	void generateFractal(vec4 origin, const int &num_points, bool smooth);
+	void generateFractal(vector<vec4> point_sequence, const int &num_points, bool smooth);
 
-	void generateFractalWithRefresh(const int &num_points, const int &transformation_refresh);
-	void generateFractalWithRefresh(vec4 origin, const int &num_points, const int &transformation_refresh);
-	void generateFractalWithRefresh(vector<vec4> point_sequence, const int &num_points, const int &transformation_refresh);
+	void generateFractalWithRefresh(const int &num_points, const int &transformation_refresh, bool smooth);
+	void generateFractalWithRefresh(vec4 origin, const int &num_points, const int &transformation_refresh, bool smooth);
+	void generateFractalWithRefresh(vector<vec4> point_sequence, const int &num_points, const int &transformation_refresh, bool smooth);
 
 	void renderFractal(const int &image_width, const int &image_height, const int &matrix_sequence_count);
 
@@ -80,6 +80,8 @@ public:
 
 	void tickAnimation();
 	void swapMatrices();
+
+	void toggleSmooth() { smooth_render = !smooth_render; }
 
 private:
 	string seed;
@@ -110,6 +112,7 @@ private:
 	float interpolation_state = 0.0f;
 	float interpolation_increment = 0.02f;
 	bool front_buffer_first = true;
+	bool smooth_render = true;
 
 	// current gen parameters, included for 
 	bool refresh_loaded;

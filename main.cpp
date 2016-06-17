@@ -106,6 +106,7 @@ int main()
 		
 	fractal_generator *generator;
 	float inter_start = 0.0f;
+	bool smooth = true;
 
 	if (entered_seed.size() == 0)
 		generator = new fractal_generator(context, two_dimensional);
@@ -113,9 +114,9 @@ int main()
 	else generator = new fractal_generator(entered_seed, context, two_dimensional);
 
 	if (refresh_enabled == "y" || refresh_enabled == "yes" || refresh_enabled == "true")
-		generator->generateFractalWithRefresh(num_points, 5);
+		generator->generateFractalWithRefresh(num_points, 5, smooth);
 
-	else generator->generateFractal(num_points);
+	else generator->generateFractal(num_points, smooth);
 
 	glfwSetTime(0);
 	float render_fps = 60.0f;
