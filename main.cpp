@@ -76,7 +76,7 @@ int main()
 	int num_points = (point_count == "" || point_count == "\n" || std::stoi(point_count) <= 0) ? 50000 : std::stoi(point_count);
 
 	float eye_level = 0.0f;
-	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, 1024, 512, true));
+	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, 1366, 768, true));
 	shared_ptr<key_handler> keys(new key_handler(context));
 	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 1.0f), 45.0f));
 
@@ -155,6 +155,8 @@ int main()
 
 				else if (!reverse)
 					frame_counter += counter_increment;
+
+				generator->tickAnimation();
 			}
 
 			generator->drawFractal();
@@ -196,16 +198,6 @@ int main()
 
 			if (keys->checkPress(GLFW_KEY_X, false))
 				saveImage(8.0f, *generator, context);
-
-			if (keys->checkPress(GLFW_KEY_EQUAL, true)) {
-				inter_start + 0.01f > 1.0f ? 1.0f : inter_start += 0.01f;
-				generator->generateFractal(vec4(1.0f), num_points, inter_start);
-			}
-
-			if (keys->checkPress(GLFW_KEY_MINUS, true)) {
-				inter_start - 0.01f < 0.0f ? 0.0f : inter_start -= 0.01f;
-				generator->generateFractal(vec4(1.0f), num_points, inter_start);
-			}
 
 			glfwSetTime(0.0f);
 		}

@@ -41,9 +41,13 @@ public:
 
 	void setMatrices(const int &num_matrices, const int &translate, const int &rotate, const int &scale);
 
+	mat4 generateInterpolatedMatrix(int index) const;
+	vec4 generateInterpolatedColor(int index) const;
+	float generateInterpolatedSize(int index) const;
+
 	void generateFractal(const int &num_points);
-	void generateFractal(vec4 origin, const int &num_points, float interpolation_ratio);
-	void generateFractal(vector<vec4> point_sequence, const int &num_points, float interpolation_ratio);
+	void generateFractal(vec4 origin, const int &num_points);
+	void generateFractal(vector<vec4> point_sequence, const int &num_points);
 
 	void generateFractalWithRefresh(const int &num_points, const int &transformation_refresh);
 	void generateFractalWithRefresh(vec4 origin, const int &num_points, const int &transformation_refresh);
@@ -54,7 +58,6 @@ public:
 	//vector<mat4> generateMatrixSequence(const vector<int> &matrix_indices) const;
 	vector<mat4> generateMatrixSequence(const int &sequence_size) const;
 
-	void setMatrices(const vector< pair<string, mat4> > &new_matrices) { matrices.clear(); matrices = new_matrices; }
 	void applyBackground(const int &num_samples);
 	void checkKeys(const shared_ptr<key_handler> &keys);
 	void drawFractal() const;
@@ -75,17 +78,26 @@ public:
 	vec4 getBackgroundColor() const { return background_color; }
 	void adjustBackgroundBrightness(float adjustment);
 
+	void tickAnimation();
+	void swapMatrices();
+
 private:
 	string seed;
-	vector< pair<string, mat4> > matrices;
-	vector< pair<string, mat4> > matrices2;
-	vector<vec4> colors;
-	vector<vec4> colors2;
+	vector< pair<string, mat4> > matrices_front;
+	vector< pair<string, mat4> > matrices_back;
+	vector<vec4> colors_front;
+	vector<vec4> colors_back;
 	vec4 background_color;
 	bool inverted = false;
-	vector<float> sizes;
-	vector<float> sizes2;
+	vector<float> sizes_front;
+	vector<float> sizes_back;
 	matrix_creator mc;
+	matrix_creator mc_persistent_seed;
+
+	//weights determine probability of each matrix type
+	int translate_weight;
+	int rotate_weight;
+	int scale_weight;
 
 	// rendering parameters
 	float line_width = 1.0f;
@@ -95,6 +107,9 @@ private:
 	bool show_points = true;
 	bool enable_triangles = false;
 	bool enable_lines = false;
+	float interpolation_state = 0.0f;
+	float interpolation_increment = 0.01f;
+	bool front_buffer_first = true;
 
 	// current gen parameters, included for 
 	bool refresh_loaded;
@@ -134,6 +149,10 @@ private:
 		vector<float> &points);
 
 	void bufferData(const vector<float> &vertex_data);
+
+	vector< pair<string, mat4> > generateMatrixVector(const int &count) const;
+	vector<vec4> generateColorVector(const int &count) const;
+	vector<float> generateSizeVector(const int &count) const;
 };
 
 #endif
