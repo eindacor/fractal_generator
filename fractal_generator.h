@@ -108,7 +108,7 @@ private:
 	bool enable_triangles = false;
 	bool enable_lines = false;
 	float interpolation_state = 0.0f;
-	float interpolation_increment = 0.01f;
+	float interpolation_increment = 0.02f;
 	bool front_buffer_first = true;
 
 	// current gen parameters, included for 

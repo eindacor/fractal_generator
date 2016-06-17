@@ -802,7 +802,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 void fractal_generator::tickAnimation() {
 	float increment_coefficient = 1.0f - (abs(0.5f - interpolation_state) * 2.0f);
 
-	float actual_increment = glm::clamp(interpolation_increment * increment_coefficient * increment_coefficient, interpolation_increment * 0.1f, interpolation_increment);
+	float actual_increment = glm::clamp(interpolation_increment * increment_coefficient, interpolation_increment * 0.01f, interpolation_increment);
 
 	if (interpolation_state + actual_increment >= 1.0f) {
 		interpolation_state = 0.0f;
