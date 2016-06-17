@@ -228,7 +228,18 @@ vector<vec4> fractal_generator::generateColorVector(const int &count) const
 
 	for (int i = 0; i < count; i++)
 	{
-		color_vector.push_back(vec4(mc_persistent_seed.getRandomUniform(), mc_persistent_seed.getRandomUniform(), mc_persistent_seed.getRandomUniform(), mc_persistent_seed.getRandomUniform()));
+		//light colors
+		//color_vector.push_back(vec4(mc_persistent_seed.getRandomUniform(), mc_persistent_seed.getRandomUniform(), mc_persistent_seed.getRandomUniform(), mc_persistent_seed.getRandomUniform()));
+
+		//color_vector.push_back( mc_persistent_seed.getRandomVec4AlphaClamp(0.5f, 1.0f)) ;
+		//color_vector.push_back(mc_persistent_seed.getRandomVec4());
+
+		color_vector.push_back(mc_persistent_seed.getRandomVec4FromColorRanges(
+			0.5f, 1.0f,		// red range
+			0.5f, 1.0f,		// green range
+			0.5f, 1.0f,		// blue range
+			0.5f, 1.0f		// alpha range
+			));
 	}
 
 	return color_vector;
@@ -855,15 +866,15 @@ void fractal_generator::newColors()
 {
 	for (auto &color : colors_front)
 	{
-		color = mc.getRandomVec4();
+		color = mc_persistent_seed.getRandomVec4AlphaClamp(0.5f, 1.0f);
 	}
 
 	for (auto &color : colors_back)
 	{
-		color = mc.getRandomVec4();
+		color = mc_persistent_seed.getRandomVec4AlphaClamp(0.5f, 1.0f);
 	}
 
-	regenerateFractal();
+	cout << "new colors" << endl;
 }
 
 void fractal_generator::regenerateFractal()

@@ -124,7 +124,7 @@ int main()
 	clock_t start = clock();
 	unsigned int frame_counter = 0;
 	unsigned int counter_increment = 1;
-	bool show_animation = true;
+	bool show_growth = true;
 	bool smooth_lines = true;
 	bool paused = false;
 	bool reverse = false;
@@ -144,21 +144,22 @@ int main()
 			camera->updateCamera();
 			camera->setMVP(context, mat4(1.0f), jep::NORMAL);
 
-			glUniform1i(context->getShaderGLint("enable_growth_animation"), show_animation ? 1 : 0);
+			glUniform1i(context->getShaderGLint("enable_growth_animation"), show_growth ? 1 : 0);
 			glUniform1i(context->getShaderGLint("frame_count"), frame_counter);
 
 			glUniformMatrix4fv(context->getShaderGLint("interpolation_matrix"), 1, GL_FALSE, &interpolated[0][0]);
 
-			if (!paused && show_animation)
+			if (!paused && show_growth)
 			{
 				if (reverse && frame_counter > counter_increment)
 					frame_counter -= counter_increment;
 
 				else if (!reverse)
 					frame_counter += counter_increment;
-
-				generator->tickAnimation();
 			}
+
+			if (!paused)
+				generator->tickAnimation();
 
 			generator->drawFractal();
 			generator->checkKeys(keys);
@@ -168,7 +169,7 @@ int main()
 				finished = true;
 
 			if (keys->checkPress(GLFW_KEY_J, false))
-				show_animation = !show_animation;
+				show_growth = !show_growth;
 
 			if (keys->checkPress(GLFW_KEY_G, false))
 			{
@@ -188,7 +189,7 @@ int main()
 			if (keys->checkPress(GLFW_KEY_R, false))
 			{
 				frame_counter = 0;
-				show_animation = true;
+				show_growth = true;
 				paused = false;
 			}
 
