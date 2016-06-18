@@ -18,11 +18,10 @@ uniform int frame_count;\n\
 out vec4 fragment_color;\n\
 uniform float point_size_scale = 1.0f;\n\
 uniform int invert_colors;\n\
-uniform mat4 interpolation_matrix;\n\
 void main()\n\
 {\n\
 	gl_PointSize = point_size * point_size_scale;\n\
-	gl_Position = MVP * fractal_scale * interpolation_matrix * position;\n\
+	gl_Position = MVP * fractal_scale * position;\n\
 	float alpha_value = (frame_count > gl_VertexID) || (enable_growth_animation == 0) ? color.a : 0.0f;\n\
 	if (invert_colors > 0)\n\
 	{\n\
@@ -44,11 +43,6 @@ void main()\n\
 
 int main()
 {
-	//string data_path = "c:\\Users\\jpollack\\documents\\github\\fractal_generator\\";
-	//string data_path = "j:\\Github\\fractal_generator\\";
-	//string vert_file = data_path + "VertexShader.glsl";
-	//string frag_file = data_path + "PixelShader.glsl";
-
 	string entered_seed;
 
 	cout << "enter seed: ";
@@ -79,11 +73,6 @@ int main()
 	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, 1366, 768, true));
 	shared_ptr<key_handler> keys(new key_handler(context));
 	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 1.0f), 45.0f));
-
-	mat4 first = glm::translate(mat4(1.0f), vec3(1.0f));
-	mat4 second = glm::translate(mat4(1.0f), vec3(0.0f));
-
-	mat4 interpolated;
 
 	vector<vec4> point_sequence = {
 		vec4(-1.0f, -1.0f, 0.0f, 1.0f),
@@ -139,15 +128,11 @@ int main()
 			glfwPollEvents();
 			context->clearBuffers();
 
-			interpolated = (first * inter_start) + (second *(1.0f - inter_start));
-
 			camera->updateCamera();
 			camera->setMVP(context, mat4(1.0f), jep::NORMAL);
 
 			glUniform1i(context->getShaderGLint("enable_growth_animation"), show_growth ? 1 : 0);
 			glUniform1i(context->getShaderGLint("frame_count"), frame_counter);
-
-			glUniformMatrix4fv(context->getShaderGLint("interpolation_matrix"), 1, GL_FALSE, &interpolated[0][0]);
 
 			if (!paused && show_growth)
 			{

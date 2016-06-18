@@ -5,6 +5,8 @@
 
 #include "header.h"
 
+// TODO refactor class, class doesn't merely create matrices anymore
+
 class matrix_creator
 {
 public:

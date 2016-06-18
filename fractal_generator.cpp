@@ -17,7 +17,7 @@ fractal_generator::fractal_generator(
 
 	context = con;
 	is_2D = two_dimensional;
-	setMatrices(num_matrices, translate_weight, rotate_weight, scale_weight);
+	setMatrices(num_matrices);
 	initialized = false;
 
 	applyBackground(2);
@@ -42,7 +42,7 @@ fractal_generator::fractal_generator(
 
 	context = con;
 	is_2D = two_dimensional;
-	setMatrices(num_matrices, translate_weight, rotate_weight, scale_weight);
+	setMatrices(num_matrices);
 	initialized = false;
 
 	applyBackground(2);
@@ -70,7 +70,7 @@ fractal_generator::fractal_generator(
 
 	context = con;
 	is_2D = two_dimensional;
-	setMatrices(num_matrices, translate_weight, rotate_weight, scale_weight);
+	setMatrices(num_matrices);
 	initialized = false;
 
 	applyBackground(2);
@@ -97,7 +97,7 @@ fractal_generator::fractal_generator(
 	rotate_weight = rotate;
 	scale_weight = scale;
 
-	setMatrices(num_matrices, translate_weight, rotate_weight, scale_weight);
+	setMatrices(num_matrices);
 	initialized = false;
 
 	applyBackground(2);
@@ -251,7 +251,7 @@ vector<float> fractal_generator::generateSizeVector(const int &count) const
 	return size_vector;
 }
 
-void fractal_generator::setMatrices(const int &num_matrices, const int &translate, const int &rotate, const int &scale)
+void fractal_generator::setMatrices(const int &num_matrices)
 {
 	//TODO add .reserve() for each vector
 	matrices_front.clear();
@@ -424,14 +424,14 @@ void fractal_generator::generateFractal(vec4 or, const int &num_points, bool smo
 
 	for (int i = 0; i < num_points + discard_count && num_matrices > 0; i++)
 	{
+		if (i < discard_count)
+			continue;
+
 		int random_index = (int)(mc.getRandomUniform() * num_matrices);
 		
 		mat4 transformation_matrix = generateInterpolatedMatrix(random_index);
 		vec4 transformation_color = generateInterpolatedColor(random_index);
 		float transformation_size = generateInterpolatedSize(random_index);
-
-		if (i < discard_count)
-			continue;
 
 		addNewPointAndIterate(origin, point_color, starting_size, transformation_matrix, transformation_color, transformation_size, points);
 	}
@@ -668,14 +668,14 @@ void fractal_generator::addNewPointAndIterate(
 	starting_color = (starting_color + matrix_color) / 2.0f;
 	starting_size = (starting_size + point_size) / 2.0f;
 
-	points.push_back((float)starting_point.x);
-	points.push_back((float)starting_point.y);
-	points.push_back((float)starting_point.z);
-	points.push_back((float)starting_point.w);
-	points.push_back((float)starting_color.r);
-	points.push_back((float)starting_color.g);
-	points.push_back((float)starting_color.b);
-	points.push_back((float)starting_color.a);
+	points.push_back((float)(starting_point.x));
+	points.push_back((float)(starting_point.y));
+	points.push_back((float)(starting_point.z));
+	points.push_back((float)(starting_point.w));
+	points.push_back((float)(starting_color.r));
+	points.push_back((float)(starting_color.g));
+	points.push_back((float)(starting_color.b));
+	points.push_back((float)(starting_color.a));
 	points.push_back(starting_size);
 }
 
@@ -689,6 +689,7 @@ void fractal_generator::addNewPoint(
 	points.push_back((float)point.y);
 	points.push_back((float)point.z);
 	points.push_back((float)point.w);
+
 	points.push_back((float)color.r);
 	points.push_back((float)color.g);
 	points.push_back((float)color.b);
@@ -839,7 +840,7 @@ void fractal_generator::tickAnimation() {
 	vec4 new_background = generateInterpolatedColor(1);
 	background_color = inverted ? vec4(1.0f) - new_background : new_background;
 
-	adjustBrightness(background_color, inverted ? 0.8f : -0.8f);
+	color_man.adjustLightness(background_color, inverted ? 0.8f : -0.8f);
 	context->setBackgroundColor(background_color);
 }
 
@@ -896,28 +897,12 @@ void fractal_generator::applyBackground(const int &num_samples)
 {
 	background_color = inverted ? vec4(1.0f) - getSampleColor(num_samples, colors_front) : getSampleColor(num_samples, colors_front);
 
-	//adjustBrightness(background_color, inverted ? 0.8f : -0.8f);
-	adjustBrightness(background_color, jep::floatRoll(-1.0f, 1.0f, 2));
+	color_man.adjustLightness(background_color, jep::floatRoll(-1.0f, 1.0f, 2));
 	context->setBackgroundColor(background_color);
-}
-
-void fractal_generator::adjustBrightness(vec4 &color, float degree)
-{
-	degree = glm::clamp(degree, -1.0f, 1.0f);
-
-	if (degree < 0)
-		color = color * (1.0f + degree);
-
-	else
-	{
-		vec4 inverted_color = 1.0f - color;
-		vec4 adjustment_color = degree * inverted_color;
-		color += adjustment_color;
-	}
 }
 
 void fractal_generator::adjustBackgroundBrightness(float adjustment)
 {
-	adjustBrightness(background_color, adjustment);
+	color_man.adjustLightness(background_color, adjustment);
 	context->setBackgroundColor(background_color);
 }

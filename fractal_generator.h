@@ -5,6 +5,7 @@
 
 #include "header.h"
 #include "matrix_creator.h"
+#include "color_manager.h"
 
 class fractal_generator
 {
@@ -39,7 +40,7 @@ public:
 
 	string getSeed() const { return seed; }
 
-	void setMatrices(const int &num_matrices, const int &translate, const int &rotate, const int &scale);
+	void setMatrices(const int &num_matrices);
 
 	mat4 generateInterpolatedMatrix(int index) const;
 	vec4 generateInterpolatedColor(int index) const;
@@ -67,9 +68,6 @@ public:
 	void fractal_generator::newColors();
 	void regenerateFractal();
 
-	//takes value from -1 to 1
-	void adjustBrightness(vec4 &color, float degree);
-
 	vec4 getSampleColor(const int &samples, const vector<vec4> &color_pool) const;
 	float getLineWidth() const { return line_width; }
 
@@ -95,6 +93,7 @@ private:
 	vector<float> sizes_back;
 	matrix_creator mc;
 	matrix_creator mc_persistent_seed;
+	color_manager color_man;
 
 	//weights determine probability of each matrix type
 	int translate_weight;
