@@ -46,6 +46,4 @@ typedef std::pair<bool, float> random_switch;
 class matrix_creator;
 class fractal_generator;
 
-enum color_palette {RANDOM, MONOCHROMATIC, COMPLEMENTARY, SPLIT_COMPLEMENTARY, TRIAD, TETRAD, SQUARE, DEFAULT};
-
 #endif

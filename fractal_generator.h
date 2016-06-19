@@ -43,7 +43,7 @@ public:
 	void setMatrices(const int &num_matrices);
 
 	mat4 generateInterpolatedMatrix(int index) const;
-	vec4 generateInterpolatedColor(int index) const;
+	vec4 generateInterpolatedColor(int front_index, int back_index) const;
 	float generateInterpolatedSize(int index) const;
 
 	void generateFractal(const int &num_points, bool smooth);
@@ -114,7 +114,9 @@ private:
 	float interpolation_increment = 0.02f;
 	bool front_buffer_first = true;
 	bool smooth_render = true;
-	color_palette current_palette = DEFAULT;
+	color_palette current_palette = DEFAULT_COLOR_PALETTE;
+	int background_front_index = 0;
+	int background_back_index = 0;
 
 	// current gen parameters, included for 
 	bool refresh_loaded;
