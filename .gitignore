@@ -1,3 +1,3 @@
 *.bmp
 *.psd
-/screens
+/screens/*
