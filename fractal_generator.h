@@ -81,6 +81,8 @@ public:
 
 	void toggleSmooth() { smooth_render = !smooth_render; }
 
+	void cycleColorPalette();
+
 private:
 	string seed;
 	vector< pair<string, mat4> > matrices_front;
@@ -112,6 +114,7 @@ private:
 	float interpolation_increment = 0.02f;
 	bool front_buffer_first = true;
 	bool smooth_render = true;
+	color_palette current_palette = DEFAULT;
 
 	// current gen parameters, included for 
 	bool refresh_loaded;

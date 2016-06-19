@@ -323,3 +323,124 @@ vector<vec4> color_manager::getAnalogousPalette(const vec4 &color, int count) co
 
 	return colors;
 }
+
+vector<vec4> color_manager::getTriadPalette(const vec4 &color, int count) const
+{
+	vector<vec4> triad = getTriad(color);
+	vector<vec4> palette;
+
+	if (3 == count)
+		return triad;
+
+	else if (count < 3)
+	{
+		for (int i = 0; i < count; i++)
+		{
+			palette.push_back(triad.at(i));
+		}
+	}
+
+	else
+	{
+		int required_monochrome_steps = (count / 3) + 1;
+
+		vector< vector<vec4> > triad_palettes;
+		triad_palettes.push_back(getMonochromaticPalette(triad.at(0), required_monochrome_steps));
+		triad_palettes.push_back(getMonochromaticPalette(triad.at(1), required_monochrome_steps));
+		triad_palettes.push_back(getMonochromaticPalette(triad.at(2), required_monochrome_steps));
+
+		for (int i = 0; i < count; i++)
+		{
+			int base_color = i % 3;
+			int current_step = i / 3;
+			palette.push_back(triad_palettes.at(base_color).at(current_step));
+		}
+	}
+
+	return palette;
+}
+
+vector<vec4> color_manager::getTetradPalette(const vec4 &color, int count) const
+{
+	vector<vec4> tetrad = getTetrad(color);
+	vector<vec4> palette;
+
+	if (4 == count)
+		return tetrad;
+
+	else if (count < 4)
+	{
+		for (int i = 0; i < count; i++)
+		{
+			palette.push_back(tetrad.at(i));
+		}
+	}
+
+	else
+	{
+		int required_monochrome_steps = (count / 4) + 1;
+
+		vector< vector<vec4> > tetrad_palettes;
+		tetrad_palettes.push_back(getMonochromaticPalette(tetrad.at(0), required_monochrome_steps));
+		tetrad_palettes.push_back(getMonochromaticPalette(tetrad.at(1), required_monochrome_steps));
+		tetrad_palettes.push_back(getMonochromaticPalette(tetrad.at(2), required_monochrome_steps));
+		tetrad_palettes.push_back(getMonochromaticPalette(tetrad.at(3), required_monochrome_steps));
+
+		for (int i = 0; i < count; i++)
+		{
+			int base_color = i % 4;
+			int current_step = i / 4;
+			palette.push_back(tetrad_palettes.at(base_color).at(current_step));
+		}
+	}
+
+	return palette;
+}
+
+vector<vec4> color_manager::getSquarePalette(const vec4 &color, int count) const
+{
+	vector<vec4> square = getTetrad(color);
+	vector<vec4> palette;
+
+	if (4 == count)
+		return square;
+
+	else if (count < 4)
+	{
+		for (int i = 0; i < count; i++)
+		{
+			palette.push_back(square.at(i));
+		}
+	}
+
+	else
+	{
+		int required_monochrome_steps = (count / 4) + 1;
+
+		vector< vector<vec4> > square_palettes;
+		square_palettes.push_back(getMonochromaticPalette(square.at(0), required_monochrome_steps));
+		square_palettes.push_back(getMonochromaticPalette(square.at(1), required_monochrome_steps));
+		square_palettes.push_back(getMonochromaticPalette(square.at(2), required_monochrome_steps));
+		square_palettes.push_back(getMonochromaticPalette(square.at(3), required_monochrome_steps));
+
+		for (int i = 0; i < count; i++)
+		{
+			int base_color = i % 4;
+			int current_step = i / 4;
+			palette.push_back(square_palettes.at(base_color).at(current_step));
+		}
+	}
+
+	return palette;
+}
+
+vector<vec4> color_manager::getRandomPalette(const matrix_creator &mc, int count) const
+{
+	vector<vec4> palette;
+	for (int i = 0; i < count; i++)
+	{
+		palette.push_back(mc.getRandomVec4());
+	}
+
+	return palette;
+}

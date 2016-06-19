@@ -57,6 +57,10 @@ public:
 
 	vector<vec4> getMonochromaticPalette(const vec4 &color, int count) const;
 	vector<vec4> getAnalogousPalette(const vec4 &color, int count) const;
+	vector<vec4> getTriadPalette(const vec4 &color, int count) const;
+	vector<vec4> getTetradPalette(const vec4 &color, int count) const;
+	vector<vec4> getSquarePalette(const vec4 &color, int count) const;
+	vector<vec4> getRandomPalette(const matrix_creator &mc, int count) const;
 
 	int getNewHue(int hue, int dist) const;
 

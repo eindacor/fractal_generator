@@ -13,7 +13,7 @@ fractal_generator::fractal_generator(
 	int num_matrices = int(mc.getRandomFloatInRange(2, 8));
 	translate_weight = int(mc.getRandomFloatInRange(1, 6));
 	rotate_weight = int(mc.getRandomFloatInRange(1, 6));
-	scale_weight = int(mc.getRandomFloatInRange(1, 6));
+	scale_weight = int(mc.getRandomFloatInRange(1, 4));
 
 	context = con;
 	is_2D = two_dimensional;
@@ -35,10 +35,10 @@ fractal_generator::fractal_generator(
 	cout << "seed: " << randomization_seed << endl << endl;
 	seed = randomization_seed;
 
-	int num_matrices = int(mc.getRandomFloatInRange(3, 6));
-	translate_weight = int(mc.getRandomFloatInRange(2, 6));
-	rotate_weight = int(mc.getRandomFloatInRange(1, 4));
-	scale_weight = int(mc.getRandomFloatInRange(1, 3));
+	int num_matrices = int(mc.getRandomFloatInRange(2, 8));
+	translate_weight = int(mc.getRandomFloatInRange(1, 6));
+	rotate_weight = int(mc.getRandomFloatInRange(1, 6));
+	scale_weight = int(mc.getRandomFloatInRange(1, 4));
 
 	context = con;
 	is_2D = two_dimensional;
@@ -231,22 +231,41 @@ vector<vec4> fractal_generator::generateColorVector(const int &count) const
 		0.5f, 1.0f		// alpha range
 	);
 
-	//return color_man.getMonochromaticPalette(random_color, count);
-	return color_man.getAnalogousPalette(random_color, count);
+	vector<vec4> color_vector;
 
-	//vector<vec4> color_vector;
+	switch (current_palette)
+	{
+	case DEFAULT:
+		for (int i = 0; i < count; i++)
+		{
+			color_vector.push_back(mc_persistent_seed.getRandomVec4FromColorRanges(
+				0.5f, 1.0f,		// red range
+				0.5f, 1.0f,		// green range
+				0.5f, 1.0f,		// blue range
+				0.5f, 1.0f		// alpha range
+				));
+		}
+		return color_vector;
 
-	//for (int i = 0; i < count; i++)
-	//{
-	//	color_vector.push_back(mc_persistent_seed.getRandomVec4FromColorRanges(
-	//		0.5f, 1.0f,		// red range
-	//		0.5f, 1.0f,		// green range
-	//		0.5f, 1.0f,		// blue range
-	//		0.5f, 1.0f		// alpha range
-	//		));
-	//}
-
-	//return color_vector;
+	case RANDOM: return color_man.getRandomPalette(mc_persistent_seed, count);
+	case MONOCHROMATIC: return color_man.getMonochromaticPalette(random_color, count);
+	case COMPLEMENTARY:
+	case SPLIT_COMPLEMENTARY:
+	case TRIAD: return color_man.getTriadPalette(random_color, count);
+	case TETRAD: return color_man.getTetradPalette(random_color, count);
+	case SQUARE: return color_man.getSquarePalette(random_color, count);
+	default: 
+		for (int i = 0; i < count; i++)
+		{
+			color_vector.push_back(mc_persistent_seed.getRandomVec4FromColorRanges(
+				0.5f, 1.0f,		// red range
+				0.5f, 1.0f,		// green range
+				0.5f, 1.0f,		// blue range
+				0.5f, 1.0f		// alpha range
+				));
+		}
+		return color_vector;
+	}
 }
 
 vector<float> fractal_generator::generateSizeVector(const int &count) const
@@ -312,6 +331,14 @@ void fractal_generator::swapMatrices()
 	}
 
 	front_buffer_first = !front_buffer_first;
+}
+
+void fractal_generator::cycleColorPalette()
+{
+	if (current_palette == DEFAULT)
+		current_palette = color_palette(0);
+
+	else current_palette = color_palette(int(current_palette) + 1);
 }
 
 void fractal_generator::printMatrices() const
@@ -678,10 +705,31 @@ void fractal_generator::addNewPointAndIterate(
 	starting_color = (starting_color + matrix_color) / 2.0f;
 	starting_size = (starting_size + point_size) / 2.0f;
 
-	points.push_back((float)(starting_point.x));
-	points.push_back((float)(starting_point.y));
-	points.push_back((float)(starting_point.z));
+	vec4 point_to_add = starting_point;
+
+	float max_length = 50.0f;
+	float min_length = 0.3f;
+
+	//scale points to ensure all points fall within clipping plane
+	if (glm::length(point_to_add) > max_length)
+	{
+		float scale_factor = max_length / glm::length(point_to_add);
+		mat4 scale_modifier = glm::scale(mat4(1.0f), vec3(scale_factor, scale_factor, scale_factor));
+		point_to_add = scale_modifier * point_to_add;
+	}
+
+	if (glm::length(point_to_add) < min_length)
+	{
+		float scale_factor = min_length / glm::length(point_to_add);
+		mat4 scale_modifier = glm::scale(mat4(1.0f), vec3(scale_factor, scale_factor, scale_factor));
+		point_to_add = scale_modifier * point_to_add;
+	}
+
+	points.push_back((float)(point_to_add.x));
+	points.push_back((float)(point_to_add.y));
+	points.push_back((float)(point_to_add.z));
 	points.push_back((float)(starting_point.w));
+
 	points.push_back((float)(starting_color.r));
 	points.push_back((float)(starting_color.g));
 	points.push_back((float)(starting_color.b));
@@ -695,9 +743,29 @@ void fractal_generator::addNewPoint(
 	const float &size,
 	vector<float> &points)
 {
-	points.push_back((float)point.x);
-	points.push_back((float)point.y);
-	points.push_back((float)point.z);
+	vec4 point_to_add = point;
+
+	float max_length = 50.0f;
+	float min_length = 0.3f;
+
+	//scale points to ensure all points fall within clipping plane
+	if (glm::length(point_to_add) > max_length)
+	{
+		float scale_factor = max_length / glm::length(point_to_add);
+		mat4 scale_modifier = glm::scale(mat4(1.0f), vec3(scale_factor, scale_factor, scale_factor));
+		point_to_add = scale_modifier * point_to_add;
+	}
+
+	if (glm::length(point_to_add) < min_length)
+	{
+		float scale_factor = min_length / glm::length(point_to_add);
+		mat4 scale_modifier = glm::scale(mat4(1.0f), vec3(scale_factor, scale_factor, scale_factor));
+		point_to_add = scale_modifier * point_to_add;
+	}
+
+	points.push_back((float)point_to_add.x);
+	points.push_back((float)point_to_add.y);
+	points.push_back((float)point_to_add.z);
 	points.push_back((float)point.w);
 
 	points.push_back((float)color.r);
@@ -811,6 +879,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		fractal_scale *= 1.1f;
 		fractal_scale_matrix = glm::scale(mat4(1.0f), vec3(fractal_scale, fractal_scale, fractal_scale));
 		glUniformMatrix4fv(context->getShaderGLint("fractal_scale"), 1, GL_FALSE, &fractal_scale_matrix[0][0]);
+		cout << "scale: " << fractal_scale << endl;
 	}
 
 	if (keys->checkPress(GLFW_KEY_V))
@@ -818,6 +887,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		fractal_scale /= 1.1f;
 		fractal_scale_matrix = glm::scale(mat4(1.0f), vec3(fractal_scale, fractal_scale, fractal_scale));
 		glUniformMatrix4fv(context->getShaderGLint("fractal_scale"), 1, GL_FALSE, &fractal_scale_matrix[0][0]);
+		cout << "scale: " << fractal_scale << endl;
 	}
 
 	if (keys->checkPress(GLFW_KEY_I, false))
@@ -828,6 +898,24 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 	if (keys->checkPress(GLFW_KEY_Z, false))
 		toggleSmooth();
+
+	if (keys->checkPress(GLFW_KEY_Y, false))
+	{
+		cycleColorPalette();
+
+		switch (current_palette)
+		{
+		case DEFAULT: cout << "default palette" << endl; break;
+		case RANDOM: cout << "random palette" << endl; break;
+		case MONOCHROMATIC: cout << "monochromatic palette" << endl; break;
+		case COMPLEMENTARY: cout << "complementary palette" << endl; break;
+		case SPLIT_COMPLEMENTARY: cout << "split complementary palette" << endl; break;
+		case TRIAD: cout << "triad palette" << endl; break;
+		case TETRAD: cout << "tetrad palette" << endl; break;
+		case SQUARE: cout << "square palette" << endl; break;
+		default: cout << "default palette" << endl; break;
+		}
+	}
 }
 
 void fractal_generator::tickAnimation() {
