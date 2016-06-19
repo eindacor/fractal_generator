@@ -97,6 +97,9 @@ int main()
 	float inter_start = 0.0f;
 	bool smooth = true;
 
+	glfwWindowHint(GLFW_SAMPLES, 4);
+	glEnable(GL_MULTISAMPLE);
+
 	if (entered_seed.size() == 0)
 		generator = new fractal_generator(context, two_dimensional);
 

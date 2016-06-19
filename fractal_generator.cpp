@@ -224,19 +224,29 @@ vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &
 
 vector<vec4> fractal_generator::generateColorVector(const int &count) const
 {
-	vector<vec4> color_vector;
+	vec4 random_color = mc_persistent_seed.getRandomVec4FromColorRanges(
+		0.5f, 1.0f,		// red range
+		0.5f, 1.0f,		// green range
+		0.5f, 1.0f,		// blue range
+		0.5f, 1.0f		// alpha range
+	);
 
-	for (int i = 0; i < count; i++)
-	{
-		color_vector.push_back(mc_persistent_seed.getRandomVec4FromColorRanges(
-			0.5f, 1.0f,		// red range
-			0.5f, 1.0f,		// green range
-			0.5f, 1.0f,		// blue range
-			0.5f, 1.0f		// alpha range
-			));
-	}
+	//return color_man.getMonochromaticPalette(random_color, count);
+	return color_man.getAnalogousPalette(random_color, count);
 
-	return color_vector;
+	//vector<vec4> color_vector;
+
+	//for (int i = 0; i < count; i++)
+	//{
+	//	color_vector.push_back(mc_persistent_seed.getRandomVec4FromColorRanges(
+	//		0.5f, 1.0f,		// red range
+	//		0.5f, 1.0f,		// green range
+	//		0.5f, 1.0f,		// blue range
+	//		0.5f, 1.0f		// alpha range
+	//		));
+	//}
+
+	//return color_vector;
 }
 
 vector<float> fractal_generator::generateSizeVector(const int &count) const
@@ -840,7 +850,7 @@ void fractal_generator::tickAnimation() {
 	vec4 new_background = generateInterpolatedColor(1);
 	background_color = inverted ? vec4(1.0f) - new_background : new_background;
 
-	color_man.adjustLightness(background_color, inverted ? 0.8f : -0.8f);
+	color_man.adjustLightness(background_color, inverted ? 0.8f : 0.2f);
 	context->setBackgroundColor(background_color);
 }
 
@@ -897,12 +907,13 @@ void fractal_generator::applyBackground(const int &num_samples)
 {
 	background_color = inverted ? vec4(1.0f) - getSampleColor(num_samples, colors_front) : getSampleColor(num_samples, colors_front);
 
-	color_man.adjustLightness(background_color, jep::floatRoll(-1.0f, 1.0f, 2));
+	color_man.adjustLightness(background_color, jep::floatRoll(0.0f, 1.0f, 2));
 	context->setBackgroundColor(background_color);
 }
 
 void fractal_generator::adjustBackgroundBrightness(float adjustment)
 {
-	color_man.adjustLightness(background_color, adjustment);
+	float current_lightness = color_man.getHSLFromRGBA(background_color).L;
+	color_man.adjustLightness(background_color, current_lightness + adjustment);
 	context->setBackgroundColor(background_color);
 }

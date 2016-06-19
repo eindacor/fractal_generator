@@ -3,37 +3,56 @@
 
 color_manager::color_manager()
 {
-	vec4 color_test(0.25f, 0.5f, 0.75f, 1.0f);
-	cout << "rgba: " + glm::to_string(color_test) << endl;
+	vec4 color_test(255.0f / 255.0f, 0.0f / 255.0f, 0.0f / 255.0f, 1.0f);
+	cout << "rgba: " + toRGBAString(color_test) << endl;
 	HSL hsl = getHSLFromRGBA(color_test);
 	cout << "hsl: " + hsl.to_string() << endl;
-	cout << "reverted: " + glm::to_string(getRGBAFromHSL(hsl, 1.0f)) << endl;
+	cout << "reverted: " + toRGBAString(getRGBAFromHSL(hsl, 1.0f)) << endl;
 
-	cout << "complementary: " + glm::to_string(getComplementary(color_test)) << endl;
+	cout << "complementary: " + toRGBAString(getComplementary(color_test)) << endl;
 
 	vector<vec4> triad = getTriad(color_test);
 	cout << "triad: " << endl;
 	for (const auto &color : triad)
 	{
-		cout << glm::to_string(color) << endl;
+		cout << toRGBAString(color) << endl;
 	}
 
 	vector<vec4> split = getSplitComplementary(color_test, 1);
 	cout << "split complementary: " << endl;
 	for (const auto &color : split)
 	{
-		cout << glm::to_string(color) << endl;
+		cout << toRGBAString(color) << endl;
 	}
 
-	cout << "analogous: " + glm::to_string(getAnalogous(color_test, 2));
+	cout << "analogous: " + toRGBAString(getAnalogous(color_test, 2)) << endl;
 
 	vector<vec4> double_comp = getDoubleComplementary(color_test, 2);
 	cout << "double complementary: " << endl;
 	for (const auto &color : double_comp)
 	{
-		cout << glm::to_string(color) << endl;
+		cout << toRGBAString(color) << endl;
 	}
 
+	vector<vec4> mono_palette = getMonochromaticPalette(color_test, 5);
+	cout << "monochromatic palette: " << endl;
+	for (const auto &color : mono_palette)
+	{
+		cout << toRGBAString(color) << endl;
+	}
+
+	vector<vec4> ana_palette = getAnalogousPalette(color_test, 5);
+	cout << "analogous palette: " << endl;
+	for (const auto &color : ana_palette)
+	{
+		cout << toRGBAString(color) << endl;
+	}
+
+}
+
+string color_manager::toRGBAString(const vec4 &color) const
+{
+	return "(" + std::to_string(int(255.0f * color.r)) + ", " + std::to_string(int(255.0f * color.g)) + ", " + std::to_string(int(255.0f * color.b)) + ", " + std::to_string(color.a) + ")";
 }
 
 vec4 color_manager::generateRandomColorFromSaturation(const matrix_creator &mc, const vec4 &seed) const
@@ -161,6 +180,7 @@ void color_manager::nudgeSaturation(vec4 &seed, float degree) const
 
 void color_manager::adjustLightness(vec4 &color, float lightness) const
 {
+	lightness = glm::clamp(lightness, 0.0f, 1.0f);
 	HSL hsl = getHSLFromRGBA(color);
 	hsl.L = lightness;
 	color = getRGBAFromHSL(hsl, color.a);
@@ -193,7 +213,7 @@ vector<vec4> color_manager::getSplitComplementary(const vec4 &color, int steps) 
 vec4 color_manager::getAnalogous(const vec4 &color, int steps) const
 {
 	HSL hsl = getHSLFromRGBA(color);
-	hsl.H = getNewHue(hsl.H, steps * 15);
+	hsl.H = getNewHue(hsl.H, steps * 30);
 	return getRGBAFromHSL(hsl);
 }
 
@@ -208,9 +228,45 @@ vector<vec4> color_manager::getTriad(const vec4 &color) const
 
 	triad.push_back(color);
 	triad.push_back(getRGBAFromHSL(t1));
-	triad.push_back(getRGBAFromHSL(t1));
+	triad.push_back(getRGBAFromHSL(t2));
 
 	return triad;
+}
+
+vector<vec4> color_manager::getTetrad(const vec4 &color) const
+{
+	vector<vec4> tetrad;
+
+	HSL hsl = getHSLFromRGBA(color);
+
+	HSL t1(getNewHue(hsl.H, 60), hsl.S, hsl.L);
+	HSL t2(getNewHue(hsl.H, 180), hsl.S, hsl.L);
+	HSL t3(getNewHue(hsl.H, 240), hsl.S, hsl.L);
+
+	tetrad.push_back(color);
+	tetrad.push_back(getRGBAFromHSL(t1));
+	tetrad.push_back(getRGBAFromHSL(t2));
+	tetrad.push_back(getRGBAFromHSL(t3));
+
+	return tetrad;
+}
+
+vector<vec4> color_manager::getSquare(const vec4 &color) const
+{
+	vector<vec4> square;
+
+	HSL hsl = getHSLFromRGBA(color);
+
+	HSL t1(getNewHue(hsl.H, 90), hsl.S, hsl.L);
+	HSL t2(getNewHue(hsl.H, 180), hsl.S, hsl.L);
+	HSL t3(getNewHue(hsl.H, 270), hsl.S, hsl.L);
+
+	square.push_back(color);
+	square.push_back(getRGBAFromHSL(t1));
+	square.push_back(getRGBAFromHSL(t2));
+	square.push_back(getRGBAFromHSL(t3));
+
+	return square;
 }
 
 int color_manager::getNewHue(int hue, int dist) const
@@ -235,4 +291,35 @@ vector<vec4> color_manager::getDoubleComplementary(const vec4 &color, int steps)
 	double_comp.push_back(getComplementary(analogous));
 
 	return double_comp;
+}
+
+vector<vec4> color_manager::getMonochromaticPalette(const vec4 &color, int count) const
+{
+	vector<vec4> colors;
+	HSL hsl = getHSLFromRGBA(color);
+
+	float lightness_increment = 1.0f / float(count);
+	for (int i = 0; i < count; i++)
+	{
+		float adjustment_distance = lightness_increment * float(i);
+		float brightness = glm::mod(hsl.L + adjustment_distance, 1.0f);
+
+		HSL new_color(hsl.H, hsl.S, brightness);
+		colors.push_back(getRGBAFromHSL(new_color));
+	}
+
+	return colors;
+}
+
+vector<vec4> color_manager::getAnalogousPalette(const vec4 &color, int count) const
+{
+	vector<vec4> colors;
+
+	for (int i = 0; i < count; i++)
+	{
+		int current_step = i % 2 == 0 ? i : i * -1;
+		colors.push_back(getAnalogous(color, current_step));
+	}
+
+	return colors;
 }

@@ -45,11 +45,18 @@ public:
 	void adjustSaturation(vec4 &color, float saturation) const;
 	void nudgeSaturation(vec4 &color, float degree) const;
 
+	string toRGBAString(const vec4 &color) const;
+
 	vec4 getComplementary(const vec4 &color) const;
 	vector<vec4> getSplitComplementary(const vec4 &color, int steps) const;
 	vec4 getAnalogous(const vec4 &color, int steps) const;
 	vector<vec4> getTriad(const vec4 &color) const;
+	vector<vec4> getTetrad(const vec4 &color) const;
+	vector<vec4> getSquare(const vec4 &color) const;
 	vector<vec4> getDoubleComplementary(const vec4 &color, int steps) const;
+
+	vector<vec4> getMonochromaticPalette(const vec4 &color, int count) const;
+	vector<vec4> getAnalogousPalette(const vec4 &color, int count) const;
 
 	int getNewHue(int hue, int dist) const;
 
