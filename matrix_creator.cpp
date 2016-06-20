@@ -122,7 +122,7 @@ void matrix_creator::seed(const string &seed_string)
 	uniform_generator = new boost::variate_generator<boost::mt19937&, boost::uniform_real<float> >(rng, random_range);
 }
 
-string matrix_creator::generateAlphanumericString(int num_chars, bool print_values)
+string matrix_creator::generateAlphanumericString(int num_chars)
 {
 	string random_string;
 
@@ -134,13 +134,7 @@ string matrix_creator::generateAlphanumericString(int num_chars, bool print_valu
 	{
 		unsigned short random_index = getRandomUniform() * (float)set_size;
 		random_string += charset[random_index];
-
-		if (print_values)
-			cout << random_index << " ";
 	}
-
-	if (print_values)
-		cout << endl;
 
 	return random_string;
 }

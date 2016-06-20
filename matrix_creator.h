@@ -38,7 +38,7 @@ public:
 	vec4 getRandomVec4AlphaClamp(float alpha_min, float alpha_max) const { return vec4(getRandomFloat(), getRandomFloat(), getRandomFloat(), getRandomFloatInRange(alpha_min, alpha_max)); }
 	vec4 getRandomVec4FromColorRanges(float r_min, float r_max, float g_min, float g_max, float b_min, float b_max, float a_min, float a_max) const 
 		{ return vec4(getRandomFloatInRange(r_min, r_max), getRandomFloatInRange(g_min, g_max), getRandomFloatInRange(b_min, b_max), getRandomFloatInRange(a_min, a_max)); }
-	string generateAlphanumericString(int num_chars, bool print_values = false);
+	string generateAlphanumericString(int num_chars);
 
 	void seed(const string &seed_string);
 

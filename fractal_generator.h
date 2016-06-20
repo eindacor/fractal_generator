@@ -12,12 +12,14 @@ class fractal_generator
 public:
 	fractal_generator(
 		const shared_ptr<jep::ogl_context> &con,
-		bool two_dimensional = false);
+		int num_points,
+		bool two_dimensional);
 
 	fractal_generator(
 		const string &randomization_seed,
 		const shared_ptr<jep::ogl_context> &con,
-		bool two_dimensional = false);
+		int num_points,
+		bool two_dimensional);
 
 	fractal_generator(
 		const string &randomization_seed,
@@ -26,7 +28,8 @@ public:
 		const int &translate, 
 		const int &rotate, 
 		const int &scale, 
-		bool two_dimensional = false);
+		int num_points,
+		bool two_dimensional);
 
 	fractal_generator(
 		const shared_ptr<jep::ogl_context> &con, 
@@ -34,7 +37,8 @@ public:
 		const int &translate, 
 		const int &rotate, 
 		const int &scale, 
-		bool two_dimensional = false);
+		int num_points,
+		bool two_dimensional);
 
 	~fractal_generator() { glDeleteVertexArrays(1, &pg_VAO); glDeleteBuffers(1, &pg_VBO); }
 
@@ -46,13 +50,10 @@ public:
 	vec4 generateInterpolatedColor(int front_index, int back_index) const;
 	float generateInterpolatedSize(int index) const;
 
-	void generateFractal(const int &num_points, bool smooth);
-	void generateFractal(vec4 origin, const int &num_points, bool smooth);
-	void generateFractal(vector<vec4> point_sequence, const int &num_points, bool smooth);
-
-	void generateFractalWithRefresh(const int &num_points, const int &transformation_refresh, bool smooth);
-	void generateFractalWithRefresh(vec4 origin, const int &num_points, const int &transformation_refresh, bool smooth);
-	void generateFractalWithRefresh(vector<vec4> point_sequence, const int &num_points, const int &transformation_refresh, bool smooth);
+	void generateFractal();
+	void generateFractalFromPointSequence();
+	void generateFractalWithRefresh();
+	void generateFractalFromPointSequenceWithRefresh();
 
 	void renderFractal(const int &image_width, const int &image_height, const int &matrix_sequence_count);
 
@@ -99,6 +100,8 @@ private:
 	matrix_creator mc_persistent_seed;
 	color_manager color_man;
 
+	vector<int> random_matrix_order;
+
 	//weights determine probability of each matrix type
 	int translate_weight;
 	int rotate_weight;
@@ -133,7 +136,7 @@ private:
 	bool refresh_loaded;
 	int refresh_value;
 	bool is_2D;
-	vec4 origin;
+	vec4 origin = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	bool sequence_loaded;
 	vector<vec4> preloaded_sequence;
 

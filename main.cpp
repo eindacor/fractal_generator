@@ -41,38 +41,72 @@ void main()\n\
 }\n\
 ";
 
-int main()
+void getSettings(string &seed, bool &refresh_enabled, bool &two_dimensional, int &num_points, int &window_width, int &window_height)
 {
-	string entered_seed;
+	string use_defaults;
+	cout << "use default settings?: ";
+	std::getline(std::cin, use_defaults);
+	std::transform(use_defaults.begin(), use_defaults.end(), use_defaults.begin(), ::tolower);
+	cout << endl;
+
+	if (use_defaults == "y" || use_defaults == "yes" || use_defaults == "true" || use_defaults == "" || use_defaults == "\n")
+		return;
 
 	cout << "enter seed: ";
-	std::getline(std::cin, entered_seed);
+	std::getline(std::cin, seed);
 	cout << endl;
-	entered_seed.erase(std::remove(entered_seed.begin(), entered_seed.end(), '\n'), entered_seed.end());
+	seed.erase(std::remove(seed.begin(), seed.end(), '\n'), seed.end());
 
-	string refresh_enabled;
+	string refresh_enabled_input;
 	cout << "refresh enabled?: ";
-	std::getline(std::cin, refresh_enabled);
-	std::transform(refresh_enabled.begin(), refresh_enabled.end(), refresh_enabled.begin(), ::tolower);
+	std::getline(std::cin, refresh_enabled_input);
+	std::transform(refresh_enabled_input.begin(), refresh_enabled_input.end(), refresh_enabled_input.begin(), ::tolower);
+	refresh_enabled = refresh_enabled_input == "y" || refresh_enabled_input == "yes" || refresh_enabled_input == "true";
 	cout << endl;
 
-	string two_dimensional_enabled;
+	string two_dimensional_enabled_input;
 	cout << "2D?: ";
-	std::getline(std::cin, two_dimensional_enabled);
-	std::transform(refresh_enabled.begin(), refresh_enabled.end(), refresh_enabled.begin(), ::tolower);
+	std::getline(std::cin, two_dimensional_enabled_input);
+	std::transform(two_dimensional_enabled_input.begin(), two_dimensional_enabled_input.end(), two_dimensional_enabled_input.begin(), ::tolower);
 	cout << endl;
-	bool two_dimensional = (two_dimensional_enabled == "y" || two_dimensional_enabled == "yes" || two_dimensional_enabled == "true");
+	two_dimensional = (two_dimensional_enabled_input == "y" || two_dimensional_enabled_input == "yes" || two_dimensional_enabled_input == "true");
 
 	string point_count;
 	cout << "point count: ";
 	std::getline(std::cin, point_count);
 	cout << endl;
-	int num_points = (point_count == "" || point_count == "\n" || std::stoi(point_count) <= 0) ? 50000 : std::stoi(point_count);
+	num_points = (point_count == "" || point_count == "\n" || std::stoi(point_count) <= 0) ? 10000 : std::stoi(point_count);
+
+	string window_width_input;
+	cout << "window width: ";
+	std::getline(std::cin, window_width_input);
+	cout << endl;
+	window_width = (window_width_input == "" || window_width_input == "\n") ? 1366 : std::stoi(window_width_input);
+	window_width = glm::clamp(window_width, 600, 4096);
+
+	string window_height_input;
+	cout << "window height: ";
+	std::getline(std::cin, window_height_input);
+	cout << endl;
+	window_height = (window_height_input == "" || window_height_input == "\n") ? 768 : std::stoi(window_height_input);
+	window_height = glm::clamp(window_height, 600, 4096);
+}
+
+int main()
+{
+	string seed = "";
+	bool refresh_enabled = false;
+	bool two_dimensional = false;
+	int num_points = 10000;
+	int window_width = 1366;
+	int window_height = 768;
+
+	getSettings(seed, refresh_enabled, two_dimensional, num_points, window_width, window_height);
 
 	float eye_level = 0.0f;
-	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, 1366, 768, true));
+	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, window_width, window_height, true));
 	shared_ptr<key_handler> keys(new key_handler(context));
-	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 1.0f), 45.0f));
+	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 2.0f), 45.0f));
 
 	vector<vec4> point_sequence = {
 		vec4(-1.0f, -1.0f, 0.0f, 1.0f),
@@ -100,15 +134,16 @@ int main()
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glEnable(GL_MULTISAMPLE);
 
-	if (entered_seed.size() == 0)
-		generator = new fractal_generator(context, two_dimensional);
+	// TODO create factory class that creates generators, only keep one constructor that requires all parameters
+	if (seed.size() == 0)
+		generator = new fractal_generator(context, num_points, two_dimensional);
 
-	else generator = new fractal_generator(entered_seed, context, two_dimensional);
+	else generator = new fractal_generator(seed, context, num_points, two_dimensional);
 
-	if (refresh_enabled == "y" || refresh_enabled == "yes" || refresh_enabled == "true")
-		generator->generateFractalWithRefresh(num_points, 5, smooth);
+	if (refresh_enabled)
+		generator->generateFractalWithRefresh();
 
-	else generator->generateFractal(num_points, smooth);
+	else generator->generateFractal();
 
 	glfwSetTime(0);
 	float render_fps = 60.0f;
@@ -120,6 +155,8 @@ int main()
 	bool smooth_lines = true;
 	bool paused = false;
 	bool reverse = false;
+
+	generator->printContext();
 
 	while (!finished)
 	{
