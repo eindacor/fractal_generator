@@ -428,6 +428,7 @@ string color_manager::getPaletteName(color_palette p) const
 	case PRIMARY_PALETTE: return "primary palette";
 	case SECONDARY_PALETTE: return "secondary palette";
 	case TERTIARY_PALETTE: return "tertiary palette";
+	case ANALOGOUS_PALETTE: return "analogous palette";
 	case RANDOM_COLORS: return "random colors";
 	case MONOCHROMATIC_PALETTE: return "monochromatic palette";
 	case COMPLEMENTARY_PALETTE: return "complementary palette";
@@ -439,7 +440,7 @@ string color_manager::getPaletteName(color_palette p) const
 	}
 }
 
-vector<vec4> color_manager::generatePaletteFromSeed(const vec4 &seed, color_palette palette_type, int count) const
+vector<vec4> color_manager::generatePaletteFromSeed(const vec4 &seed, color_palette palette_type, int count, color_palette &random_palette_selected) const
 {
 	vector<vec4> color_vector;
 
@@ -449,12 +450,13 @@ vector<vec4> color_manager::generatePaletteFromSeed(const vec4 &seed, color_pale
 	{
 		// random_palette_type + 1 to ensure DEFAULT_COLOR_PALETTE is possible and RANDOM_PALETTE cannot be called recursively
 		int random_palette_type = int(mc.getRandomFloatInRange(0.0f, float(DEFAULT_COLOR_PALETTE))) + 1;		
-		cout << "random palette: " + getPaletteName(color_palette(random_palette_type)) << endl;
-		return generatePaletteFromSeed(seed, color_palette(random_palette_type), count);
+		random_palette_selected = color_palette(random_palette_type);
+		return generatePaletteFromSeed(seed, color_palette(random_palette_type), count, random_palette_selected);
 	}
 	case PRIMARY_PALETTE: return getPrimaryPalette(count);
 	case SECONDARY_PALETTE: return getSecondaryPalette(count);
 	case TERTIARY_PALETTE: return getTertiaryPalette(count);
+	case ANALOGOUS_PALETTE: return getAnalogousPalette(seed, count);
 	case RANDOM_COLORS: return getRandomPalette(count);
 	case MONOCHROMATIC_PALETTE: return getMonochromaticPalette(seed, count);
 	case COMPLEMENTARY_PALETTE: return getComplementaryPalette(seed, count);

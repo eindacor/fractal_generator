@@ -215,20 +215,11 @@ vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &
 	return matrix_vector;
 }
 
-vector<vec4> fractal_generator::generateColorVector(const int &count) const
+vector<vec4> fractal_generator::generateColorVector(const vec4 &seed, color_palette palette, const int &count, color_palette &random_selection) const
 {
 	vector<vec4> color_set;
-	float alpha_min = 0.5f;
-	float alpha_max = 1.0f;
-	vec4 random_color = mc_persistent_seed.getRandomVec4FromColorRanges(
-		0.0f, 1.0f,		// red range
-		0.0f, 1.0f,		// green range
-		0.0f, 1.0f,		// blue range
-		alpha_min, alpha_max		// alpha range
-	);
 
-	cout << "seed color: " << color_man.toRGBAString(random_color) << endl;
-	color_set = color_man.generatePaletteFromSeed(random_color, current_palette, count);
+	color_set = color_man.generatePaletteFromSeed(seed, palette, count, random_selection);
 
 	if (randomize_alpha)
 		color_man.randomizeAlpha(color_set, alpha_min, alpha_max);
@@ -236,9 +227,6 @@ vector<vec4> fractal_generator::generateColorVector(const int &count) const
 	if (randomize_lightness)
 		color_man.modifyLightness(color_set, mc_persistent_seed.getRandomFloatInRange(0.3, 2.0f));
 
-	cout << "palette (" + color_man.getPaletteName(current_palette) + "): " << endl;
-	color_man.printColorSet(color_set);
-	cout << endl;
 	return color_set;
 }
 
@@ -257,7 +245,8 @@ vector<float> fractal_generator::generateSizeVector(const int &count) const
 void fractal_generator::setMatrices(const int &num_matrices)
 {
 	int random_palette_index = int(mc_persistent_seed.getRandomFloatInRange(0.0f, float(DEFAULT_COLOR_PALETTE)));
-	current_palette = color_palette(random_palette_index);
+	palette_front = color_palette(random_palette_index);
+	palette_back = color_palette(random_palette_index);
 
 	//TODO add .reserve() for each vector
 	matrices_front.clear();
@@ -271,15 +260,28 @@ void fractal_generator::setMatrices(const int &num_matrices)
 	matrices_front = generateMatrixVector(num_matrices);
 	matrices_back = generateMatrixVector(num_matrices);
 
-	colors_front = generateColorVector(num_matrices);
-	colors_back = generateColorVector(num_matrices);
+	alpha_min = 0.5f;
+	alpha_max = 1.0f;
+
+	seed_color_front = mc_persistent_seed.getRandomVec4FromColorRanges(
+		0.0f, 1.0f,		// red range
+		0.0f, 1.0f,		// green range
+		0.0f, 1.0f,		// blue range
+		alpha_min, alpha_max		// alpha range
+		);
+
+	seed_color_back = mc_persistent_seed.getRandomVec4FromColorRanges(
+		0.0f, 1.0f,		// red range
+		0.0f, 1.0f,		// green range
+		0.0f, 1.0f,		// blue range
+		alpha_min, alpha_max		// alpha range
+		);
+
+	colors_front = generateColorVector(seed_color_front, palette_front, num_matrices, random_palette_front);
+	colors_back = generateColorVector(seed_color_back, palette_back, num_matrices, random_palette_back);
 
 	sizes_front = generateSizeVector(num_matrices);
 	sizes_back = generateSizeVector(num_matrices);
-
-	cout << endl;
-	printMatrices();
-	cout << endl;
 }
 
 void fractal_generator::swapMatrices() 
@@ -291,8 +293,15 @@ void fractal_generator::swapMatrices()
 		colors_back.clear();
 		sizes_back.clear();
 
+		seed_color_back = mc_persistent_seed.getRandomVec4FromColorRanges(
+			0.0f, 1.0f,		// red range
+			0.0f, 1.0f,		// green range
+			0.0f, 1.0f,		// blue range
+			alpha_min, alpha_max		// alpha range
+			);
+
 		matrices_back = generateMatrixVector(matrices_front.size());
-		colors_back = generateColorVector(matrices_front.size());
+		colors_back = generateColorVector(seed_color_back, palette_back, matrices_front.size(), random_palette_back);
 		sizes_back = generateSizeVector(matrices_front.size());
 	}
 
@@ -302,8 +311,15 @@ void fractal_generator::swapMatrices()
 		colors_front.clear();
 		sizes_front.clear();
 
+		seed_color_front = mc_persistent_seed.getRandomVec4FromColorRanges(
+			0.0f, 1.0f,		// red range
+			0.0f, 1.0f,		// green range
+			0.0f, 1.0f,		// blue range
+			alpha_min, alpha_max		// alpha range
+			);
+
 		matrices_front = generateMatrixVector(matrices_back.size());
-		colors_front = generateColorVector(matrices_back.size());
+		colors_front = generateColorVector(seed_color_front, palette_front, matrices_back.size(), random_palette_front);
 		sizes_front = generateSizeVector(matrices_back.size());
 	}
 
@@ -312,15 +328,21 @@ void fractal_generator::swapMatrices()
 
 void fractal_generator::cycleColorPalette()
 {
-	if (current_palette == DEFAULT_COLOR_PALETTE)
-		current_palette = color_palette(0);
+	// palettes separated in case these change independently at some point
+	if (palette_front == DEFAULT_COLOR_PALETTE)
+		palette_front = color_palette(0);
 
-	else current_palette = color_palette(int(current_palette) + 1);
+	else palette_front = color_palette(int(palette_front) + 1);
+
+	if (palette_back == DEFAULT_COLOR_PALETTE)
+		palette_back = color_palette(0);
+
+	else palette_back = color_palette(int(palette_back) + 1);
 }
 
 void fractal_generator::printMatrices() const
 {
-	cout << "-----matrice_front-----" << endl;
+	cout << "-----matrices_front-----" << endl;
 	for (const auto &matrix_pair : matrices_front)
 	{
 		cout << matrix_pair.first << endl;
@@ -894,8 +916,12 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 	if (keys->checkPress(GLFW_KEY_Y, false))
 	{
 		cycleColorPalette();
-		cout << color_man.getPaletteName(current_palette) << endl;
+		cout << "front palette: " + color_man.getPaletteName(palette_front) << endl;
+		cout << "back palette: " + color_man.getPaletteName(palette_back) << endl;
 	}
+
+	if (keys->checkPress(GLFW_KEY_SEMICOLON))
+		printContext();
 }
 
 void fractal_generator::tickAnimation() {
@@ -981,4 +1007,39 @@ void fractal_generator::adjustBackgroundBrightness(float adjustment)
 	float current_lightness = color_man.getHSLFromRGBA(background_color).L;
 	color_man.adjustLightness(background_color, current_lightness + adjustment);
 	context->setBackgroundColor(background_color);
+}
+
+void fractal_generator::printContext()
+{
+	printMatrices();
+	cout << "seed: " << seed << endl;
+
+	cout << "front palette: " + color_man.getPaletteName(palette_front) << endl;
+	if (palette_front == RANDOM_PALETTE)
+		cout << "current front palette: " + color_man.getPaletteName(random_palette_front) << endl;
+
+	cout << "front color set, seed = " + color_man.toRGBAString(seed_color_front) + ":" << endl;
+	color_man.printColorSet(colors_front);
+	cout << "front background index: " << background_front_index << endl;
+	cout << endl;
+
+	cout << "back palette: " + color_man.getPaletteName(palette_back) << endl;
+	if (palette_back == RANDOM_PALETTE)
+		cout << "current back palette: " + color_man.getPaletteName(random_palette_back) << endl;
+
+	cout << "back color set, seed = " + color_man.toRGBAString(seed_color_back) + ":" << endl;
+	color_man.printColorSet(colors_back);
+	cout << "back background index: " << background_back_index << endl;
+	cout << endl;
+
+	cout << "line width: " << line_width << endl;
+	cout << "interpolation state: " << interpolation_state << endl;
+	cout << "current scale: " << fractal_scale << endl;
+	front_buffer_first ? cout << "front buffer first" << endl : cout << "back buffer first" << endl;
+	smooth_render ? cout << "smooth rendering enabled" << endl : cout << "smooth rendering disabled" << endl;
+	randomize_lightness ? cout << "lightness randomization enabled" << endl : cout << "lightness randomization disabled" << endl;
+	randomize_alpha ? cout << "alpha randomization enabled (" << alpha_min << ", " << alpha_max << ")" << endl : cout << "alpha randomization disabled" << endl;
+	refresh_loaded ? cout << "refresh mode enabled (" << refresh_value << ")" << endl : cout << "refresh mode disabled" << endl;
+	is_2D ? cout << "2D mode enabled" << endl : cout << "2D mode disabled" << endl;
+	sequence_loaded ? cout << "point sequence loaded" << endl : cout << "point sequence not loaded" << endl;
 }

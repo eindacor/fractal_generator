@@ -83,6 +83,8 @@ public:
 
 	void cycleColorPalette();
 
+	void printContext();
+
 private:
 	string seed;
 	vector< pair<string, mat4> > matrices_front;
@@ -114,11 +116,18 @@ private:
 	float interpolation_increment = 0.02f;
 	bool front_buffer_first = true;
 	bool smooth_render = true;
-	color_palette current_palette = DEFAULT_COLOR_PALETTE;
+	color_palette palette_front = DEFAULT_COLOR_PALETTE;
+	color_palette palette_back = DEFAULT_COLOR_PALETTE;
+	color_palette random_palette_front = DEFAULT_COLOR_PALETTE;
+	color_palette random_palette_back = DEFAULT_COLOR_PALETTE;
 	int background_front_index = 0;
 	int background_back_index = 0;
 	bool randomize_lightness = true;
 	bool randomize_alpha = true;
+	vec4 seed_color_front;
+	vec4 seed_color_back;
+	float alpha_min;
+	float alpha_max;
 
 	// current gen parameters, included for 
 	bool refresh_loaded;
@@ -160,7 +169,7 @@ private:
 	void bufferData(const vector<float> &vertex_data);
 
 	vector< pair<string, mat4> > generateMatrixVector(const int &count) const;
-	vector<vec4> generateColorVector(const int &count) const;
+	vector<vec4> generateColorVector(const vec4 &seed, color_palette palette, const int &count, color_palette &random_selection) const;
 	vector<float> generateSizeVector(const int &count) const;
 };
 

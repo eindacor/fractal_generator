@@ -6,7 +6,8 @@
 #include "header.h"
 #include "matrix_creator.h"
 
-enum color_palette { RANDOM_PALETTE, PRIMARY_PALETTE, SECONDARY_PALETTE, TERTIARY_PALETTE, RANDOM_COLORS, MONOCHROMATIC_PALETTE, COMPLEMENTARY_PALETTE, SPLIT_COMPLEMENTARY_PALETTE, TRIAD_PALETTE, TETRAD_PALETTE, SQUARE_PALETTE, DEFAULT_COLOR_PALETTE
+//RANDOM_PALETTE must be first, DEFAULT_COLOR_PALETTE must be last
+enum color_palette { RANDOM_PALETTE, ANALOGOUS_PALETTE, PRIMARY_PALETTE, SECONDARY_PALETTE, TERTIARY_PALETTE, RANDOM_COLORS, MONOCHROMATIC_PALETTE, COMPLEMENTARY_PALETTE, SPLIT_COMPLEMENTARY_PALETTE, TRIAD_PALETTE, TETRAD_PALETTE, SQUARE_PALETTE, DEFAULT_COLOR_PALETTE
 };
 
 class HSL
@@ -82,7 +83,7 @@ public:
 
 	int getNewHue(int hue, int dist) const;
 
-	vector<vec4> generatePaletteFromSeed(const vec4 &seed, color_palette palette_type, int count) const;
+	vector<vec4> generatePaletteFromSeed(const vec4 &seed, color_palette palette_type, int count, color_palette &random_palette_selected) const;
 
 	void printColorSet(const vector<vec4> &set) const;
 
