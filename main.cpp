@@ -29,7 +29,6 @@ void main()\n\
 		fragment_color = vec4(vec3(1.0) - color.rgb, alpha_value); \n\
 	}\n\
 	else {fragment_color = vec4(color.rgb, alpha_value);}\n\
-	fragment_color = points[0];\n\
 }\n\
 ";
 

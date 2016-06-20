@@ -117,6 +117,8 @@ private:
 	color_palette current_palette = DEFAULT_COLOR_PALETTE;
 	int background_front_index = 0;
 	int background_back_index = 0;
+	bool randomize_lightness = true;
+	bool randomize_alpha = true;
 
 	// current gen parameters, included for 
 	bool refresh_loaded;

@@ -229,8 +229,13 @@ vector<vec4> fractal_generator::generateColorVector(const int &count) const
 
 	cout << "seed color: " << color_man.toRGBAString(random_color) << endl;
 	color_set = color_man.generatePaletteFromSeed(random_color, current_palette, count);
-	color_man.randomizeAlpha(color_set, alpha_min, alpha_max);
-	color_man.modifyLightness(color_set, mc_persistent_seed.getRandomFloatInRange(0.3, 2.0f));
+
+	if (randomize_alpha)
+		color_man.randomizeAlpha(color_set, alpha_min, alpha_max);
+
+	if (randomize_lightness)
+		color_man.modifyLightness(color_set, mc_persistent_seed.getRandomFloatInRange(0.3, 2.0f));
+
 	cout << "palette (" + color_man.getPaletteName(current_palette) + "): " << endl;
 	color_man.printColorSet(color_set);
 	cout << endl;
@@ -822,6 +827,24 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 	if (keys->checkPress(GLFW_KEY_5, false))
 		adjustBackgroundBrightness(0.05f);
+
+	if (keys->checkPress(GLFW_KEY_Q, false)) 
+	{
+		randomize_lightness = !randomize_lightness;
+		if (randomize_lightness)
+			cout << "randomize lightness enabled" << endl;
+
+		else cout << "randomize lightness disabled" << endl;
+	}
+
+	if (keys->checkPress(GLFW_KEY_U, false))
+	{
+		randomize_alpha = !randomize_alpha;
+		if (randomize_alpha)
+			cout << "randomize alpha enabled" << endl;
+
+		else cout << "randomize alpha disabled" << endl;
+	}
 
 	if (keys->checkPress(GLFW_KEY_PERIOD, false))
 	{
