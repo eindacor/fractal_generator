@@ -423,11 +423,12 @@ string color_manager::getPaletteName(color_palette p) const
 {
 	switch (p)
 	{
+	case RANDOM_PALETTE: return "random palette";
 	case DEFAULT_COLOR_PALETTE: return "default palette";
 	case PRIMARY_PALETTE: return "primary palette";
 	case SECONDARY_PALETTE: return "secondary palette";
 	case TERTIARY_PALETTE: return "tertiary palette";
-	case RANDOM_PALETTE: return "random palette";
+	case RANDOM_COLORS: return "random colors";
 	case MONOCHROMATIC_PALETTE: return "monochromatic palette";
 	case COMPLEMENTARY_PALETTE: return "complementary palette";
 	case SPLIT_COMPLEMENTARY_PALETTE: return "split complementary palette";
@@ -444,28 +445,24 @@ vector<vec4> color_manager::generatePaletteFromSeed(const vec4 &seed, color_pale
 
 	switch (palette_type)
 	{
-	case DEFAULT_COLOR_PALETTE:
-		for (int i = 0; i < count; i++)
-		{
-			color_vector.push_back(mc.getRandomVec4FromColorRanges(
-				0.5f, 1.0f,		// red range
-				0.5f, 1.0f,		// green range
-				0.5f, 1.0f,		// blue range
-				0.5f, 1.0f		// alpha range
-				));
-		}
-		return color_vector;
-
+	case RANDOM_PALETTE: 
+	{
+		// random_palette_type + 1 to ensure DEFAULT_COLOR_PALETTE is possible and RANDOM_PALETTE cannot be called recursively
+		int random_palette_type = int(mc.getRandomFloatInRange(0.0f, float(DEFAULT_COLOR_PALETTE))) + 1;		
+		cout << "random palette: " + getPaletteName(color_palette(random_palette_type)) << endl;
+		return generatePaletteFromSeed(seed, color_palette(random_palette_type), count);
+	}
 	case PRIMARY_PALETTE: return getPrimaryPalette(count);
 	case SECONDARY_PALETTE: return getSecondaryPalette(count);
 	case TERTIARY_PALETTE: return getTertiaryPalette(count);
-	case RANDOM_PALETTE: return getRandomPalette(count);
+	case RANDOM_COLORS: return getRandomPalette(count);
 	case MONOCHROMATIC_PALETTE: return getMonochromaticPalette(seed, count);
 	case COMPLEMENTARY_PALETTE: return getComplementaryPalette(seed, count);
 	case SPLIT_COMPLEMENTARY_PALETTE: return getSplitComplementaryPalette(seed, count);
 	case TRIAD_PALETTE: return getTriadPalette(seed, count);
 	case TETRAD_PALETTE: return getTetradPalette(seed, count);
 	case SQUARE_PALETTE: return getSquarePalette(seed, count);
+	case DEFAULT_COLOR_PALETTE:
 	default:
 		for (int i = 0; i < count; i++)
 		{
