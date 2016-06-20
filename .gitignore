@@ -1,3 +1,5 @@
 *.bmp
 *.psd
+*.iobj
+*.ipdb
 /screens/*

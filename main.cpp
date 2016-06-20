@@ -18,7 +18,6 @@ uniform int frame_count;\n\
 out vec4 fragment_color;\n\
 uniform float point_size_scale = 1.0f;\n\
 uniform int invert_colors;\n\
-uniform vec4 points[256];\n\
 void main()\n\
 {\n\
 	gl_PointSize = point_size * point_size_scale;\n\
@@ -121,16 +120,6 @@ int main()
 	bool smooth_lines = true;
 	bool paused = false;
 	bool reverse = false;
-
-	int int_array[10];
-	int_array[2] = 200;
-
-	float points[4 * 256];
-	points[0] = 0.0f;
-	points[1] = 1.0f;
-	points[2] = 0.0f;
-	points[3] = 1.0f;
-	glUniform4fv(context->getShaderGLint("points"), 256, points);
 
 	while (!finished)
 	{
