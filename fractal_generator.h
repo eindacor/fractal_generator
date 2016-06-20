@@ -169,7 +169,8 @@ private:
 		const float &size,
 		vector<float> &points);
 
-	void bufferData(const vector<float> &vertex_data);
+	void bufferMatrixSequence();
+	void bufferMatrices();
 
 	vector< pair<string, mat4> > generateMatrixVector(const int &count) const;
 	vector<vec4> generateColorVector(const vec4 &seed, color_palette palette, const int &count, color_palette &random_selection) const;

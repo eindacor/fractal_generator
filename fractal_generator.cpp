@@ -104,11 +104,8 @@ fractal_generator::fractal_generator(
 	glDepthRange(0.0, 1.0);
 }
 
-void fractal_generator::bufferData(const vector<float> &vertex_data)
+void fractal_generator::bufferMatrixSequence()
 {
-	enable_triangles = vertex_count >= 3;
-	enable_lines = vertex_count >= 2;
-
 	if (initialized)
 	{
 		glDeleteVertexArrays(1, &pg_VAO); 
@@ -122,31 +119,31 @@ void fractal_generator::bufferData(const vector<float> &vertex_data)
 	// create/bind Vertex Buffer Object
 	glGenBuffers(1, &pg_VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, pg_VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertex_data.size(), &vertex_data[0], GL_STATIC_DRAW);
-
-	// stride is the total size of each vertex's attribute data (position + color + size)
-	// change this to 7 for triangle bug
-	int stride = vertex_size * sizeof(float);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(int) * random_matrix_order.size(), &random_matrix_order[0], GL_STATIC_DRAW);
 
 	// load position data
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, stride, (void*)0);
-
-	// load color data
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, stride, (void*)(4 * sizeof(float)));
-
-	// load point size
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, stride, (void*)(8 * sizeof(float)));
+	glVertexAttribPointer(0, 1, GL_INT, GL_FALSE, 0, (void*)0);
 
 	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
 	initialized = true;
+}
+
+void fractal_generator::bufferMatrices()
+{
+	glUniformMatrix4fv(context->getShaderGLint("transformation_matrices_front"), matrices_front.size(), GL_FALSE, &(matrices_front[0].second[0][0]));
+	glUniformMatrix4fv(context->getShaderGLint("transformation_matrices_back"), matrices_back.size(), GL_FALSE, &(matrices_back[0].second[0][0]));
+
+	glUniform4fv(context->getShaderGLint("colors_front"), colors_front.size(), &colors_front[0][0]);
+	glUniform4fv(context->getShaderGLint("colors_back"), colors_back.size(), &colors_back[0][0]);
+
+	glUniform1fv(context->getShaderGLint("sizes_front"), sizes_front.size(), &sizes_front[0]);
+	glUniform1fv(context->getShaderGLint("sizes_back"), sizes_back.size(), &sizes_back[0]);
+
+	glUniform1f(context->getShaderGLint("matrix_count"), float(matrices_front.size()));
 }
 
 void fractal_generator::drawFractal() const
@@ -154,8 +151,6 @@ void fractal_generator::drawFractal() const
 	// bind target VAO
 	glBindVertexArray(pg_VAO);
 	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
 
 	if (enable_triangles && triangle_mode != 0)
 		glDrawArrays(triangle_mode, 0, vertex_count);
@@ -167,8 +162,6 @@ void fractal_generator::drawFractal() const
 		glDrawArrays(GL_POINTS, 0, vertex_count);
 
 	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
 	glBindVertexArray(0);
 }
 
@@ -292,6 +285,9 @@ void fractal_generator::setMatrices(const int &num_matrices)
 
 	sizes_front = generateSizeVector(num_matrices);
 	sizes_back = generateSizeVector(num_matrices);
+
+	bufferMatrixSequence();
+	bufferMatrices();
 }
 
 void fractal_generator::swapMatrices() 
@@ -334,6 +330,8 @@ void fractal_generator::swapMatrices()
 	}
 
 	front_buffer_first = !front_buffer_first;
+	front_buffer_first ? glUniform1i(context->getShaderGLint("front_buffer_first"), 1) : glUniform1i(context->getShaderGLint("front_buffer_first"), 0);
+	bufferMatrices();
 }
 
 void fractal_generator::cycleColorPalette()
@@ -406,7 +404,7 @@ float fractal_generator::generateInterpolatedSize(int index) const
 
 void fractal_generator::generateFractalFromPointSequence()
 {
-	if (smooth_render)
+	/*if (smooth_render)
 		mc.seed(seed);
 
 	vector<float> points;
@@ -437,14 +435,12 @@ void fractal_generator::generateFractalFromPointSequence()
 			vec4* new_point = &preloaded_sequence.at(n);
 			addNewPointAndIterate(*new_point, point_color, starting_size, transformation_matrix, transformation_color, transformation_size, points);
 		}
-	}
-
-	bufferData(points);
+	}*/
 }
 
 void fractal_generator::generateFractal()
 {
-	if (smooth_render)
+	/*if (smooth_render)
 		mc.seed(seed);
 
 	refresh_loaded = false;
@@ -470,14 +466,12 @@ void fractal_generator::generateFractal()
 		float transformation_size = generateInterpolatedSize(random_index);
 
 		addNewPointAndIterate(origin, point_color, starting_size, transformation_matrix, transformation_color, transformation_size, points);
-	}
-
-	bufferData(points);
+	}*/
 }
 
 void fractal_generator::generateFractalWithRefresh()
 {
-	if (smooth_render)
+	/*if (smooth_render)
 		mc.seed(seed);
 
 	sequence_loaded = false;
@@ -511,14 +505,12 @@ void fractal_generator::generateFractalWithRefresh()
 		new_size /= (float)refresh_value;
 
 		addNewPoint(new_point, point_color, new_size, points);
-	}
-
-	bufferData(points);
+	}*/
 }
 
 void fractal_generator::generateFractalFromPointSequenceWithRefresh()
 {
-	if (smooth_render)
+	/*if (smooth_render)
 		mc.seed(seed);
 
 	sequence_loaded = true;
@@ -564,9 +556,7 @@ void fractal_generator::generateFractalFromPointSequenceWithRefresh()
 			*target_point /= (float)refresh_value;
 			addNewPoint(*target_point, point_color, new_size, points);
 		}
-	}
-
-	bufferData(points);
+	}*/
 }
 
 
@@ -924,14 +914,15 @@ void fractal_generator::tickAnimation() {
 	if (interpolation_state + actual_increment >= 1.0f) {
 		interpolation_state = 0.0f;
 		swapMatrices();
-		regenerateFractal();
 	}
 
 	else
 	{
 		interpolation_state += actual_increment;
-		regenerateFractal();
 	}
+
+	glUniform1f(context->getShaderGLint("interpolation_state"), interpolation_state);
+	bufferMatrices();
 
 	vec4 new_background = generateInterpolatedColor(background_front_index, background_back_index);
 	background_color = inverted ? vec4(1.0f) - new_background : new_background;

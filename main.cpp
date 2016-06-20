@@ -5,29 +5,69 @@
 
 const char* vertex_shader_string = "\
 #version 330\n\
-layout(location = 0) in vec4 position;\n\
-layout(location = 1) in vec4 color;\n\
-layout(location = 2) in float point_size;\n\
+layout(location = 0) in int matrix_index;\n\
 uniform mat4 MVP;\n\
 uniform mat4 MV;\n\
 uniform mat4 model_matrix;\n\
 uniform mat4 view_matrix;\n\
+uniform mat4 projection_matrix;\n\
 uniform mat4 fractal_scale = mat4(1.0f);\n\
 uniform int enable_growth_animation;\n\
 uniform int frame_count;\n\
 out vec4 fragment_color;\n\
 uniform float point_size_scale = 1.0f;\n\
 uniform int invert_colors;\n\
+\n\
+uniform mat4 transformation_matrices_front[16];\n\
+uniform mat4 transformation_matrices_back[16];\n\
+uniform vec4 colors_front[16];\n\
+uniform vec4 colors_back[16];\n\
+uniform float sizes_front[16];\n\
+uniform float sizes_back[16];\n\
+uniform int matrix_count;\n\
+uniform int front_buffer_first;\n\
+uniform float interpolation_state;\n\
+vec4 output_point = vec4(0.0, 0.0, 0.0, 1.0);\n\
+vec4 output_color = vec4(0.5, 0.5, 0.5, 1.0);\n\
+float output_size = 1.0;\n\
+\n\
 void main()\n\
 {\n\
-	gl_PointSize = point_size * point_size_scale;\n\
-	gl_Position = MVP * fractal_scale * position;\n\
-	float alpha_value = (frame_count > gl_VertexID) || (enable_growth_animation == 0) ? color.a : 0.0f;\n\
-	if (invert_colors > 0)\n\
+	float alpha_value = (frame_count > gl_VertexID) || (enable_growth_animation == 0) ? 1.0 : 0.0;\n\
+	mat4 transformation_matrix;\n\
+	vec4 transformation_color;\n\
+	float transformation_size;\n\
+	for (int i = 0; i < gl_VertexID; i++)\n\
 	{\n\
-		fragment_color = vec4(vec3(1.0) - color.rgb, alpha_value); \n\
+		int matrix_index = int((noise1(1.0) + 1.0) / 2.0 * matrix_count);\n\
+\n\
+		if (front_buffer_first > 0)\n\
+		{\n\
+			transformation_matrix = (transformation_matrices_front[matrix_index] * interpolation_state) + (transformation_matrices_back[matrix_index] * (1.0f - interpolation_state));\n\
+			transformation_color = (colors_front[matrix_index] * interpolation_state) + (colors_back[matrix_index] * (1.0 - interpolation_state));\n\
+			transformation_size = (sizes_front[matrix_index] * interpolation_state) + (sizes_back[matrix_index] * (1.0 - interpolation_state));\n\
+		}\n\
+\n\
+		else\n\
+		{\n\
+			transformation_matrix = (transformation_matrices_back[matrix_index] * interpolation_state) + (transformation_matrices_front[matrix_index] * (1.0 - interpolation_state));\n\
+			transformation_color = (colors_back[matrix_index] * interpolation_state) + (colors_front[matrix_index] * (1.0 - interpolation_state));\n\
+			transformation_size = (sizes_back[matrix_index] * interpolation_state) + (sizes_front[matrix_index] * (1.0 - interpolation_state));\n\
+		}\n\
+\n\
+		output_point = transformation_matrix * output_point;\n\
+		output_color = (output_color * float(gl_VertexID) + transformation_color) / float(gl_VertexID + 1);\n\
+		output_size = (output_size * float(gl_VertexID) + transformation_size) / float(gl_VertexID + 1);\n\
 	}\n\
-	else {fragment_color = vec4(color.rgb, alpha_value);}\n\
+\n\
+		mat4 MVP = projection_matrix * view_matrix * transformation_matrix;\n\
+		gl_Position = MVP * fractal_scale * output_point;\n\
+		if (invert_colors > 0)\n\
+		{\n\
+			fragment_color = vec4(vec3(1.0) - output_color.rgb, output_color.a);\n\
+		}\n\
+		else { fragment_color = output_color; }\n\
+		gl_PointSize = output_size * point_size_scale;\n\
 }\n\
 ";
 
@@ -170,6 +210,11 @@ int main()
 
 			camera->updateCamera();
 			camera->setMVP(context, mat4(1.0f), jep::NORMAL);
+			//TODO update ogl_tools to allow a setProjectionMatrixFunction
+			mat4 view_matrix = camera->getViewMatrix();
+			mat4 projection_matrix = camera->getProjectionMatrix();
+			glUniformMatrix4fv(context->getShaderGLint("projection_matrix"), 1, GL_FALSE, &projection_matrix[0][0]);
+			glUniformMatrix4fv(context->getShaderGLint("view_matrix"), 1, GL_FALSE, &view_matrix[0][0]);
 
 			glUniform1i(context->getShaderGLint("enable_growth_animation"), show_growth ? 1 : 0);
 			glUniform1i(context->getShaderGLint("frame_count"), frame_counter);
