@@ -31,6 +31,15 @@ vec4 output_point = vec4(0.0, 0.0, 0.0, 1.0);\n\
 vec4 output_color = vec4(0.5, 0.5, 0.5, 1.0);\n\
 float output_size = 1.0;\n\
 \n\
+float rand(vec2 co)\n\
+{\n\
+	float a = 12.9898;\n\
+	float b = 78.233;\n\
+	float c = 43758.5453;\n\
+	float dt = dot(co.xy, vec2(a, b));\n\
+	float sn = mod(dt, 3.14);\n\
+	return fract(sin(sn) * c);\n\
+}\n\
 void main()\n\
 {\n\
 	float alpha_value = (frame_count > gl_VertexID) || (enable_growth_animation == 0) ? 1.0 : 0.0;\n\
@@ -39,7 +48,7 @@ void main()\n\
 	float transformation_size;\n\
 	for (int i = 0; i < gl_VertexID; i++)\n\
 	{\n\
-		int matrix_index = int(((noise1(1.0) + 1.0) / 2.0) * matrix_count);\n\
+		int matrix_index = int(((rand(vec2(gl_VertexID, gl_VertexID * -1.0)) + 1.0) / 2.0) * matrix_count);\n\
 \n\
 		if (front_buffer_first > 0)\n\
 		{\n\
@@ -48,7 +57,7 @@ void main()\n\
 			transformation_size = (sizes_front[matrix_index] * interpolation_state) + (sizes_back[matrix_index] * (1.0 - interpolation_state));\n\
 		}\n\
 \n\
-		else if ()\n\
+		else\n\
 		{\n\
 			transformation_matrix = (transformation_matrices_back[matrix_index] * interpolation_state) + (transformation_matrices_front[matrix_index] * (1.0 - interpolation_state));\n\
 			transformation_color = (colors_back[matrix_index] * interpolation_state) + (colors_front[matrix_index] * (1.0 - interpolation_state));\n\
