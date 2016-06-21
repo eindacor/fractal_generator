@@ -425,7 +425,6 @@ void fractal_generator::generateFractalFromPointSequence()
 	{
 		int random_index = random_matrix_order.at(i);
 
-		mat4 transformation_matrix = generateInterpolatedMatrix(random_index);
 		vec4 transformation_color = generateInterpolatedColor(random_index, random_index);
 		float transformation_size = generateInterpolatedSize(random_index);
 
@@ -435,7 +434,7 @@ void fractal_generator::generateFractalFromPointSequence()
 		for (int n = 0; n < preloaded_sequence.size(); n++)
 		{
 			vec4* new_point = &preloaded_sequence.at(n);
-			addNewPointAndIterate(*new_point, point_color, starting_size, transformation_matrix, transformation_color, transformation_size, points);
+			addNewPointAndIterate(*new_point, point_color, starting_size, random_index, transformation_color, transformation_size, points);
 		}
 	}
 
@@ -455,6 +454,7 @@ void fractal_generator::generateFractal()
 
 	int num_matrices = matrices_front.size();
 
+	vec4 starting_point = origin;
 	vec4 point_color(0.5f, 0.5f, 0.5f, 0.5f);
 	float starting_size = 10.0;
 
@@ -465,11 +465,10 @@ void fractal_generator::generateFractal()
 
 		int random_index = random_matrix_order.at(i);
 		
-		mat4 transformation_matrix = generateInterpolatedMatrix(random_index);
 		vec4 transformation_color = generateInterpolatedColor(random_index, random_index);
 		float transformation_size = generateInterpolatedSize(random_index);
 
-		addNewPointAndIterate(origin, point_color, starting_size, transformation_matrix, transformation_color, transformation_size, points);
+		addNewPointAndIterate(starting_point, point_color, starting_size, random_index, transformation_color, transformation_size, points);
 	}
 
 	bufferData(points);
@@ -687,12 +686,24 @@ void fractal_generator::addNewPointAndIterate(
 	vec4 &starting_point,
 	vec4 &starting_color,
 	float &starting_size,
-	const mat4 &matrix,
+	int matrix_index,
 	const vec4 &matrix_color,
 	const float &point_size,
 	vector<float> &points)
 {
-	starting_point = matrix * starting_point;
+	mat4 matrix_front = matrices_front.at(matrix_index).second;
+	mat4 matrix_back = matrices_back.at(matrix_index).second;
+
+	vec4 point_front = matrix_front * starting_point;
+	vec4 point_back = matrix_back * starting_point;
+
+	interpolation_state = glm::clamp(interpolation_state, 0.0f, 1.0f);
+
+	if (front_buffer_first)
+		starting_point = (point_front * interpolation_state) + (point_back * (1.0f - interpolation_state));
+
+	else starting_point = (point_back * interpolation_state) + (point_front * (1.0f - interpolation_state));
+
 	starting_color = (starting_color + matrix_color) / 2.0f;
 	starting_size = (starting_size + point_size) / 2.0f;
 
@@ -720,6 +731,9 @@ void fractal_generator::addNewPointAndIterate(
 	{
 		focal_point = vec3(0.0f);
 		average_delta = 0.0f;
+		max_x = 0.0f;
+		max_y = 0.0f;
+		max_z = 0.0f;
 	}
 
 	float current_point_count = points.size();
@@ -727,6 +741,15 @@ void fractal_generator::addNewPointAndIterate(
 	focal_point = ((current_point_count * focal_point) + vec3(point_to_add)) / (current_point_count + 1.0f);
 	float delta = glm::length(vec3(point_to_add) - focal_point);
 	average_delta = ((current_point_count * average_delta) + delta) / (current_point_count + 1.0f);
+
+	if (point_to_add.x > max_x)
+		max_x = point_to_add.x;
+
+	if (point_to_add.y > max_y)
+		max_y = point_to_add.y;
+
+	if (point_to_add.z > max_z)
+		max_z = point_to_add.z;
 
 	points.push_back((float)(point_to_add.x));
 	points.push_back((float)(point_to_add.y));
@@ -1018,6 +1041,10 @@ void fractal_generator::printContext()
 	printMatrices();
 	cout << "seed: " << seed << endl;
 	cout << "point count: " << vertex_count << endl;
+	cout << "focal point: " + glm::to_string(focal_point) << endl;
+	cout << "max x: " << max_x << endl;
+	cout << "max y: " << max_y << endl;
+	cout << "max z: " << max_z << endl;
 
 	cout << "front palette: " + color_man.getPaletteName(palette_front) << endl;
 	if (palette_front == RANDOM_PALETTE)

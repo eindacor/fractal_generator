@@ -12,6 +12,7 @@ uniform mat4 MVP;\n\
 uniform mat4 MV;\n\
 uniform mat4 model_matrix;\n\
 uniform mat4 view_matrix;\n\
+uniform mat4 projection_matrix;\n\
 uniform mat4 fractal_scale = mat4(1.0f);\n\
 uniform int enable_growth_animation;\n\
 uniform int frame_count;\n\
@@ -100,7 +101,8 @@ int main()
 	int num_points = 10000;
 	int window_width = 1366;
 	int window_height = 768;
-	bool auto_tracking = true;
+	bool auto_tracking = false;
+	bool smooth = true;
 
 	getSettings(seed, refresh_enabled, two_dimensional, num_points, window_width, window_height);
 
@@ -130,8 +132,7 @@ int main()
 		
 	fractal_generator *generator;
 	float inter_start = 0.0f;
-	bool smooth = true;
-
+	
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glEnable(GL_MULTISAMPLE);
 

@@ -46,6 +46,7 @@ public:
 
 	void setMatrices(const int &num_matrices);
 
+	vec4 getInterpolatedLocation(int index, vec4 point) const;
 	mat4 generateInterpolatedMatrix(int index) const;
 	vec4 generateInterpolatedColor(int front_index, int back_index) const;
 	float generateInterpolatedSize(int index) const;
@@ -103,7 +104,7 @@ private:
 	matrix_creator mc_persistent_seed;
 	color_manager color_man;
 	vec3 focal_point;
-	float average_delta;
+	float average_delta, max_x, max_y, max_z;
 
 	vector<int> random_matrix_order;
 
@@ -163,7 +164,7 @@ private:
 		vec4 &starting_point,
 		vec4 &starting_color,
 		float &starting_size,
-		const mat4 &matrix,
+		int matrix_index,
 		const vec4 &matrix_color,
 		const float &point_size,
 		vector<float> &points);
