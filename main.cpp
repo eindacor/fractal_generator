@@ -100,6 +100,7 @@ int main()
 	int num_points = 10000;
 	int window_width = 1366;
 	int window_height = 768;
+	bool auto_tracking = true;
 
 	getSettings(seed, refresh_enabled, two_dimensional, num_points, window_width, window_height);
 
@@ -183,17 +184,11 @@ int main()
 			if (!paused)
 				generator->tickAnimation();
 
-			if (keys->checkPress(GLFW_KEY_LEFT_BRACKET))
+			if (auto_tracking && !paused)
 			{
 				float average_delta = generator->getAverageDelta();
 				camera->setPosition(generator->getFocalPoint() + vec3(average_delta * 6.0f));
 				camera->setFocus(generator->getFocalPoint());
-			}
-
-			if (keys->checkPress(GLFW_KEY_RIGHT_BRACKET), false)
-			{
-				camera->setPosition(vec3(0.0f, eye_level, 2.0f));
-				camera->setFocus(vec3(0.0f, 0.0f, 0.0f));
 			}
 
 			camera->updateCamera();
@@ -201,6 +196,18 @@ int main()
 
 			generator->drawFractal();
 			generator->checkKeys(keys);
+
+			if (keys->checkPress(GLFW_KEY_0, false))
+			{
+				auto_tracking = !auto_tracking;
+				auto_tracking ? cout << "auto tracking enabled" << endl : cout << "auto tracking disabled" << endl;
+			}
+
+			if (keys->checkPress(GLFW_KEY_RIGHT_BRACKET), false)
+			{
+				camera->setPosition(vec3(0.0f, eye_level, 2.0f));
+				camera->setFocus(vec3(0.0f, 0.0f, 0.0f));
+			}
 
 			//TODO see why this only works when include_hold is enabled
 			if (keys->checkPress(GLFW_KEY_ESCAPE))
