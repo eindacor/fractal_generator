@@ -39,16 +39,16 @@ void main()\n\
 	float transformation_size;\n\
 	for (int i = 0; i < gl_VertexID; i++)\n\
 	{\n\
-		int matrix_index = int((noise1(1.0) + 1.0) / 2.0 * matrix_count);\n\
+		int matrix_index = int(((noise1(1.0) + 1.0) / 2.0) * matrix_count);\n\
 \n\
 		if (front_buffer_first > 0)\n\
 		{\n\
-			transformation_matrix = (transformation_matrices_front[matrix_index] * interpolation_state) + (transformation_matrices_back[matrix_index] * (1.0f - interpolation_state));\n\
+			transformation_matrix = (transformation_matrices_front[matrix_index] * interpolation_state) + (transformation_matrices_back[matrix_index] * (1.0 - interpolation_state));\n\
 			transformation_color = (colors_front[matrix_index] * interpolation_state) + (colors_back[matrix_index] * (1.0 - interpolation_state));\n\
 			transformation_size = (sizes_front[matrix_index] * interpolation_state) + (sizes_back[matrix_index] * (1.0 - interpolation_state));\n\
 		}\n\
 \n\
-		else\n\
+		else if ()\n\
 		{\n\
 			transformation_matrix = (transformation_matrices_back[matrix_index] * interpolation_state) + (transformation_matrices_front[matrix_index] * (1.0 - interpolation_state));\n\
 			transformation_color = (colors_back[matrix_index] * interpolation_state) + (colors_front[matrix_index] * (1.0 - interpolation_state));\n\
