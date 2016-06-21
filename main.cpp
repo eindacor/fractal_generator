@@ -168,9 +168,6 @@ int main()
 			glfwPollEvents();
 			context->clearBuffers();
 
-			camera->updateCamera();
-			camera->setMVP(context, mat4(1.0f), jep::NORMAL);
-
 			glUniform1i(context->getShaderGLint("enable_growth_animation"), show_growth ? 1 : 0);
 			glUniform1i(context->getShaderGLint("frame_count"), frame_counter);
 
@@ -185,6 +182,22 @@ int main()
 
 			if (!paused)
 				generator->tickAnimation();
+
+			if (keys->checkPress(GLFW_KEY_LEFT_BRACKET))
+			{
+				float average_delta = generator->getAverageDelta();
+				camera->setPosition(generator->getFocalPoint() + vec3(average_delta * 6.0f));
+				camera->setFocus(generator->getFocalPoint());
+			}
+
+			if (keys->checkPress(GLFW_KEY_RIGHT_BRACKET), false)
+			{
+				camera->setPosition(vec3(0.0f, eye_level, 2.0f));
+				camera->setFocus(vec3(0.0f, 0.0f, 0.0f));
+			}
+
+			camera->updateCamera();
+			camera->setMVP(context, mat4(1.0f), jep::NORMAL);
 
 			generator->drawFractal();
 			generator->checkKeys(keys);

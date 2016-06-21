@@ -86,6 +86,9 @@ public:
 
 	void printContext();
 
+	vec3 getFocalPoint() const { return focal_point; }
+	float getAverageDelta() const { return average_delta; }
+
 private:
 	string seed;
 	vector< pair<string, mat4> > matrices_front;
@@ -99,6 +102,8 @@ private:
 	matrix_creator mc;
 	matrix_creator mc_persistent_seed;
 	color_manager color_man;
+	vec3 focal_point;
+	float average_delta;
 
 	vector<int> random_matrix_order;
 
@@ -132,7 +137,7 @@ private:
 	float alpha_min;
 	float alpha_max;
 
-	// current gen parameters, included for 
+	// current gen parameters
 	bool refresh_loaded;
 	int refresh_value;
 	bool is_2D;

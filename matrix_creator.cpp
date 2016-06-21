@@ -14,27 +14,27 @@ matrix_creator::matrix_creator(const string &seed_string)
 
 mat4 matrix_creator::getRandomTranslation() const
 {
-	return glm::translate(mat4(1.0f), vec3(getRandomFloatInScope(), getRandomFloatInScope(), getRandomFloatInScope()));
+	return glm::translate(mat4(1.0f), vec3(getRandomFloatInScope() * translation_adjustment, getRandomFloatInScope() * translation_adjustment, getRandomFloatInScope() * translation_adjustment));
 }
 
 mat4 matrix_creator::getRandomTranslation2D() const
 {
-	return glm::translate(mat4(1.0f), vec3(getRandomFloatInScope(), getRandomFloatInScope(), 0.0f));
+	return glm::translate(mat4(1.0f), vec3(getRandomFloatInScope() * translation_adjustment, getRandomFloatInScope() * translation_adjustment, 0.0f));
 }
 
 mat4 matrix_creator::getRandomTranslation(const random_switch &x, const random_switch &y, const random_switch &z) const
 {
-	float generated_x = x.first ? x.second : getRandomFloatInScope();
-	float generated_y = y.first ? y.second : getRandomFloatInScope();
-	float generated_z = z.first ? z.second : getRandomFloatInScope();
+	float generated_x = x.first ? x.second : getRandomFloatInScope() * translation_adjustment;
+	float generated_y = y.first ? y.second : getRandomFloatInScope() * translation_adjustment;
+	float generated_z = z.first ? z.second : getRandomFloatInScope() * translation_adjustment;
 
 	return glm::translate(mat4(1.0f), vec3(generated_x, generated_y, generated_z));
 }
 
 mat4 matrix_creator::getRandomTranslation2D(const random_switch &x, const random_switch &y) const
 {
-	float generated_x = x.first ? x.second : getRandomFloatInScope();
-	float generated_y = y.first ? y.second : getRandomFloatInScope();
+	float generated_x = x.first ? x.second : getRandomFloatInScope() * translation_adjustment;
+	float generated_y = y.first ? y.second : getRandomFloatInScope() * translation_adjustment;
 
 	return glm::translate(mat4(1.0f), vec3(generated_x, generated_y, 0.0f));
 }
@@ -69,27 +69,61 @@ mat4 matrix_creator::getRandomRotation2D(const random_switch &z, const random_sw
 
 mat4 matrix_creator::getRandomScale() const
 {
-	return glm::scale(mat4(1.0f), vec3(getRandomFloatInScope(), getRandomFloatInScope(), getRandomFloatInScope()));
+	vec3 scale_vector = vec3(getRandomFloatInRange(scale_min, scale_max), getRandomFloatInRange(scale_min, scale_max), getRandomFloatInRange(scale_min, scale_max));
+
+	if (getRandomFloat() < 0.5f)
+		scale_vector.x *= -1.0f;
+
+	if (getRandomFloat() < 0.5f)
+		scale_vector.y *= -1.0f;
+
+	if (getRandomFloat() < 0.5f)
+		scale_vector.z *= -1.0f;
+
+	return glm::scale(mat4(1.0f), scale_vector);
 }
 
 mat4 matrix_creator::getRandomScale2D() const
 {
-	return glm::scale(mat4(1.0f), vec3(getRandomFloatInScope(), getRandomFloatInScope(), 1.0f));
+	vec3 scale_vector = vec3(getRandomFloatInRange(scale_min, scale_max), getRandomFloatInRange(scale_min, scale_max), 1.0f);
+
+	if (getRandomFloat() < 0.5f)
+		scale_vector.x *= -1.0f;
+
+	if (getRandomFloat() < 0.5f)
+		scale_vector.y *= -1.0f;
+
+	return glm::scale(mat4(1.0f), scale_vector);
 }
 
 mat4 matrix_creator::getRandomScale(const random_switch &x, const random_switch &y, const random_switch &z) const
 {
-	float generated_x = x.first ? x.second : getRandomFloatInScope();
-	float generated_y = y.first ? y.second : getRandomFloatInScope();
-	float generated_z = z.first ? z.second : getRandomFloatInScope();
+	float generated_x = x.first ? x.second : getRandomFloatInRange(scale_min, scale_max);
+	float generated_y = y.first ? y.second : getRandomFloatInRange(scale_min, scale_max);
+	float generated_z = z.first ? z.second : getRandomFloatInRange(scale_min, scale_max);
+
+	if (!x.first && getRandomFloat() < 0.5f)
+		generated_x *= -1.0f;
+
+	if (!y.first && getRandomFloat() < 0.5f)
+		generated_y *= -1.0f;
+
+	if (!z.first && getRandomFloat() < 0.5f)
+		generated_z *= -1.0f;
 
 	return glm::scale(mat4(1.0f), vec3(generated_x, generated_y, generated_z));
 }
 
 mat4 matrix_creator::getRandomScale2D(const random_switch &x, const random_switch &y) const
 {
-	float generated_x = x.first ? x.second : getRandomFloatInScope();
-	float generated_y = y.first ? y.second : getRandomFloatInScope();
+	float generated_x = x.first ? x.second : getRandomFloatInRange(scale_min, scale_max);
+	float generated_y = y.first ? y.second : getRandomFloatInRange(scale_min, scale_max);
+
+	if (!x.first && getRandomFloat() < 0.5f)
+		generated_x *= -1.0f;
+
+	if (!y.first && getRandomFloat() < 0.5f)
+		generated_y *= -1.0f;
 
 	return glm::scale(mat4(1.0f), vec3(generated_x, generated_y, 1.0f));
 }

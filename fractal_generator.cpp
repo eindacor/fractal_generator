@@ -14,7 +14,7 @@ fractal_generator::fractal_generator(
 	int num_matrices = int(mc.getRandomFloatInRange(2, 8));
 	translate_weight = int(mc.getRandomFloatInRange(1, 6));
 	rotate_weight = int(mc.getRandomFloatInRange(1, 6));
-	scale_weight = int(mc.getRandomFloatInRange(1, 4));
+	scale_weight = int(mc.getRandomFloatInRange(1, 3));
 
 	context = con;
 	is_2D = two_dimensional;
@@ -30,15 +30,15 @@ fractal_generator::fractal_generator(
 	const string &randomization_seed,
 	const shared_ptr<ogl_context> &con,
 	int num_points, 
-	bool two_dimensional) : mc(randomization_seed), mc_persistent_seed(randomization_seed), color_man(seed)
+	bool two_dimensional) : mc(randomization_seed), mc_persistent_seed(randomization_seed), color_man(randomization_seed)
 {
 	vertex_count = num_points;
 	seed = randomization_seed;
 
-	int num_matrices = int(mc.getRandomFloatInRange(2, 8));
+	int num_matrices = int(mc.getRandomFloatInRange(3, 6));
 	translate_weight = int(mc.getRandomFloatInRange(1, 6));
 	rotate_weight = int(mc.getRandomFloatInRange(1, 6));
-	scale_weight = int(mc.getRandomFloatInRange(1, 4));
+	scale_weight = int(mc.getRandomFloatInRange(1, 3));
 
 	context = con;
 	is_2D = two_dimensional;
@@ -58,7 +58,7 @@ fractal_generator::fractal_generator(
 	const int &rotate, 
 	const int &scale, 
 	int num_points, 
-	bool two_dimensional) : mc(randomization_seed), mc_persistent_seed(randomization_seed), color_man(seed)
+	bool two_dimensional) : mc(randomization_seed), mc_persistent_seed(randomization_seed), color_man(randomization_seed)
 {
 	vertex_count = num_points;
 	seed = randomization_seed;
@@ -715,6 +715,18 @@ void fractal_generator::addNewPointAndIterate(
 		mat4 scale_modifier = glm::scale(mat4(1.0f), vec3(scale_factor, scale_factor, scale_factor));
 		point_to_add = scale_modifier * point_to_add;
 	}
+
+	if (points.size() == 0)
+	{
+		focal_point = vec3(0.0f);
+		average_delta = 0.0f;
+	}
+
+	float current_point_count = points.size();
+
+	focal_point = ((current_point_count * focal_point) + vec3(point_to_add)) / (current_point_count + 1.0f);
+	float delta = glm::length(vec3(point_to_add) - focal_point);
+	average_delta = ((current_point_count * average_delta) + delta) / (current_point_count + 1.0f);
 
 	points.push_back((float)(point_to_add.x));
 	points.push_back((float)(point_to_add.y));

@@ -45,6 +45,10 @@ public:
 private:
 	boost::mt19937 rng;
 	boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > *uniform_generator = nullptr;
+
+	float translation_adjustment = 1.0f;
+	float scale_min = 0.0f;
+	float scale_max = 1.0f;
 };
 
 #endif
