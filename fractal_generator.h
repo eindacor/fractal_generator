@@ -21,32 +21,22 @@ public:
 		int num_points,
 		bool two_dimensional);
 
-	fractal_generator(
-		const string &randomization_seed,
-		const shared_ptr<jep::ogl_context> &con, 
-		const int &num_matrices, 
-		const int &translate, 
-		const int &rotate, 
-		const int &scale, 
-		int num_points,
-		bool two_dimensional);
-
-	fractal_generator(
-		const shared_ptr<jep::ogl_context> &con, 
-		const int &num_matrices, 
-		const int &translate, 
-		const int &rotate, 
-		const int &scale, 
-		int num_points,
-		bool two_dimensional);
+	//fractal_generator(
+	//	const string &randomization_seed,
+	//	const shared_ptr<jep::ogl_context> &con, 
+	//	const int &num_matrices, 
+	//	const int &translate, 
+	//	const int &rotate, 
+	//	const int &scale, 
+	//	int num_points,
+	//	bool two_dimensional);
 
 	~fractal_generator() { glDeleteVertexArrays(1, &pg_VAO); glDeleteBuffers(1, &pg_VBO); }
 
-	string getSeed() const { return seed; }
+	string getSeed() const { return base_seed; }
 
 	void setMatrices(const int &num_matrices);
 
-	vec4 getInterpolatedLocation(int index, vec4 point) const;
 	mat4 generateInterpolatedMatrix(int index) const;
 	vec4 generateInterpolatedColor(int front_index, int back_index) const;
 	float generateInterpolatedSize(int index) const;
@@ -82,6 +72,7 @@ public:
 
 	void tickAnimation();
 	void swapMatrices();
+	void changeDirection();
 
 	void toggleSmooth() { smooth_render = !smooth_render; }
 
@@ -93,7 +84,8 @@ public:
 	float getAverageDelta() const { return average_delta; }
 
 private:
-	string seed;
+	string base_seed;
+	string generation_seed;
 	vector< pair<string, mat4> > matrices_front;
 	vector< pair<string, mat4> > matrices_back;
 	vector<vec4> colors_front;
@@ -103,7 +95,6 @@ private:
 	vector<float> sizes_front;
 	vector<float> sizes_back;
 	matrix_creator mc;
-	matrix_creator mc_persistent_seed;
 	color_manager color_man;
 	vec3 focal_point;
 	float average_delta, max_x, max_y, max_z;
@@ -122,8 +113,7 @@ private:
 	bool enable_triangles = false;
 	bool enable_lines = false;
 	float interpolation_state = 0.0f;
-	float interpolation_increment = 0.02f;
-	bool front_buffer_first = true;
+	float interpolation_increment = 0.02f; // original 0.02f
 	bool smooth_render = true;
 	color_palette palette_front = DEFAULT_COLOR_PALETTE;
 	color_palette palette_back = DEFAULT_COLOR_PALETTE;
@@ -137,6 +127,8 @@ private:
 	vec4 seed_color_back;
 	float alpha_min;
 	float alpha_max;
+	signed int generation = 0;
+	bool reverse = false;
 
 	// current gen parameters
 	bool refresh_loaded;
