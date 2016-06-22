@@ -56,6 +56,8 @@ public:
 	void generateFractalWithRefresh();
 	void generateFractalFromPointSequenceWithRefresh();
 
+	void setRefreshValue(int value) { refresh_value = value; }
+
 	void renderFractal(const int &image_width, const int &image_height, const int &matrix_sequence_count);
 
 	//vector<mat4> generateMatrixSequence(const vector<int> &matrix_indices) const;
@@ -106,8 +108,6 @@ private:
 	vec3 focal_point;
 	float average_delta, max_x, max_y, max_z;
 
-	vector<int> random_matrix_order;
-
 	//weights determine probability of each matrix type
 	int translate_weight;
 	int rotate_weight;
@@ -140,7 +140,7 @@ private:
 
 	// current gen parameters
 	bool refresh_loaded;
-	int refresh_value;
+	int refresh_value = 10;
 	bool is_2D;
 	vec4 origin = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	bool sequence_loaded;

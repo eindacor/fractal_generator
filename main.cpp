@@ -42,7 +42,7 @@ void main()\n\
 }\n\
 ";
 
-void getSettings(string &seed, bool &refresh_enabled, bool &two_dimensional, int &num_points, int &window_width, int &window_height)
+void getSettings(string &seed, bool &refresh_enabled, int &refresh_value, bool &two_dimensional, int &num_points, int &window_width, int &window_height)
 {
 	string use_defaults;
 	cout << "use default settings?: ";
@@ -64,6 +64,15 @@ void getSettings(string &seed, bool &refresh_enabled, bool &two_dimensional, int
 	std::transform(refresh_enabled_input.begin(), refresh_enabled_input.end(), refresh_enabled_input.begin(), ::tolower);
 	refresh_enabled = refresh_enabled_input == "y" || refresh_enabled_input == "yes" || refresh_enabled_input == "true";
 	cout << endl;
+
+	if (refresh_enabled)
+	{
+		string value;
+		cout << "refresh iterations: ";
+		std::getline(std::cin, value);
+		cout << endl;
+		refresh_value = (value == "" || value == "\n" || std::stoi(value) <= 0 || std::stoi(value) >= 50) ? 10 : std::stoi(value);
+	}
 
 	string two_dimensional_enabled_input;
 	cout << "2D?: ";
@@ -97,6 +106,7 @@ int main()
 {
 	string seed = "";
 	bool refresh_enabled = false;
+	int refresh_value = 10;
 	bool two_dimensional = false;
 	int num_points = 10000;
 	int window_width = 1366;
@@ -104,7 +114,7 @@ int main()
 	bool auto_tracking = false;
 	bool smooth = true;
 
-	getSettings(seed, refresh_enabled, two_dimensional, num_points, window_width, window_height);
+	getSettings(seed, refresh_enabled, refresh_value, two_dimensional, num_points, window_width, window_height);
 
 	float eye_level = 0.0f;
 	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, window_width, window_height, true));
@@ -143,7 +153,10 @@ int main()
 	else generator = new fractal_generator(seed, context, num_points, two_dimensional);
 
 	if (refresh_enabled)
+	{
 		generator->generateFractalWithRefresh();
+		generator->setRefreshValue(refresh_value);
+	}
 
 	else generator->generateFractal();
 
