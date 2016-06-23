@@ -154,6 +154,7 @@ int main()
 
 	if (refresh_enabled)
 	{
+		generator->enableRefreshMode();
 		generator->generateFractalWithRefresh();
 		generator->setRefreshValue(refresh_value);
 	}

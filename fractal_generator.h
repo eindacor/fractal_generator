@@ -37,7 +37,6 @@ public:
 
 	void setMatrices();
 
-	mat4 generateInterpolatedMatrix(int index) const;
 	vec4 generateInterpolatedColor(int front_index, int back_index) const;
 	float generateInterpolatedSize(int index) const;
 
@@ -46,6 +45,7 @@ public:
 	void generateFractalWithRefresh();
 	void generateFractalFromPointSequenceWithRefresh();
 
+	void enableRefreshMode() { refresh_loaded = true; }
 	void setRefreshValue(int value) { refresh_value = value; }
 
 	void renderFractal(const int &image_width, const int &image_height, const int &matrix_sequence_count);
@@ -116,8 +116,8 @@ private:
 	float interpolation_state = 0.0f;
 	float interpolation_increment = 0.02f; // original 0.02f
 	bool smooth_render = true;
-	color_palette palette_front = DEFAULT_COLOR_PALETTE;
-	color_palette palette_back = DEFAULT_COLOR_PALETTE;
+	color_palette palette_front = RANDOM_PALETTE;
+	color_palette palette_back = RANDOM_PALETTE;
 	color_palette random_palette_front = DEFAULT_COLOR_PALETTE;
 	color_palette random_palette_back = DEFAULT_COLOR_PALETTE;
 	int background_front_index = 0;
@@ -159,8 +159,6 @@ private:
 		vec4 &starting_color,
 		float &starting_size,
 		int matrix_index,
-		const vec4 &matrix_color,
-		const float &point_size,
 		vector<float> &points);
 
 	void addNewPoint(

@@ -221,6 +221,7 @@ void fractal_generator::setMatrices()
 	translate_weight = int(mc.getRandomFloatInRange(4, 6));
 	rotate_weight = int(mc.getRandomFloatInRange(2, 6));
 	scale_weight = int(mc.getRandomFloatInRange(1, 3));
+	scale_weight = 0;
 
 	for (int i = 0; i < vertex_count; i++)
 	{
@@ -360,14 +361,6 @@ void fractal_generator::printMatrices() const
 	cout << "------------------" << endl;
 }
 
-mat4 fractal_generator::generateInterpolatedMatrix(int index) const
-{
-	mat4 random_matrix_front = matrices_front.at(index).second;
-	mat4 random_matrix_back = matrices_back.at(index).second;
-
-	return (random_matrix_front * interpolation_state) + (random_matrix_back * (1.0f - interpolation_state));
-}
-
 vec4 fractal_generator::generateInterpolatedColor(int front_index, int back_index) const
 {
 	vec4 matrix_color_front = colors_front.at(front_index);
@@ -411,7 +404,7 @@ void fractal_generator::generateFractalFromPointSequence()
 		for (int n = 0; n < preloaded_sequence.size(); n++)
 		{
 			vec4* new_point = &preloaded_sequence.at(n);
-			addNewPointAndIterate(*new_point, point_color, starting_size, random_index, transformation_color, transformation_size, points);
+			addNewPointAndIterate(*new_point, point_color, starting_size, random_index, points);
 		}
 	}
 
@@ -439,7 +432,7 @@ void fractal_generator::generateFractal()
 		vec4 transformation_color = generateInterpolatedColor(matrix_index, matrix_index);
 		float transformation_size = generateInterpolatedSize(matrix_index);
 
-		addNewPointAndIterate(starting_point, point_color, starting_size, matrix_index, transformation_color, transformation_size, points);
+		addNewPointAndIterate(starting_point, point_color, starting_size, matrix_index, points);
 	}
 
 	bufferData(points);
@@ -454,33 +447,39 @@ void fractal_generator::generateFractalWithRefresh()
 
 	int num_matrices = matrices_front.size();
 
+	mc.seed(generation_seed);
+
 	for (int i = 0; i < vertex_count && num_matrices > 0; i++)
 	{
-		vec4 point_color(0.0f, 0.0f, 0.0f, 0.0f);
+		vec4 point_color(1.0f, 1.0f, 1.0f, 1.0f);
 		vec4 new_point = origin;
 		float new_size = 0.0f;
 
 		for (int n = 0; n < refresh_value; n++)
 		{
-			int matrix_index = smooth_render ? matrix_sequence.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
-
-			vec4 transformation_color = generateInterpolatedColor(matrix_index, matrix_index);
-			float transformation_size = generateInterpolatedSize(matrix_index);
+			int matrix_index = int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
 
 			mat4 matrix_front = matrices_front.at(matrix_index).second;
 			mat4 matrix_back = matrices_back.at(matrix_index).second;
 			vec4 point_front = matrix_front * new_point;
 			vec4 point_back = matrix_back * new_point;
 
+			vec4 matrix_color_front = colors_front.at(matrix_index);
+			vec4 matrix_color_back = colors_back.at(matrix_index);
+
+			float point_size_front = sizes_front.at(matrix_index);
+			float point_size_back = sizes_back.at(matrix_index);
+
 			interpolation_state = glm::clamp(interpolation_state, 0.0f, 1.0f);
 
-			new_point += (point_front * interpolation_state) + (point_back * (1.0f - interpolation_state));
+			new_point = (point_front * interpolation_state) + (point_back * (1.0f - interpolation_state));
+			vec4 transformation_color = (matrix_color_front * interpolation_state) + (matrix_color_back * (1.0f - interpolation_state));
+			float transformation_size = (point_size_front * interpolation_state) + (point_size_back * (1.0f - interpolation_state));
 
 			point_color += transformation_color;
 			new_size += transformation_size;
 		}
 
-		new_point /= (float)refresh_value;
 		point_color /= (float)refresh_value;
 		new_size /= (float)refresh_value;
 
@@ -666,22 +665,24 @@ void fractal_generator::addNewPointAndIterate(
 	vec4 &starting_color,
 	float &starting_size,
 	int matrix_index,
-	const vec4 &matrix_color,
-	const float &point_size,
 	vector<float> &points)
 {
 	mat4 matrix_front = matrices_front.at(matrix_index).second;
 	mat4 matrix_back = matrices_back.at(matrix_index).second;
-
 	vec4 point_front = matrix_front * starting_point;
 	vec4 point_back = matrix_back * starting_point;
+
+	vec4 matrix_color_front = (starting_color + colors_front.at(matrix_index)) / 2.0f;
+	vec4 matrix_color_back = (starting_color + colors_back.at(matrix_index)) / 2.0f;
+
+	float point_size_front = (starting_size + sizes_front.at(matrix_index)) / 2.0f;
+	float point_size_back = (starting_size + sizes_back.at(matrix_index)) / 2.0f;
 
 	interpolation_state = glm::clamp(interpolation_state, 0.0f, 1.0f);
 
 	starting_point = (point_front * interpolation_state) + (point_back * (1.0f - interpolation_state));
-
-	starting_color = (starting_color + matrix_color) / 2.0f;
-	starting_size = (starting_size + point_size) / 2.0f;
+	starting_color = (matrix_color_front * interpolation_state) + (matrix_color_back * (1.0f - interpolation_state));
+	starting_size = (point_size_front * interpolation_state) + (point_size_back * (1.0f - interpolation_state));
 
 	vec4 point_to_add = starting_point;
 
@@ -964,13 +965,13 @@ void fractal_generator::tickAnimation() {
 
 	reverse ? interpolation_state -= actual_increment : interpolation_state += actual_increment;
 
-	if (interpolation_state < 0.0f)
+	if (interpolation_state <= 0.0f)
 	{
 		interpolation_state = 1.0f;
 		swapMatrices();
 	}
 
-	else if (interpolation_state > 1.0f)
+	else if (interpolation_state >= 1.0f)
 	{
 		interpolation_state = 0.0f;
 		swapMatrices();
