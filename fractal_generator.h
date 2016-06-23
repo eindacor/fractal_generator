@@ -35,7 +35,7 @@ public:
 
 	string getSeed() const { return base_seed; }
 
-	void setMatrices(const int &num_matrices);
+	void setMatrices();
 
 	mat4 generateInterpolatedMatrix(int index) const;
 	vec4 generateInterpolatedColor(int front_index, int back_index) const;
@@ -86,6 +86,7 @@ public:
 private:
 	string base_seed;
 	string generation_seed;
+	vector<unsigned int> matrix_sequence;
 	vector< pair<string, mat4> > matrices_front;
 	vector< pair<string, mat4> > matrices_back;
 	vector<vec4> colors_front;
@@ -129,6 +130,7 @@ private:
 	float alpha_max;
 	signed int generation = 0;
 	bool reverse = false;
+	bool print_context_on_swap = false;
 
 	// current gen parameters
 	bool refresh_loaded;

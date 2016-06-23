@@ -11,14 +11,9 @@ fractal_generator::fractal_generator(
 	mc.seed(generation_seed);
 	color_man.seed(generation_seed);
 
-	int num_matrices = int(mc.getRandomFloatInRange(2, 7));
-	translate_weight = int(mc.getRandomFloatInRange(2, 6));
-	rotate_weight = int(mc.getRandomFloatInRange(2, 6));
-	scale_weight = int(mc.getRandomFloatInRange(1, 3));
-
 	context = con;
 	is_2D = two_dimensional;
-	setMatrices(num_matrices);
+	setMatrices();
 	initialized = false;
 
 	glEnable(GL_PROGRAM_POINT_SIZE);
@@ -38,14 +33,9 @@ fractal_generator::fractal_generator(
 	mc.seed(generation_seed);
 	color_man.seed(generation_seed);
 
-	int num_matrices = int(mc.getRandomFloatInRange(2, 7));
-	translate_weight = int(mc.getRandomFloatInRange(2, 6));
-	rotate_weight = int(mc.getRandomFloatInRange(2, 6));
-	scale_weight = int(mc.getRandomFloatInRange(1, 3));
-
 	context = con;
 	is_2D = two_dimensional;
-	setMatrices(num_matrices);
+	setMatrices();
 	initialized = false;
 
 	glEnable(GL_PROGRAM_POINT_SIZE);
@@ -224,8 +214,19 @@ vector<float> fractal_generator::generateSizeVector(const int &count) const
 	return size_vector;
 }
 
-void fractal_generator::setMatrices(const int &num_matrices)
+// this method is run once and only once per fractal gen object
+void fractal_generator::setMatrices()
 {
+	int num_matrices = int(mc.getRandomFloatInRange(3, 7));
+	translate_weight = int(mc.getRandomFloatInRange(4, 6));
+	rotate_weight = int(mc.getRandomFloatInRange(2, 6));
+	scale_weight = int(mc.getRandomFloatInRange(1, 3));
+
+	for (int i = 0; i < vertex_count; i++)
+	{
+		matrix_sequence.push_back(int(mc.getRandomFloatInRange(0.0f, float(num_matrices))));
+	}
+
 	int random_palette_index = int(mc.getRandomFloatInRange(0.0f, float(DEFAULT_COLOR_PALETTE)));
 	palette_front = color_palette(random_palette_index);
 	palette_back = color_palette(random_palette_index);
@@ -315,7 +316,8 @@ void fractal_generator::swapMatrices()
 		sizes_back = generateSizeVector(matrices_front.size());
 	}
 
-	printContext();
+	if (print_context_on_swap)
+		printContext();
 }
 
 void fractal_generator::changeDirection()
@@ -418,9 +420,6 @@ void fractal_generator::generateFractalFromPointSequence()
 
 void fractal_generator::generateFractal()
 {
-	if (smooth_render)
-		mc.seed(generation_seed);
-
 	refresh_loaded = false;
 	sequence_loaded = false;
 
@@ -435,12 +434,12 @@ void fractal_generator::generateFractal()
 
 	for (int i = 0; i < vertex_count && num_matrices > 0; i++)
 	{
-		int random_index = int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+		int matrix_index = smooth_render ? matrix_sequence.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
 		
-		vec4 transformation_color = generateInterpolatedColor(random_index, random_index);
-		float transformation_size = generateInterpolatedSize(random_index);
+		vec4 transformation_color = generateInterpolatedColor(matrix_index, matrix_index);
+		float transformation_size = generateInterpolatedSize(matrix_index);
 
-		addNewPointAndIterate(starting_point, point_color, starting_size, random_index, transformation_color, transformation_size, points);
+		addNewPointAndIterate(starting_point, point_color, starting_size, matrix_index, transformation_color, transformation_size, points);
 	}
 
 	bufferData(points);
@@ -448,9 +447,6 @@ void fractal_generator::generateFractal()
 
 void fractal_generator::generateFractalWithRefresh()
 {
-	if (smooth_render)
-		mc.seed(generation_seed);
-
 	sequence_loaded = false;
 
 	vector<float> points;
@@ -466,14 +462,13 @@ void fractal_generator::generateFractalWithRefresh()
 
 		for (int n = 0; n < refresh_value; n++)
 		{
-			int random_index = int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+			int matrix_index = smooth_render ? matrix_sequence.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
 
-			vec4 transformation_color = generateInterpolatedColor(random_index, random_index);
-			float transformation_size = generateInterpolatedSize(random_index);
+			vec4 transformation_color = generateInterpolatedColor(matrix_index, matrix_index);
+			float transformation_size = generateInterpolatedSize(matrix_index);
 
-			mat4 matrix_front = matrices_front.at(random_index).second;
-			mat4 matrix_back = matrices_back.at(random_index).second;
-
+			mat4 matrix_front = matrices_front.at(matrix_index).second;
+			mat4 matrix_back = matrices_back.at(matrix_index).second;
 			vec4 point_front = matrix_front * new_point;
 			vec4 point_back = matrix_back * new_point;
 
@@ -518,16 +513,20 @@ void fractal_generator::generateFractalFromPointSequenceWithRefresh()
 
 		for (int n = 0; n < refresh_value; n++)
 		{
-			int random_index = (int)(mc.getRandomUniform() * num_matrices);
+			int matrix_index = smooth_render ? matrix_sequence.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
 
-			mat4 transformation_matrix = generateInterpolatedMatrix(random_index);
-			vec4 transformation_color = generateInterpolatedColor(random_index, random_index);
-			float transformation_size = generateInterpolatedSize(random_index);
+			vec4 transformation_color = generateInterpolatedColor(matrix_index, matrix_index);
+			float transformation_size = generateInterpolatedSize(matrix_index);
+
+			mat4 matrix_front = matrices_front.at(matrix_index).second;
+			mat4 matrix_back = matrices_back.at(matrix_index).second;
 
 			for (int c = 0; c < preloaded_sequence.size(); c++)
 			{
 				vec4 *target_point = &preloaded_sequence.at(c);
-				*target_point = transformation_matrix * *target_point;
+				vec4 point_front = matrix_front * *target_point;
+				vec4 point_back = matrix_back * *target_point;
+				*target_point = (point_front * interpolation_state) + (point_back * (1.0f - interpolation_state));
 			}
 
 			point_color += transformation_color;
@@ -686,23 +685,23 @@ void fractal_generator::addNewPointAndIterate(
 
 	vec4 point_to_add = starting_point;
 
-	float max_length = 50.0f;
-	float min_length = 0.3f;
+	//float max_length = 50.0f;
+	//float min_length = 0.3f;
 
-	//scale points to ensure all points fall within clipping plane
-	if (glm::length(point_to_add) > max_length)
-	{
-		float scale_factor = max_length / glm::length(point_to_add);
-		mat4 scale_modifier = glm::scale(mat4(1.0f), vec3(scale_factor, scale_factor, scale_factor));
-		point_to_add = scale_modifier * point_to_add;
-	}
+	////scale points to ensure all points fall within clipping plane
+	//if (glm::length(point_to_add) > max_length)
+	//{
+	//	float scale_factor = max_length / glm::length(point_to_add);
+	//	mat4 scale_modifier = glm::scale(mat4(1.0f), vec3(scale_factor, scale_factor, scale_factor));
+	//	point_to_add = scale_modifier * point_to_add;
+	//}
 
-	if (glm::length(point_to_add) < min_length)
-	{
-		float scale_factor = min_length / glm::length(point_to_add);
-		mat4 scale_modifier = glm::scale(mat4(1.0f), vec3(scale_factor, scale_factor, scale_factor));
-		point_to_add = scale_modifier * point_to_add;
-	}
+	//if (glm::length(point_to_add) < min_length)
+	//{
+	//	float scale_factor = min_length / glm::length(point_to_add);
+	//	mat4 scale_modifier = glm::scale(mat4(1.0f), vec3(scale_factor, scale_factor, scale_factor));
+	//	point_to_add = scale_modifier * point_to_add;
+	//}
 
 	if (points.size() == 0)
 	{
@@ -748,23 +747,23 @@ void fractal_generator::addNewPoint(
 {
 	vec4 point_to_add = point;
 
-	float max_length = 50.0f;
-	float min_length = 0.3f;
+	//float max_length = 50.0f;
+	//float min_length = 0.3f;
 
-	//scale points to ensure all points fall within clipping plane
-	if (glm::length(point_to_add) > max_length)
-	{
-		float scale_factor = max_length / glm::length(point_to_add);
-		mat4 scale_modifier = glm::scale(mat4(1.0f), vec3(scale_factor, scale_factor, scale_factor));
-		point_to_add = scale_modifier * point_to_add;
-	}
+	////scale points to ensure all points fall within clipping plane
+	//if (glm::length(point_to_add) > max_length)
+	//{
+	//	float scale_factor = max_length / glm::length(point_to_add);
+	//	mat4 scale_modifier = glm::scale(mat4(1.0f), vec3(scale_factor, scale_factor, scale_factor));
+	//	point_to_add = scale_modifier * point_to_add;
+	//}
 
-	if (glm::length(point_to_add) < min_length)
-	{
-		float scale_factor = min_length / glm::length(point_to_add);
-		mat4 scale_modifier = glm::scale(mat4(1.0f), vec3(scale_factor, scale_factor, scale_factor));
-		point_to_add = scale_modifier * point_to_add;
-	}
+	//if (glm::length(point_to_add) < min_length)
+	//{
+	//	float scale_factor = min_length / glm::length(point_to_add);
+	//	mat4 scale_modifier = glm::scale(mat4(1.0f), vec3(scale_factor, scale_factor, scale_factor));
+	//	point_to_add = scale_modifier * point_to_add;
+	//}
 
 	if (points.size() == 0)
 	{
@@ -953,6 +952,9 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 	if (keys->checkPress(GLFW_KEY_APOSTROPHE, false))
 		changeDirection();
+
+	if (keys->checkPress(GLFW_KEY_BACKSLASH, false))
+		print_context_on_swap = !print_context_on_swap;
 }
 
 void fractal_generator::tickAnimation() {
