@@ -48,7 +48,7 @@ private:
 
 	float translation_adjustment = 1.0f;
 	float scale_min = 0.95f;
-	float scale_max = 1.0f;
+	float scale_max = 1.05f;
 };
 
 #endif

@@ -219,9 +219,8 @@ void fractal_generator::setMatrices()
 {
 	int num_matrices = int(mc.getRandomFloatInRange(3, 7));
 	translate_weight = int(mc.getRandomFloatInRange(4, 6));
-	rotate_weight = int(mc.getRandomFloatInRange(2, 6));
+	rotate_weight = int(mc.getRandomFloatInRange(4, 6));
 	scale_weight = int(mc.getRandomFloatInRange(1, 3));
-	scale_weight = 0;
 
 	for (int i = 0; i < vertex_count; i++)
 	{
