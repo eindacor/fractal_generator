@@ -167,7 +167,7 @@ vector<vec4> fractal_generator::generateColorVector(const vec4 &seed, color_pale
 		color_man.randomizeAlpha(color_set, alpha_min, alpha_max);
 
 	if (randomize_lightness)
-		color_man.modifyLightness(color_set, mc.getRandomFloatInRange(0.3, 2.0f));
+		color_man.modifyLightness(color_set, mc.getRandomFloatInRange(0.3, 1.2f));
 
 	return color_set;
 }
@@ -335,7 +335,14 @@ vec4 fractal_generator::generateInterpolatedColor(int front_index, int back_inde
 	vec4 matrix_color_front = colors_front.at(front_index);
 	vec4 matrix_color_back = colors_back.at(back_index);
 
-	return (matrix_color_front * interpolation_state) + (matrix_color_back * (1.0f - interpolation_state));
+	vec4 interpolated = (matrix_color_front * interpolation_state) + (matrix_color_back * (1.0f - interpolation_state));
+
+	interpolated.r = glm::clamp(interpolated.r, 0.0f, 1.0f);
+	interpolated.g = glm::clamp(interpolated.g, 0.0f, 1.0f);
+	interpolated.b = glm::clamp(interpolated.b, 0.0f, 1.0f);
+	interpolated.a = glm::clamp(interpolated.a, 0.0f, 1.0f);
+
+	return interpolated;
 }
 
 float fractal_generator::generateInterpolatedSize(int index) const
