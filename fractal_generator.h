@@ -57,9 +57,9 @@ public:
 	void checkKeys(const shared_ptr<key_handler> &keys);
 	void drawFractal() const;
 
-	void invertColor(vec4 &original);
 	void invertColors();
-	void fractal_generator::newColors();
+	void newColors();
+	void updateBackground();
 	void regenerateFractal();
 
 	vec4 getSampleColor(const int &samples, const vector<vec4> &color_pool) const;
@@ -77,6 +77,8 @@ public:
 	void toggleSmooth() { smooth_render = !smooth_render; }
 
 	void cycleColorPalette();
+
+	void loadPointSequence(const vector<vec4> &sequence);
 
 	void printContext();
 
@@ -133,11 +135,11 @@ private:
 	bool print_context_on_swap = false;
 
 	// current gen parameters
-	bool refresh_loaded;
+	bool refresh_loaded = false;
 	int refresh_value = 10;
 	bool is_2D;
 	vec4 origin = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	bool sequence_loaded;
+	bool sequence_loaded = false;
 	vector<vec4> preloaded_sequence;
 
 	float fractal_scale = 1.0f;

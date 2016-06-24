@@ -71,7 +71,7 @@ void getSettings(string &seed, bool &refresh_enabled, int &refresh_value, bool &
 		cout << "refresh iterations: ";
 		std::getline(std::cin, value);
 		cout << endl;
-		refresh_value = (value == "" || value == "\n" || std::stoi(value) <= 0 || std::stoi(value) >= 50) ? 10 : std::stoi(value);
+		refresh_value = (value == "" || value == "\n" || std::stoi(value) <= 0 || std::stoi(value) >= 50) ? 5 : std::stoi(value);
 	}
 
 	string two_dimensional_enabled_input;
@@ -106,7 +106,7 @@ int main()
 {
 	string seed = "";
 	bool refresh_enabled = false;
-	int refresh_value = 10;
+	int refresh_value = 5;
 	bool two_dimensional = false;
 	int num_points = 10000;
 	int window_width = 1366;
@@ -155,11 +155,8 @@ int main()
 	if (refresh_enabled)
 	{
 		generator->enableRefreshMode();
-		generator->generateFractalWithRefresh();
 		generator->setRefreshValue(refresh_value);
 	}
-
-	else generator->generateFractal();
 
 	glfwSetTime(0);
 	float render_fps = 60.0f;

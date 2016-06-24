@@ -166,7 +166,7 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	glDisable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST);
 
-	glUniform1f(context->getShaderGLint("point_size_scale"), image_scale * 2.0f);
+	glUniform1f(context->getShaderGLint("point_size_scale"), image_scale);
 	glLineWidth(image_scale * 2.0f * fg.getLineWidth());
 	fg.drawFractal();
 	glLineWidth(fg.getLineWidth());
