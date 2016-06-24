@@ -21,16 +21,6 @@ public:
 		int num_points,
 		bool two_dimensional);
 
-	//fractal_generator(
-	//	const string &randomization_seed,
-	//	const shared_ptr<jep::ogl_context> &con, 
-	//	const int &num_matrices, 
-	//	const int &translate, 
-	//	const int &rotate, 
-	//	const int &scale, 
-	//	int num_points,
-	//	bool two_dimensional);
-
 	~fractal_generator() { glDeleteVertexArrays(1, &pg_VAO); glDeleteBuffers(1, &pg_VBO); }
 
 	string getSeed() const { return base_seed; }
