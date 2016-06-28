@@ -2,7 +2,8 @@
 
 matrix_creator::matrix_creator()
 {
-	rng.seed(clock());
+	std::chrono::time_point<std::chrono::system_clock> seed = std::chrono::system_clock::now();
+	rng.seed(seed.time_since_epoch().count());
 	boost::uniform_real<float> random_range(0, 1);
 	uniform_generator = new boost::variate_generator<boost::mt19937&, boost::uniform_real<float> >(rng, random_range);
 }

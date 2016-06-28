@@ -42,7 +42,7 @@ void main()\n\
 }\n\
 ";
 
-void getSettings(string &seed, bool &refresh_enabled, int &refresh_value, bool &two_dimensional, int &num_points, int &window_width, int &window_height, int &num_fractals)
+void getSettings(string &seed, bool &refresh_enabled, int &refresh_value, bool &two_dimensional, int &num_points, int &window_width, int &window_height)
 {
 	string use_defaults;
 	cout << "use default settings?: ";
@@ -87,13 +87,6 @@ void getSettings(string &seed, bool &refresh_enabled, int &refresh_value, bool &
 	cout << endl;
 	num_points = (point_count == "" || point_count == "\n" || std::stoi(point_count) <= 0) ? 10000 : std::stoi(point_count);
 
-	string fractal_count;
-	cout << "fractal_count: ";
-	std::getline(std::cin, fractal_count);
-	cout << endl;
-	num_fractals = (fractal_count == "" || fractal_count == "\n" || std::stoi(fractal_count) <= 0 || std::stoi(fractal_count) > 10) ? 1 : std::stoi(fractal_count);
-	num_points /= num_fractals;
-
 	string window_width_input;
 	cout << "window width: ";
 	std::getline(std::cin, window_width_input);
@@ -120,27 +113,20 @@ int main()
 	int window_height = 768;
 	bool auto_tracking = false;
 	bool smooth = true;
-	int num_fractals = 1;
 	matrix_creator mc;
 
-	getSettings(seed, refresh_enabled, refresh_value, two_dimensional, num_points, window_width, window_height, num_fractals);
+	getSettings(seed, refresh_enabled, refresh_value, two_dimensional, num_points, window_width, window_height);
+
+	if (seed.size() == 0)
+		seed = mc.generateAlphanumericString(32);
 
 	float eye_level = 0.0f;
 	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, window_width, window_height, true));
 
-	vector< shared_ptr<key_handler> > key_sets;
-	vector< shared_ptr<fractal_generator> > fractal_container;
+	shared_ptr<fractal_generator> generator(new fractal_generator(seed, context, num_points, two_dimensional));
+	shared_ptr<key_handler> keys(new key_handler(context));
 
-	for (int i = 0; i < num_fractals; i++)
-	{
-		shared_ptr<key_handler> keys_to_add(new key_handler(context));
-		key_sets.push_back(keys_to_add);
-
-		shared_ptr<fractal_generator> generator_to_add(seed.size() == 0 ? new fractal_generator(mc.generateAlphanumericString(32), context, num_points, two_dimensional) : new fractal_generator(seed + "_" + std::to_string(i), context, num_points, two_dimensional));
-		fractal_container.push_back(generator_to_add);
-	}
-
-	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(key_sets.at(0), context, vec3(0.0f, eye_level, 2.0f), 45.0f));
+	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 2.0f), 45.0f));
 
 	vector<vec4> point_sequence = {
 		vec4(-1.0f, -1.0f, 0.0f, 1.0f),
@@ -166,11 +152,8 @@ int main()
 
 	if (refresh_enabled)
 	{
-		for (auto &fractal_ptr : fractal_container)
-		{
-			fractal_ptr->enableRefreshMode();
-			fractal_ptr->setRefreshValue(refresh_value);
-		}	
+		generator->enableRefreshMode();
+		generator->setRefreshValue(refresh_value);
 	}
 
 	glfwSetTime(0);
@@ -185,12 +168,7 @@ int main()
 	bool reverse = false;
 	bool growth_paused = false;
 
-	for (auto &fractal_ptr : fractal_container)
-	{
-		fractal_ptr->printContext();
-	}
-
-	cout << "num fractals: " << fractal_container.size() << endl;
+	generator->printContext();
 
 	while (!finished)
 	{
@@ -216,78 +194,72 @@ int main()
 
 			if (!paused)
 			{
-				for (auto &fractal_ptr : fractal_container)
-				{
-					fractal_ptr->tickAnimation();
-				}
+				generator->tickAnimation();
 			}
 
 			if (auto_tracking && !paused)
 			{
-				float average_delta = fractal_container.at(0)->getAverageDelta();
-				camera->setPosition(fractal_container.at(0)->getFocalPoint() + vec3(average_delta * 6.0f));
-				camera->setFocus(fractal_container.at(0)->getFocalPoint());
+				float average_delta = generator->getAverageDelta();
+				camera->setPosition(generator->getFocalPoint() + vec3(average_delta * 6.0f));
+				camera->setFocus(generator->getFocalPoint());
 			}
 
 			camera->updateCamera();
 			camera->setMVP(context, mat4(1.0f), jep::NORMAL);
 
-			for (int i = 0; i < fractal_container.size(); i++)
-			{
-				fractal_container.at(i)->drawFractal();
-				fractal_container.at(i)->checkKeys(key_sets.at(i));
-			}
+			generator->drawFractal();
+			generator->checkKeys(keys);
 
-			if (key_sets.at(0)->checkPress(GLFW_KEY_0, false))
+			if (keys->checkPress(GLFW_KEY_0, false))
 			{
 				auto_tracking = !auto_tracking;
 				auto_tracking ? cout << "auto tracking enabled" << endl : cout << "auto tracking disabled" << endl;
 			}
 
-			if (key_sets.at(0)->checkPress(GLFW_KEY_RIGHT_BRACKET), false)
+			if (keys->checkPress(GLFW_KEY_RIGHT_BRACKET), false)
 			{
 				camera->setPosition(vec3(0.0f, eye_level, 2.0f));
 				camera->setFocus(vec3(0.0f, 0.0f, 0.0f));
 			}
 
 			//TODO see why this only works when include_hold is enabled
-			if (key_sets.at(0)->checkPress(GLFW_KEY_ESCAPE))
+			if (keys->checkPress(GLFW_KEY_ESCAPE))
 				finished = true;
 
-			if (key_sets.at(0)->checkPress(GLFW_KEY_J, false))
+			if (keys->checkPress(GLFW_KEY_J, false))
 				show_growth = !show_growth;
 
-			if (key_sets.at(0)->checkPress(GLFW_KEY_G, false))
+			if (keys->checkPress(GLFW_KEY_G, false))
 			{
 				if (counter_increment != 100)
 					counter_increment *= 10;
 			}
 
-			if (key_sets.at(0)->checkPress(GLFW_KEY_F, false))
+			if (keys->checkPress(GLFW_KEY_F, false))
 			{
 				if (counter_increment != 1)
 					counter_increment /= 10;
 			}
 
-			if (key_sets.at(0)->checkPress(GLFW_KEY_H, false))
+			if (keys->checkPress(GLFW_KEY_H, false))
 				reverse = !reverse;
 
-			if (key_sets.at(0)->checkPress(GLFW_KEY_R, false))
+			if (keys->checkPress(GLFW_KEY_R, false))
 			{
 				frame_counter = 0;
 				show_growth = true;
 				paused = false;
 			}
 
-			if (key_sets.at(0)->checkPress(GLFW_KEY_T, false))
+			if (keys->checkPress(GLFW_KEY_T, false))
 				paused = !paused;
 
 			context->swapBuffers();
 
-			if (key_sets.at(0)->checkPress(GLFW_KEY_X, false))
-				saveImage(8.0f, *fractal_container.at(0), context);
+			if (keys->checkPress(GLFW_KEY_X, false))
+				saveImage(8.0f, *generator, context);
 
-			if (key_sets.at(0)->checkPress(GLFW_KEY_SLASH, false))
+			if (keys->checkPress(GLFW_KEY_SLASH, false))
 				growth_paused = !growth_paused;
 
 			glfwSetTime(0.0f);
