@@ -125,10 +125,12 @@ private:
 	signed int generation = 0;
 	bool reverse = false;
 	bool print_context_on_swap = false;
+	signed int random_refresh_min = 4;
+	signed int random_refresh_max = 10;
 
 	// current gen parameters
 	bool refresh_loaded = false;
-	int refresh_value = 10;
+	int refresh_value = 5;
 	bool is_2D;
 	vec4 origin = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	bool sequence_loaded = false;

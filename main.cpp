@@ -71,7 +71,10 @@ void getSettings(string &seed, bool &refresh_enabled, int &refresh_value, bool &
 		cout << "refresh iterations: ";
 		std::getline(std::cin, value);
 		cout << endl;
-		refresh_value = (value == "" || value == "\n" || std::stoi(value) <= 0 || std::stoi(value) >= 50) ? 5 : std::stoi(value);
+		if (value == "-1")
+			refresh_value = -1;
+
+		else refresh_value = (value == "" || value == "\n" || std::stoi(value) <= 0 || std::stoi(value) >= 50) ? 5 : std::stoi(value);
 	}
 
 	string two_dimensional_enabled_input;
