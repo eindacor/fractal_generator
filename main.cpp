@@ -216,7 +216,7 @@ int main()
 				auto_tracking ? cout << "auto tracking enabled" << endl : cout << "auto tracking disabled" << endl;
 			}
 
-			if (keys->checkPress(GLFW_KEY_RIGHT_BRACKET), false)
+			if (keys->checkPress(GLFW_KEY_9, false))
 			{
 				camera->setPosition(vec3(0.0f, eye_level, 2.0f));
 				camera->setFocus(vec3(0.0f, 0.0f, 0.0f));
@@ -257,7 +257,7 @@ int main()
 			context->swapBuffers();
 
 			if (keys->checkPress(GLFW_KEY_X, false))
-				saveImage(8.0f, *generator, context);
+				saveImage(4.0f, *generator, context);
 
 			if (keys->checkPress(GLFW_KEY_SLASH, false))
 				growth_paused = !growth_paused;

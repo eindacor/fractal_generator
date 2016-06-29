@@ -75,6 +75,8 @@ public:
 	vec3 getFocalPoint() const { return focal_point; }
 	float getAverageDelta() const { return average_delta; }
 
+	signed int getGeneration() const { return generation; }
+
 private:
 	string base_seed;
 	string generation_seed;
@@ -106,7 +108,7 @@ private:
 	bool enable_triangles = false;
 	bool enable_lines = false;
 	float interpolation_state = 0.0f;
-	float interpolation_increment = 0.02f; // original 0.02f
+	float interpolation_increment = 0.02f;
 	bool smooth_render = true;
 	color_palette palette_front = RANDOM_PALETTE;
 	color_palette palette_back = RANDOM_PALETTE;

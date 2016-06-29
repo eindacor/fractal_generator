@@ -7,9 +7,6 @@ fractal_generator::fractal_generator(
 {
 	vertex_count = num_points;
 	base_seed = mc.generateAlphanumericString(32);
-	generation_seed = base_seed + "_" + std::to_string(generation);
-	mc.seed(generation_seed);
-	color_man.seed(generation_seed);
 
 	context = con;
 	is_2D = two_dimensional;
@@ -29,9 +26,6 @@ fractal_generator::fractal_generator(
 {
 	vertex_count = num_points;
 	base_seed = randomization_seed;
-	generation_seed = base_seed + "_" + std::to_string(generation);
-	mc.seed(generation_seed);
-	color_man.seed(generation_seed);
 
 	context = con;
 	is_2D = two_dimensional;
@@ -187,10 +181,19 @@ vector<float> fractal_generator::generateSizeVector(const int &count) const
 // this method is run once and only once per fractal gen object
 void fractal_generator::setMatrices()
 {
-	int num_matrices = int(mc.getRandomFloatInRange(3, 7));
+	int num_matrices = int(mc.getRandomFloatInRange(2, 10));
+	translate_weight = int(mc.getRandomFloatInRange(1, 10));
+	rotate_weight = int(mc.getRandomFloatInRange(1, 10));
+	scale_weight = int(mc.getRandomFloatInRange(1, 10));
+
+	/*int num_matrices = int(mc.getRandomFloatInRange(3, 7));
 	translate_weight = int(mc.getRandomFloatInRange(4, 6));
 	rotate_weight = int(mc.getRandomFloatInRange(4, 6));
-	scale_weight = int(mc.getRandomFloatInRange(1, 3));
+	scale_weight = int(mc.getRandomFloatInRange(1, 3));*/
+
+	generation_seed = base_seed + "_" + std::to_string(generation);
+	mc.seed(generation_seed);
+	color_man.seed(generation_seed);
 
 	for (int i = 0; i < vertex_count; i++)
 	{
@@ -210,30 +213,33 @@ void fractal_generator::setMatrices()
 	colors_back.clear();
 	sizes_back.clear();
 
-	matrices_front = generateMatrixVector(num_matrices);
-	matrices_back = generateMatrixVector(num_matrices);
-
 	alpha_min = 0.5f;
 	alpha_max = 1.0f;
 
+	//front data set
+	matrices_front = generateMatrixVector(num_matrices);
 	seed_color_front = mc.getRandomVec4FromColorRanges(
 		0.0f, 1.0f,		// red range
 		0.0f, 1.0f,		// green range
 		0.0f, 1.0f,		// blue range
 		alpha_min, alpha_max		// alpha range
 		);
-
+	colors_front = generateColorVector(seed_color_front, palette_front, num_matrices, random_palette_front);
+	sizes_front = generateSizeVector(num_matrices);
+	
+	//back data set
+	generation++;
+	generation_seed = base_seed + "_" + std::to_string(generation);
+	mc.seed(generation_seed);
+	color_man.seed(generation_seed);
+	matrices_back = generateMatrixVector(num_matrices);
 	seed_color_back = mc.getRandomVec4FromColorRanges(
 		0.0f, 1.0f,		// red range
 		0.0f, 1.0f,		// green range
 		0.0f, 1.0f,		// blue range
 		alpha_min, alpha_max		// alpha range
 		);
-
-	colors_front = generateColorVector(seed_color_front, palette_front, num_matrices, random_palette_front);
 	colors_back = generateColorVector(seed_color_back, palette_back, num_matrices, random_palette_back);
-
-	sizes_front = generateSizeVector(num_matrices);
 	sizes_back = generateSizeVector(num_matrices);
 }
 
@@ -922,6 +928,21 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 	if (keys->checkPress(GLFW_KEY_BACKSLASH, false))
 		print_context_on_swap = !print_context_on_swap;
+
+	if (keys->checkPress(GLFW_KEY_RIGHT_BRACKET, true) || keys->checkPress(GLFW_KEY_LEFT_BRACKET, true)) 
+	{
+		float increment_min = .01f;
+		float increment_max = .5f;
+		float step_amount = .002f;
+
+		if (keys->checkPress(GLFW_KEY_RIGHT_BRACKET, true))
+			interpolation_increment += step_amount;
+
+		else interpolation_increment -= step_amount;
+
+		interpolation_increment = glm::clamp(interpolation_increment, increment_min, increment_max);
+		cout << "transition speed: " << interpolation_increment / increment_max << endl;
+	}
 }
 
 void fractal_generator::tickAnimation() {

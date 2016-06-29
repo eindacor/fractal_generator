@@ -178,7 +178,7 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	int nShot = 0;
 	while (nShot < 64)
 	{
-		output_filename = fg.getSeed() + "_" + paddedValue(nShot, 3) + ".bmp";
+		output_filename = fg.getSeed() + "_" + std::to_string(fg.getGeneration()) + "_" + paddedValue(nShot, 3) + ".bmp";
 		file_check = fopen(output_filename.c_str(), "rb");
 		if (file_check == NULL) break;
 		else fclose(file_check);
