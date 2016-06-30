@@ -12,9 +12,11 @@ uniform mat4 MVP;\n\
 uniform mat4 MV;\n\
 uniform mat4 model_matrix;\n\
 uniform mat4 view_matrix;\n\
+uniform vec3 camera_position;\n\
 uniform mat4 projection_matrix;\n\
 uniform mat4 fractal_scale = mat4(1.0f);\n\
 uniform int enable_growth_animation;\n\
+uniform int lighting_enabled;\n\
 uniform int frame_count;\n\
 out vec4 fragment_color;\n\
 uniform float point_size_scale = 1.0f;\n\
@@ -24,11 +26,17 @@ void main()\n\
 	gl_PointSize = point_size * point_size_scale;\n\
 	gl_Position = MVP * fractal_scale * position;\n\
 	float alpha_value = (frame_count > gl_VertexID) || (enable_growth_animation == 0) ? color.a : 0.0f;\n\
+	fragment_color = vec4(color.rgb, alpha_value);\n\
+	if (lighting_enabled > 0)\n\
+	{\n\
+		float distance_from_camera = length(position - vec4(camera_position, 1.0));\n\
+		float distance_modifier = clamp(1.0f - (distance_from_camera / 30.0f), 0.0f, 1.0f);\n\
+		fragment_color = fragment_color * distance_modifier;\n\
+	}\n\
 	if (invert_colors > 0)\n\
 	{\n\
-		fragment_color = vec4(vec3(1.0) - color.rgb, alpha_value); \n\
+		fragment_color = vec4(vec3(1.0) - fragment_color.rgb, alpha_value); \n\
 	}\n\
-	else {fragment_color = vec4(color.rgb, alpha_value);}\n\
 }\n\
 ";
 
@@ -208,6 +216,8 @@ int main()
 			}
 
 			camera->updateCamera();
+			vec3 camera_pos = camera->getPosition();
+			glUniform3fv(context->getShaderGLint("camera_position"), 1, &camera_pos[0]);
 			camera->setMVP(context, mat4(1.0f), jep::NORMAL);
 
 			generator->drawFractal();

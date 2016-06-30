@@ -404,7 +404,7 @@ void fractal_generator::generateFractal()
 	int num_matrices = matrices_front.size();
 
 	vec4 starting_point = origin;
-	vec4 point_color(1.0f, 1.0f, 1.0f, 1.0f);
+	vec4 point_color = inverted ? vec4(0.0f, 0.0f, 0.0f, 1.0f) : vec4(1.0f);
 	float starting_size = 10.0;
 
 	for (int i = 0; i < vertex_count && num_matrices > 0; i++)
@@ -430,7 +430,7 @@ void fractal_generator::generateFractalWithRefresh()
 
 	for (int i = 0; i < vertex_count && num_matrices > 0; i++)
 	{
-		vec4 point_color(1.0f, 1.0f, 1.0f, 1.0f);
+		vec4 point_color = inverted ? vec4(0.0f, 0.0f, 0.0f, 1.0f) : vec4(1.0f);
 		vec4 new_point = origin;
 		float new_size = 10.0f;
 
@@ -946,6 +946,12 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		interpolation_increment = glm::clamp(interpolation_increment, increment_min, increment_max);
 		cout << "transition speed: " << interpolation_increment / increment_max << endl;
 	}
+
+	if (keys->checkPress(GLFW_KEY_8, false))
+	{
+		lighting_enabled = !lighting_enabled;
+		glUniform1i(context->getShaderGLint("lighting_enabled"), lighting_enabled ? 1 : 0);
+	}
 }
 
 void fractal_generator::tickAnimation() {
@@ -973,14 +979,20 @@ void fractal_generator::tickAnimation() {
 
 void fractal_generator::updateBackground()
 {
-	vec4 new_background = generateInterpolatedColor(background_front_index, background_back_index);
-	color_man.adjustLightness(new_background, 0.1f);
+	if (lighting_enabled)
+		inverted ? context->setBackgroundColor(vec4(1.0f, 1.0f, 1.0f, 1.0f)) : context->setBackgroundColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-	if (inverted)
-		new_background = vec4(1.0f) - new_background;
+	else
+	{
+		vec4 new_background = generateInterpolatedColor(background_front_index, background_back_index);
+		color_man.adjustLightness(new_background, 0.1f);
 
-	background_color = new_background;
-	context->setBackgroundColor(background_color);
+		if (inverted)
+			new_background = vec4(1.0f) - new_background;
+
+		background_color = new_background;
+		context->setBackgroundColor(background_color);
+	}
 }
 
 void fractal_generator::invertColors()

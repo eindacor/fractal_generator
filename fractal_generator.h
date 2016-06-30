@@ -127,6 +127,7 @@ private:
 	bool print_context_on_swap = false;
 	signed int random_refresh_min = 4;
 	signed int random_refresh_max = 10;
+	bool lighting_enabled = false;
 
 	// current gen parameters
 	bool refresh_loaded = false;
