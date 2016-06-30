@@ -181,6 +181,10 @@ vector<float> fractal_generator::generateSizeVector(const int &count) const
 // this method is run once and only once per fractal gen object
 void fractal_generator::setMatrices()
 {
+	generation_seed = base_seed + "_" + std::to_string(generation);
+	mc.seed(generation_seed);
+	color_man.seed(generation_seed);
+
 	int num_matrices = int(mc.getRandomFloatInRange(2, 10));
 	translate_weight = int(mc.getRandomFloatInRange(1, 10));
 	rotate_weight = int(mc.getRandomFloatInRange(1, 10));
@@ -190,10 +194,6 @@ void fractal_generator::setMatrices()
 	translate_weight = int(mc.getRandomFloatInRange(4, 6));
 	rotate_weight = int(mc.getRandomFloatInRange(4, 6));
 	scale_weight = int(mc.getRandomFloatInRange(1, 3));*/
-
-	generation_seed = base_seed + "_" + std::to_string(generation);
-	mc.seed(generation_seed);
-	color_man.seed(generation_seed);
 
 	for (int i = 0; i < vertex_count; i++)
 	{
@@ -426,7 +426,7 @@ void fractal_generator::generateFractalWithRefresh()
 	points.reserve(vertex_count * vertex_size);
 
 	int num_matrices = matrices_front.size();
-	signed int actual_refresh = refresh_value == -1 ? int(mc.getRandomFloatInRange(random_refresh_min, random_refresh_max)) : refresh_value;
+	signed int actual_refresh = refresh_value == -1 ? int(mc.getRandomFloatInRange(refresh_min, refresh_max)) : refresh_value;
 
 	for (int i = 0; i < vertex_count && num_matrices > 0; i++)
 	{
@@ -478,7 +478,7 @@ void fractal_generator::generateFractalFromPointSequenceWithRefresh()
 
 	int num_matrices = matrices_front.size();
 
-	signed int actual_refresh = refresh_value == -1 ? int(mc.getRandomFloatInRange(random_refresh_min, random_refresh_max)) : refresh_value;
+	signed int actual_refresh = refresh_value == -1 ? int(mc.getRandomFloatInRange(refresh_min, refresh_max)) : refresh_value;
 
 	for (int i = 0; i < vertex_count / preloaded_sequence.size() && num_matrices > 0; i++)
 	{
@@ -951,6 +951,18 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 	{
 		lighting_enabled = !lighting_enabled;
 		glUniform1i(context->getShaderGLint("lighting_enabled"), lighting_enabled ? 1 : 0);
+	}
+
+	if (refresh_value != refresh_min && refresh_value != -1 && keys->checkPress(GLFW_KEY_6, false))
+	{
+		refresh_value--;
+		cout << "refresh value: " << refresh_value << endl;
+	}
+
+	if (refresh_value != refresh_max && keys->checkPress(GLFW_KEY_7, false))
+	{
+		refresh_value == -1 ? refresh_value = refresh_min : refresh_value++;
+		cout << "refresh value: " << refresh_value << endl;
 	}
 }
 

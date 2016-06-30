@@ -125,8 +125,8 @@ private:
 	signed int generation = 0;
 	bool reverse = false;
 	bool print_context_on_swap = false;
-	signed int random_refresh_min = 4;
-	signed int random_refresh_max = 10;
+	signed int refresh_min = 3;
+	signed int refresh_max = 15;
 	bool lighting_enabled = false;
 
 	// current gen parameters

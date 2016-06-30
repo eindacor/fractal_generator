@@ -451,19 +451,19 @@ vector<vec4> color_manager::generatePaletteFromSeed(const vec4 &seed, color_pale
 		// random_palette_type + 1 to ensure DEFAULT_COLOR_PALETTE is possible and RANDOM_PALETTE cannot be called recursively
 		int random_palette_type = int(mc.getRandomFloatInRange(0.0f, float(DEFAULT_COLOR_PALETTE))) + 1;		
 		random_palette_selected = color_palette(random_palette_type);
-		return generatePaletteFromSeed(seed, color_palette(random_palette_type), count, random_palette_selected);
+		color_vector = generatePaletteFromSeed(seed, color_palette(random_palette_type), count, random_palette_selected);
 	}
-	case PRIMARY_PALETTE: return getPrimaryPalette(count);
-	case SECONDARY_PALETTE: return getSecondaryPalette(count);
-	case TERTIARY_PALETTE: return getTertiaryPalette(count);
-	case ANALOGOUS_PALETTE: return getAnalogousPalette(seed, count);
-	case RANDOM_COLORS: return getRandomPalette(count);
-	case MONOCHROMATIC_PALETTE: return getMonochromaticPalette(seed, count);
-	case COMPLEMENTARY_PALETTE: return getComplementaryPalette(seed, count);
-	case SPLIT_COMPLEMENTARY_PALETTE: return getSplitComplementaryPalette(seed, count);
-	case TRIAD_PALETTE: return getTriadPalette(seed, count);
-	case TETRAD_PALETTE: return getTetradPalette(seed, count);
-	case SQUARE_PALETTE: return getSquarePalette(seed, count);
+	case PRIMARY_PALETTE: color_vector = getPrimaryPalette(count); break;
+	case SECONDARY_PALETTE: color_vector = getSecondaryPalette(count); break;
+	case TERTIARY_PALETTE: color_vector = getTertiaryPalette(count); break;
+	case ANALOGOUS_PALETTE: color_vector = getAnalogousPalette(seed, count); break;
+	case RANDOM_COLORS: color_vector = getRandomPalette(count); break;
+	case MONOCHROMATIC_PALETTE: color_vector = getMonochromaticPalette(seed, count); break;
+	case COMPLEMENTARY_PALETTE: color_vector = getComplementaryPalette(seed, count); break;
+	case SPLIT_COMPLEMENTARY_PALETTE: color_vector = getSplitComplementaryPalette(seed, count); break;
+	case TRIAD_PALETTE: color_vector = getTriadPalette(seed, count); break;
+	case TETRAD_PALETTE: color_vector = getTetradPalette(seed, count); break;
+	case SQUARE_PALETTE: color_vector = getSquarePalette(seed, count); break;
 	case DEFAULT_COLOR_PALETTE:
 	default:
 		for (int i = 0; i < count; i++)
@@ -475,8 +475,11 @@ vector<vec4> color_manager::generatePaletteFromSeed(const vec4 &seed, color_pale
 				0.5f, 1.0f		// alpha range
 				));
 		}
-		return color_vector;
+		color_vector = color_vector;
+		break;
 	}
+	std::random_shuffle(color_vector.begin(), color_vector.end());
+	return color_vector;
 }
 void color_manager::printColorSet(const vector<vec4> &set) const
 {
