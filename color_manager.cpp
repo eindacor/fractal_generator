@@ -233,11 +233,14 @@ vector<vec4> color_manager::getSplitComplementaryPalette(const vec4 &color, int 
 vector<vec4> color_manager::getAnalogousPalette(const vec4 &color, int count) const
 {
 	vector<vec4> colors;
+	HSL seed_hsl = getHSLFromRGBA(color);
+	int original_hue = seed_hsl.H;
+	int increment_size = 90 / count;
 
 	for (int i = 0; i < count; i++)
 	{
-		int current_step = i % 2 == 0 ? i : i * -1;
-		colors.push_back(getAnalogousColor(color, current_step));
+		seed_hsl.H = getNewHue(original_hue, i * increment_size);
+		colors.push_back(getRGBAFromHSL(seed_hsl, color.a));
 	}
 
 	return colors;

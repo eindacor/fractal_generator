@@ -99,6 +99,9 @@ void fractal_generator::drawFractal() const
 	if (show_points)
 		glDrawArrays(GL_POINTS, 0, vertex_count);
 
+	if (show_palette)
+		glDrawArrays(GL_TRIANGLES, vertex_count, palette_vertex_count);
+
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
@@ -390,7 +393,7 @@ void fractal_generator::generateFractalFromPointSequence()
 		}
 	}
 
-	bufferData(points);
+	addPalettePointsAndBufferData(points);
 }
 
 void fractal_generator::generateFractal()
@@ -417,7 +420,7 @@ void fractal_generator::generateFractal()
 		addNewPointAndIterate(starting_point, point_color, starting_size, matrix_index, points);
 	}
 
-	bufferData(points);
+	addPalettePointsAndBufferData(points);
 }
 
 void fractal_generator::generateFractalWithRefresh()
@@ -459,7 +462,7 @@ void fractal_generator::generateFractalWithRefresh()
 		addNewPoint(new_point, point_color, new_size, points);
 	}
 
-	bufferData(points);
+	addPalettePointsAndBufferData(points);
 }
 
 void fractal_generator::generateFractalFromPointSequenceWithRefresh()
@@ -518,7 +521,7 @@ void fractal_generator::generateFractalFromPointSequenceWithRefresh()
 		}
 	}
 
-	bufferData(points);
+	addPalettePointsAndBufferData(points);
 }
 
 
@@ -932,6 +935,9 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 	if (keys->checkPress(GLFW_KEY_BACKSLASH, false))
 		print_context_on_swap = !print_context_on_swap;
 
+	if (keys->checkPress(GLFW_KEY_E, false))
+		show_palette = !show_palette;
+
 	if (keys->checkPress(GLFW_KEY_RIGHT_BRACKET, true) || keys->checkPress(GLFW_KEY_LEFT_BRACKET, true)) 
 	{
 		float increment_min = .01f;
@@ -953,9 +959,9 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		glUniform1i(context->getShaderGLint("lighting_enabled"), lighting_enabled ? 1 : 0);
 	}
 
-	if (refresh_value != refresh_min && refresh_value != -1 && keys->checkPress(GLFW_KEY_6, false))
+	if (refresh_value != -1 && keys->checkPress(GLFW_KEY_6, false))
 	{
-		refresh_value--;
+		refresh_value == refresh_min ? refresh_value = -1 : refresh_value--;
 		cout << "refresh value: " << refresh_value << endl;
 	}
 
@@ -1124,4 +1130,95 @@ void fractal_generator::printContext()
 	is_2D ? cout << "2D mode enabled" << endl : cout << "2D mode disabled" << endl;
 	sequence_loaded ? cout << "point sequence loaded" << endl : cout << "point sequence not loaded" << endl;
 	cout << "------------------------------------------------" << endl;
+}
+
+vector<float> fractal_generator::getPalettePoints()
+{
+	float swatch_height = 2.0f / colors_front.size();
+
+	vector<float> point_data;
+
+	for (int i = 0; i < colors_front.size(); i++)
+	{
+		vec4 current_color_front = colors_front.at(i);
+		vec4 current_color_back = colors_back.at(i);
+		vec4 current_color_interpolated = (current_color_front * interpolation_state) + (current_color_back * (1.0f - interpolation_state));
+
+		float top_height = 1.0f - (float(i) * swatch_height);
+		float bottom_height = 1.0f - ((i * swatch_height) + swatch_height);
+		float swatch_width = 0.05f;
+
+		vector<vec2> front_points;
+		float front_left = 1.0f - (swatch_width * 3.0f);
+		float front_right = front_left + swatch_width;
+		front_points.push_back(vec2(front_left, top_height)); //front top left
+		front_points.push_back(vec2(front_right, top_height)); //front top right
+		front_points.push_back(vec2(front_right, bottom_height)); // front bottom right
+
+		front_points.push_back(vec2(front_right, bottom_height)); // front bottom right
+		front_points.push_back(vec2(front_left, bottom_height)); // front bottom left
+		front_points.push_back(vec2(front_left, top_height)); //front top left
+
+		for (const vec2 point : front_points)
+		{
+			addDataToPalettePoints(point, current_color_front, point_data);
+		}
+
+		vector<vec2> interpolated_points;
+		float interpolated_left = front_right;
+		float interpolated_right = interpolated_left + swatch_width;
+		interpolated_points.push_back(vec2(interpolated_left, top_height)); //interpolated top left
+		interpolated_points.push_back(vec2(interpolated_right, top_height)); //interpolated top right
+		interpolated_points.push_back(vec2(interpolated_right, bottom_height)); // interpolated bottom right
+
+		interpolated_points.push_back(vec2(interpolated_right, bottom_height)); // interpolated bottom right
+		interpolated_points.push_back(vec2(interpolated_left, bottom_height)); // interpolated bottom left
+		interpolated_points.push_back(vec2(interpolated_left, top_height)); //interpolated top left
+
+		for (const vec2 point : interpolated_points)
+		{
+			addDataToPalettePoints(point, current_color_interpolated, point_data);
+		}
+
+		vector<vec2> back_points;
+		float back_left = interpolated_right;
+		float back_right = back_left + swatch_width;
+		back_points.push_back(vec2(back_left, top_height)); //back top left
+		back_points.push_back(vec2(back_right, top_height)); //back top right
+		back_points.push_back(vec2(back_right, bottom_height)); // back bottom right
+
+		back_points.push_back(vec2(back_right, bottom_height)); // back bottom right
+		back_points.push_back(vec2(back_left, bottom_height)); // back bottom left
+		back_points.push_back(vec2(back_left, top_height)); //back top left
+
+		for (const vec2 point : back_points)
+		{
+			addDataToPalettePoints(point, current_color_back, point_data);
+		}
+	}
+
+	palette_vertex_count = point_data.size() / vertex_size;
+	return point_data;
+}
+
+void fractal_generator::addDataToPalettePoints(const vec2 &point, const vec4 &color, vector<float> &points) const
+{
+	points.push_back(point.x);
+	points.push_back(point.y);
+	points.push_back(0.0f);		//to make vec4-compliant
+	points.push_back(1.0f);		//to make vec4-compliant
+	points.push_back(color.r);
+	points.push_back(color.g);
+	points.push_back(color.b);
+	points.push_back(color.a);
+	points.push_back(0.0f);		//point size
+}
+
+void fractal_generator::addPalettePointsAndBufferData(const vector<float> &vertex_data)
+{
+	glUniform1i(context->getShaderGLint("palette_vertex_id"), vertex_count);
+	vector<float> all_data = vertex_data;
+	vector<float> palette_points = getPalettePoints();
+	all_data.insert(all_data.end(), palette_points.begin(), palette_points.end());
+	bufferData(all_data);
 }

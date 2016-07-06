@@ -2,6 +2,7 @@
 #include "matrix_creator.h"
 #include "fractal_generator.h"
 #include "screencap.h"
+#include "palette_viewer.h"
 
 const char* vertex_shader_string = "\
 #version 330\n\
@@ -21,21 +22,34 @@ uniform int frame_count;\n\
 out vec4 fragment_color;\n\
 uniform float point_size_scale = 1.0f;\n\
 uniform int invert_colors;\n\
+uniform int palette_vertex_id;\n\
 void main()\n\
 {\n\
-	gl_PointSize = point_size * point_size_scale;\n\
-	gl_Position = MVP * fractal_scale * position;\n\
-	float alpha_value = (frame_count > gl_VertexID) || (enable_growth_animation == 0) ? color.a : 0.0f;\n\
-	fragment_color = vec4(color.rgb, alpha_value);\n\
-	if (lighting_enabled > 0)\n\
+	if (gl_VertexID >= palette_vertex_id)\n\
 	{\n\
-		float distance_from_camera = length(position - vec4(camera_position, 1.0));\n\
-		float distance_modifier = clamp(1.0f - (distance_from_camera / 30.0f), 0.0f, 1.0f);\n\
-		fragment_color = fragment_color * distance_modifier;\n\
+		gl_Position = position;\n\
+		fragment_color = vec4(color.rgb, 1.0f);\n\
+		if (invert_colors > 0)\n\
+		{\n\
+			fragment_color = vec4(vec3(1.0) - fragment_color.rgb, 1.0f); \n\
+		}\n\
 	}\n\
-	if (invert_colors > 0)\n\
+	else \n\
 	{\n\
-		fragment_color = vec4(vec3(1.0) - fragment_color.rgb, alpha_value); \n\
+		gl_PointSize = point_size * point_size_scale;\n\
+		gl_Position = MVP * fractal_scale * position;\n\
+		float alpha_value = (frame_count > gl_VertexID) || (enable_growth_animation == 0) ? color.a : 0.0f;\n\
+		fragment_color = vec4(color.rgb, alpha_value);\n\
+		if (lighting_enabled > 0)\n\
+		{\n\
+			float distance_from_camera = length(position - vec4(camera_position, 1.0));\n\
+			float distance_modifier = clamp(1.0f - (distance_from_camera / 30.0f), 0.0f, 1.0f);\n\
+			fragment_color = fragment_color * distance_modifier;\n\
+		}\n\
+		if (invert_colors > 0)\n\
+		{\n\
+			fragment_color = vec4(vec3(1.0) - fragment_color.rgb, alpha_value); \n\
+		}\n\
 	}\n\
 }\n\
 ";
@@ -134,6 +148,9 @@ int main()
 	float eye_level = 0.0f;
 	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, window_width, window_height, true));
 
+	//shared_ptr<ogl_context> palette_context(new ogl_context("color palette", palette_vertex_shader_string, fragment_shader_string, 600, 600, true));
+	//shared_ptr<palette_viewer> palettes(new palette_viewer(palette_context));
+
 	shared_ptr<fractal_generator> generator(new fractal_generator(seed, context, num_points, two_dimensional));
 	shared_ptr<key_handler> keys(new key_handler(context));
 
@@ -190,6 +207,7 @@ int main()
 
 			glfwPollEvents();
 			context->clearBuffers();
+			//palette_context->clearBuffers();
 
 			glUniform1i(context->getShaderGLint("enable_growth_animation"), show_growth ? 1 : 0);
 			glUniform1i(context->getShaderGLint("frame_count"), frame_counter);
@@ -220,7 +238,10 @@ int main()
 			glUniform3fv(context->getShaderGLint("camera_position"), 1, &camera_pos[0]);
 			camera->setMVP(context, mat4(1.0f), jep::NORMAL);
 
+			//palettes->setData(generator->getColorsFront(), generator->getColorsBack(), generator->getInterpolationState());
+
 			generator->drawFractal();
+			//palettes->drawPalette();
 			generator->checkKeys(keys);
 
 			if (keys->checkPress(GLFW_KEY_0, false))
@@ -268,6 +289,7 @@ int main()
 				paused = !paused;
 
 			context->swapBuffers();
+			//palette_context->swapBuffers();
 
 			if (keys->checkPress(GLFW_KEY_X, false))
 				saveImage(4.0f, *generator, context);

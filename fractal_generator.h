@@ -77,6 +77,10 @@ public:
 
 	signed int getGeneration() const { return generation; }
 
+	vector<vec4> getColorsFront() const { return colors_front; }
+	vector<vec4> getColorsBack() const { return colors_back; }
+	float getInterpolationState() const { return interpolation_state; }
+
 private:
 	string base_seed;
 	string generation_seed;
@@ -107,6 +111,7 @@ private:
 	bool show_points = true;
 	bool enable_triangles = false;
 	bool enable_lines = false;
+	bool show_palette = false;
 	float interpolation_state = 0.0f;
 	float interpolation_increment = 0.02f;
 	bool smooth_render = true;
@@ -145,6 +150,7 @@ private:
 
 	unsigned short vertex_size = 9;
 	int vertex_count;
+	int palette_vertex_count;
 
 	GLuint pg_VBO;
 	GLuint pg_VAO;
@@ -169,6 +175,9 @@ private:
 	vector< pair<string, mat4> > generateMatrixVector(const int &count) const;
 	vector<vec4> generateColorVector(const vec4 &seed, color_palette palette, const int &count, color_palette &random_selection) const;
 	vector<float> generateSizeVector(const int &count) const;
+	vector<float> getPalettePoints();
+	void addDataToPalettePoints(const vec2 &point, const vec4 &color, vector<float> &points) const;
+	void addPalettePointsAndBufferData(const vector<float> &vertex_data);
 };
 
 #endif

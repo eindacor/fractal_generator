@@ -39,6 +39,7 @@ using jep::ogl_camera_flying;
 using boost::shared_ptr;
 
 using glm::mat4;
+using glm::vec2;
 using glm::vec3;
 using glm::vec4;
 
