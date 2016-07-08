@@ -2,7 +2,6 @@
 #include "matrix_creator.h"
 #include "fractal_generator.h"
 #include "screencap.h"
-#include "palette_viewer.h"
 
 const char* vertex_shader_string = "\
 #version 330\n\
@@ -64,15 +63,22 @@ void main()\n\
 }\n\
 ";
 
-void getSettings(string &seed, bool &refresh_enabled, int &refresh_value, bool &two_dimensional, int &num_points, int &window_width, int &window_height)
+bool getYesOrNo(string prompt, bool default)
 {
-	string use_defaults;
-	cout << "use default settings?: ";
-	std::getline(std::cin, use_defaults);
-	std::transform(use_defaults.begin(), use_defaults.end(), use_defaults.begin(), ::tolower);
+	string response;
+	cout << prompt + ": ";
+	std::getline(std::cin, response);
 	cout << endl;
+	if (response == "" || response == "\n")
+		return default;
 
-	if (use_defaults == "y" || use_defaults == "yes" || use_defaults == "true" || use_defaults == "" || use_defaults == "\n")
+	else return response == "y" || response == "yes" || response == "true";
+}
+
+void getSettings(string &seed, bool &refresh_enabled, int &refresh_value, bool &two_dimensional, int &num_points, int &window_width, int &window_height, bool &use_sequence)
+{
+	bool use_defaults = getYesOrNo("use default settings?", true);
+	if (use_defaults)
 		return;
 
 	cout << "enter seed: ";
@@ -80,12 +86,7 @@ void getSettings(string &seed, bool &refresh_enabled, int &refresh_value, bool &
 	cout << endl;
 	seed.erase(std::remove(seed.begin(), seed.end(), '\n'), seed.end());
 
-	string refresh_enabled_input;
-	cout << "refresh enabled?: ";
-	std::getline(std::cin, refresh_enabled_input);
-	std::transform(refresh_enabled_input.begin(), refresh_enabled_input.end(), refresh_enabled_input.begin(), ::tolower);
-	refresh_enabled = refresh_enabled_input == "y" || refresh_enabled_input == "yes" || refresh_enabled_input == "true";
-	cout << endl;
+	refresh_enabled = getYesOrNo("refresh enabled?", refresh_enabled);
 
 	if (refresh_enabled)
 	{
@@ -98,13 +99,9 @@ void getSettings(string &seed, bool &refresh_enabled, int &refresh_value, bool &
 
 		else refresh_value = (value == "" || value == "\n" || std::stoi(value) <= 0 || std::stoi(value) >= 50) ? 5 : std::stoi(value);
 	}
-
-	string two_dimensional_enabled_input;
-	cout << "2D?: ";
-	std::getline(std::cin, two_dimensional_enabled_input);
-	std::transform(two_dimensional_enabled_input.begin(), two_dimensional_enabled_input.end(), two_dimensional_enabled_input.begin(), ::tolower);
-	cout << endl;
-	two_dimensional = (two_dimensional_enabled_input == "y" || two_dimensional_enabled_input == "yes" || two_dimensional_enabled_input == "true");
+	
+	two_dimensional = getYesOrNo("2D mode?", two_dimensional);
+	use_sequence = getYesOrNo("use preloaded point sequence?", use_sequence);
 
 	string point_count;
 	cout << "point count: ";
@@ -139,8 +136,9 @@ int main()
 	bool auto_tracking = false;
 	bool smooth = true;
 	matrix_creator mc;
+	bool use_sequence = false;
 
-	getSettings(seed, refresh_enabled, refresh_value, two_dimensional, num_points, window_width, window_height);
+	getSettings(seed, refresh_enabled, refresh_value, two_dimensional, num_points, window_width, window_height, use_sequence);
 
 	if (seed.size() == 0)
 		seed = mc.generateAlphanumericString(32);
@@ -148,15 +146,13 @@ int main()
 	float eye_level = 0.0f;
 	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, window_width, window_height, true));
 
-	//shared_ptr<ogl_context> palette_context(new ogl_context("color palette", palette_vertex_shader_string, fragment_shader_string, 600, 600, true));
-	//shared_ptr<palette_viewer> palettes(new palette_viewer(palette_context));
-
 	shared_ptr<fractal_generator> generator(new fractal_generator(seed, context, num_points, two_dimensional));
 	shared_ptr<key_handler> keys(new key_handler(context));
 
 	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 2.0f), 45.0f));
 
-	vector<vec4> point_sequence = {
+	//square
+	/*vector<vec4> point_sequence = {
 		vec4(-1.0f, -1.0f, 0.0f, 1.0f),
 		vec4(-1.0f, 1.0f, 0.0f, 1.0f),
 		vec4(-1.0f, 1.0f, 0.0f, 1.0f),
@@ -165,6 +161,16 @@ int main()
 		vec4(1.0f, -1.0f, 0.0f, 1.0f),
 		vec4(1.0f, -1.0f, 0.0f, 1.0f),
 		vec4(-1.0f, -1.0f, 0.0f, 1.0f)
+	};*/
+
+	//triangle
+	vector<vec4> point_sequence = {
+		vec4(-1.0f, -1.0f, 0.0f, 1.0f),
+		vec4(0.0f, 1.0f, 0.0f, 1.0f),
+		vec4(0.0f, 1.0f, 0.0f, 1.0f),
+		vec4(1.0f, 1.0f, 0.0f, 1.0f),
+		vec4(1.0f, 1.0f, 0.0f, 1.0f),
+		vec4(-1.0f, -1.0f, 0.0f, 1.0f),
 	};
 
 	/*
@@ -173,6 +179,7 @@ int main()
 	3LE1GoVEb1W9jV1GwrTyfMLVMYs8ipYT
 	bdUUhVCQm5hLMzy85HPY30Ipzjv3S9uN
 	fiUppj1hoBZyIZ2Vzq0NlGkdNUUKvcOM
+	DeOBqMmyPGjnqXzxyCXyOD0mMt8QMkFn   <- animated
 	*/
 
 	glfwWindowHint(GLFW_SAMPLES, 4);
@@ -183,6 +190,9 @@ int main()
 		generator->enableRefreshMode();
 		generator->setRefreshValue(refresh_value);
 	}
+
+	if (use_sequence)
+		generator->loadPointSequence(point_sequence);
 
 	glfwSetTime(0);
 	float render_fps = 60.0f;
@@ -207,7 +217,6 @@ int main()
 
 			glfwPollEvents();
 			context->clearBuffers();
-			//palette_context->clearBuffers();
 
 			glUniform1i(context->getShaderGLint("enable_growth_animation"), show_growth ? 1 : 0);
 			glUniform1i(context->getShaderGLint("frame_count"), frame_counter);
@@ -238,10 +247,7 @@ int main()
 			glUniform3fv(context->getShaderGLint("camera_position"), 1, &camera_pos[0]);
 			camera->setMVP(context, mat4(1.0f), jep::NORMAL);
 
-			//palettes->setData(generator->getColorsFront(), generator->getColorsBack(), generator->getInterpolationState());
-
 			generator->drawFractal();
-			//palettes->drawPalette();
 			generator->checkKeys(keys);
 
 			if (keys->checkPress(GLFW_KEY_0, false))
@@ -289,7 +295,6 @@ int main()
 				paused = !paused;
 
 			context->swapBuffers();
-			//palette_context->swapBuffers();
 
 			if (keys->checkPress(GLFW_KEY_X, false))
 				saveImage(4.0f, *generator, context);

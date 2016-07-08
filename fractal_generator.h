@@ -164,6 +164,13 @@ private:
 		int matrix_index,
 		vector<float> &points);
 
+	void addPointSequenceAndIterate(
+		mat4 &origin_matrix,
+		vec4 &starting_color,
+		float &starting_size,
+		int matrix_index,
+		vector<float> &points);
+
 	void addNewPoint(
 		const vec4 &point,
 		const vec4 &color,
