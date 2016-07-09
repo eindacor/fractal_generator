@@ -2,6 +2,7 @@
 #include "matrix_creator.h"
 #include "fractal_generator.h"
 #include "screencap.h"
+#include "geometry_generator.h"
 
 const char* vertex_shader_string = "\
 #version 330\n\
@@ -151,27 +152,8 @@ int main()
 
 	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 2.0f), 45.0f));
 
-	//square
-	/*vector<vec4> point_sequence = {
-		vec4(-1.0f, -1.0f, 0.0f, 1.0f),
-		vec4(-1.0f, 1.0f, 0.0f, 1.0f),
-		vec4(-1.0f, 1.0f, 0.0f, 1.0f),
-		vec4(1.0f, 1.0f, 0.0f, 1.0f),
-		vec4(1.0f, 1.0f, 0.0f, 1.0f),
-		vec4(1.0f, -1.0f, 0.0f, 1.0f),
-		vec4(1.0f, -1.0f, 0.0f, 1.0f),
-		vec4(-1.0f, -1.0f, 0.0f, 1.0f)
-	};*/
-
-	//triangle
-	vector<vec4> point_sequence = {
-		vec4(-1.0f, -1.0f, 0.0f, 1.0f),
-		vec4(0.0f, 1.0f, 0.0f, 1.0f),
-		vec4(0.0f, 1.0f, 0.0f, 1.0f),
-		vec4(1.0f, 1.0f, 0.0f, 1.0f),
-		vec4(1.0f, 1.0f, 0.0f, 1.0f),
-		vec4(-1.0f, -1.0f, 0.0f, 1.0f),
-	};
+	geometry_generator geo_gen;
+	vector<vec4> point_sequence = geo_gen.getDodecahedron(1.0f, true);
 
 	/*
 	SEEDS

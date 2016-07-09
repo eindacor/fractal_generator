@@ -370,13 +370,12 @@ void fractal_generator::generateFractalFromPointSequence()
 
 	int num_matrices = matrices_front.size();
 
-	vec4 starting_point = origin;
 	vec4 point_color = inverted ? vec4(0.0f, 0.0f, 0.0f, 1.0f) : vec4(1.0f);
 	float starting_size = 10.0;
 
 	mat4 origin_matrix = glm::scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f));
 
-	for (int i = 0; i < vertex_count / preloaded_sequence.size() && num_matrices > 0; i++)
+	for (int i = 0; i < vertex_count / preloaded_sequence.size(); i++)
 	{
 		int matrix_index = smooth_render ? matrix_sequence.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
 		vec4 transformation_color = generateInterpolatedColor(matrix_index, matrix_index);
