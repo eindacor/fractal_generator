@@ -6,6 +6,7 @@
 #include "header.h"
 #include "matrix_creator.h"
 #include "color_manager.h"
+#include "settings_manager.h"
 
 class fractal_generator
 {
@@ -81,8 +82,10 @@ public:
 	vector<vec4> getColorsBack() const { return colors_back; }
 	float getInterpolationState() const { return interpolation_state; }
 
+	settings_manager getSettings() const { return sm; }
+
 private:
-	string base_seed;
+	settings_manager sm;
 	string generation_seed;
 	vector<unsigned int> matrix_sequence;
 	vector< pair<string, mat4> > matrices_front;
@@ -90,35 +93,31 @@ private:
 	vector<vec4> colors_front;
 	vector<vec4> colors_back;
 	vec4 background_color;
-	bool inverted = false;
 	vector<float> sizes_front;
 	vector<float> sizes_back;
 	matrix_creator mc;
 	color_manager color_man;
 	vec3 focal_point;
 	float average_delta, max_x, max_y, max_z;
-
-	//weights determine probability of each matrix type
-	int translate_weight;
-	int rotate_weight;
-	int scale_weight;
-
+	
 	// rendering parameters
-	float line_width = 1.0f;
-	bool size_enabled = true;
+	color_palette palette_front = RANDOM_PALETTE;
+	color_palette palette_back = RANDOM_PALETTE;
+	color_palette random_palette_front = DEFAULT_COLOR_PALETTE;
+	color_palette random_palette_back = DEFAULT_COLOR_PALETTE;
 	GLenum line_mode = GL_LINES;
 	GLenum triangle_mode = 0;
+
+	// all fields below have been moved to settings manager
+	float line_width = 1.0f;
+	bool size_enabled = true;	
 	bool show_points = true;
 	bool enable_triangles = false;
 	bool enable_lines = false;
 	bool show_palette = false;
 	float interpolation_state = 0.0f;
 	float interpolation_increment = 0.02f;
-	bool smooth_render = true;
-	color_palette palette_front = RANDOM_PALETTE;
-	color_palette palette_back = RANDOM_PALETTE;
-	color_palette random_palette_front = DEFAULT_COLOR_PALETTE;
-	color_palette random_palette_back = DEFAULT_COLOR_PALETTE;
+	bool smooth_render = true;	
 	int background_front_index = 0;
 	int background_back_index = 0;
 	bool randomize_lightness = true;
@@ -133,22 +132,26 @@ private:
 	signed int refresh_min = 3;
 	signed int refresh_max = 15;
 	bool lighting_enabled = false;
-
-	// current gen parameters
+	bool sequence_loaded = false;
 	bool refresh_loaded = false;
 	int refresh_value = 5;
 	bool is_2D;
-	vec4 origin = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	bool sequence_loaded = false;
-	vector<vec4> preloaded_sequence;
-
 	float fractal_scale = 1.0f;
+	int translate_weight;
+	int rotate_weight;
+	int scale_weight;
+	bool inverted = false;
+	string base_seed;
+	// above fields have been moved to settings manager
+
+	// current gen parameters	
+	vec4 origin = vec4(0.0f, 0.0f, 0.0f, 1.0f);	
+	vector<vec4> preloaded_sequence;	
 	mat4 fractal_scale_matrix;
-	unsigned short discard_count = 50;
 
 	bool initialized = false;
 
-	unsigned short vertex_size = 9;
+	const unsigned short vertex_size = 9;
 	int vertex_count;
 	int palette_vertex_count;
 

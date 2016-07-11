@@ -750,7 +750,7 @@ void fractal_generator::addPointSequenceAndIterate(
 		points.push_back(starting_size);
 	}	
 
-	origin_matrix = interpolated_matrix;
+	origin_matrix = final_matrix;
 }
 
 void fractal_generator::addNewPoint(

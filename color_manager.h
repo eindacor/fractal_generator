@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef COLOR_MANAGER_H
-#define COLOR_MANAGER_H
-
 #include "header.h"
 #include "matrix_creator.h"
 
@@ -92,5 +89,3 @@ public:
 private:
 	matrix_creator mc;
 };
-
-#endif

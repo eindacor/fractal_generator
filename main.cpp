@@ -3,6 +3,7 @@
 #include "fractal_generator.h"
 #include "screencap.h"
 #include "geometry_generator.h"
+#include "settings_manager.h"
 
 const char* vertex_shader_string = "\
 #version 330\n\
@@ -76,78 +77,70 @@ bool getYesOrNo(string prompt, bool default)
 	else return response == "y" || response == "yes" || response == "true";
 }
 
-void getSettings(string &seed, bool &refresh_enabled, int &refresh_value, bool &two_dimensional, int &num_points, int &window_width, int &window_height, bool &use_sequence)
+void getSettings(settings_manager &settings)
 {
 	bool use_defaults = getYesOrNo("use default settings?", true);
 	if (use_defaults)
 		return;
 
+	string seed;
 	cout << "enter seed: ";
 	std::getline(std::cin, seed);
 	cout << endl;
 	seed.erase(std::remove(seed.begin(), seed.end(), '\n'), seed.end());
+	settings.setString("base_seed", seed);
 
-	refresh_enabled = getYesOrNo("refresh enabled?", refresh_enabled);
+	settings.setBool("refresh_enabled", getYesOrNo("refresh enabled?", settings.getBool("refresh_enabled")));
 
-	if (refresh_enabled)
+	if (settings.getBool("refresh_enabled"))
 	{
 		string value;
 		cout << "refresh iterations: ";
 		std::getline(std::cin, value);
 		cout << endl;
 		if (value == "-1")
-			refresh_value = -1;
+			settings.setInt("refresh_value", -1);
 
-		else refresh_value = (value == "" || value == "\n" || std::stoi(value) <= 0 || std::stoi(value) >= 50) ? 5 : std::stoi(value);
+		else settings.setInt("refresh_value", (value == "" || value == "\n" || std::stoi(value) <= 0 || std::stoi(value) >= 50) ? 5 : std::stoi(value));
 	}
 	
-	two_dimensional = getYesOrNo("2D mode?", two_dimensional);
-	use_sequence = getYesOrNo("use preloaded point sequence?", use_sequence);
+	settings.setBool("two_dimensional", getYesOrNo("2D mode?", settings.getBool("two_dimensional")));
+	settings.setBool("use_sequence", getYesOrNo("use preloaded point sequence?", settings.getBool("use_sequence")));
 
 	string point_count;
 	cout << "point count: ";
 	std::getline(std::cin, point_count);
 	cout << endl;
-	num_points = (point_count == "" || point_count == "\n" || std::stoi(point_count) <= 0) ? 10000 : std::stoi(point_count);
+	settings.setInt("num_points", (point_count == "" || point_count == "\n" || std::stoi(point_count) <= 0) ? 10000 : std::stoi(point_count));
 
 	string window_width_input;
 	cout << "window width: ";
 	std::getline(std::cin, window_width_input);
 	cout << endl;
-	window_width = (window_width_input == "" || window_width_input == "\n") ? 1366 : std::stoi(window_width_input);
-	window_width = glm::clamp(window_width, 600, 4096);
+	int window_width = (window_width_input == "" || window_width_input == "\n") ? 1366 : std::stoi(window_width_input);
+	settings.setInt("window_width", glm::clamp(window_width, 600, 4096));
 
 	string window_height_input;
 	cout << "window height: ";
 	std::getline(std::cin, window_height_input);
 	cout << endl;
-	window_height = (window_height_input == "" || window_height_input == "\n") ? 768 : std::stoi(window_height_input);
-	window_height = glm::clamp(window_height, 600, 4096);
+	int window_height = (window_height_input == "" || window_height_input == "\n") ? 768 : std::stoi(window_height_input);
+	settings.setInt("window_height", glm::clamp(window_height, 600, 4096));
 }
 
 int main()
 {
-	string seed = "";
-	bool refresh_enabled = false;
-	int refresh_value = 5;
-	bool two_dimensional = false;
-	int num_points = 10000;
-	int window_width = 1366;
-	int window_height = 768;
-	bool auto_tracking = false;
-	bool smooth = true;
+	settings_manager settings;
+	getSettings(settings);
 	matrix_creator mc;
-	bool use_sequence = false;
 
-	getSettings(seed, refresh_enabled, refresh_value, two_dimensional, num_points, window_width, window_height, use_sequence);
-
-	if (seed.size() == 0)
-		seed = mc.generateAlphanumericString(32);
+	if (settings.getString("base_seed").size() == 0)
+		settings.setString("base_seed", mc.generateAlphanumericString(32));
 
 	float eye_level = 0.0f;
-	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, window_width, window_height, true));
+	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, settings.getInt("window_width"), settings.getInt("window_height"), true));
 
-	shared_ptr<fractal_generator> generator(new fractal_generator(seed, context, num_points, two_dimensional));
+	shared_ptr<fractal_generator> generator(new fractal_generator(settings.getString("base_seed"), context, settings.getInt("num_points"), settings.getBool("two_dimensional")));
 	shared_ptr<key_handler> keys(new key_handler(context));
 
 	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 2.0f), 45.0f));
@@ -167,13 +160,14 @@ int main()
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glEnable(GL_MULTISAMPLE);
 
-	if (refresh_enabled)
+	//TODO pass generator preferences rather than setting everything externally
+	if (settings.getBool("refresh_enabled"))
 	{
 		generator->enableRefreshMode();
-		generator->setRefreshValue(refresh_value);
+		generator->setRefreshValue(settings.getInt("refresh_value"));
 	}
 
-	if (use_sequence)
+	if (settings.getBool("use_sequence"))
 		generator->loadPointSequence(point_sequence);
 
 	glfwSetTime(0);
@@ -217,7 +211,7 @@ int main()
 				generator->tickAnimation();
 			}
 
-			if (auto_tracking && !paused)
+			if (settings.getBool("auto_tracking") && !paused)
 			{
 				float average_delta = generator->getAverageDelta();
 				camera->setPosition(generator->getFocalPoint() + vec3(average_delta * 6.0f));
@@ -234,8 +228,8 @@ int main()
 
 			if (keys->checkPress(GLFW_KEY_0, false))
 			{
-				auto_tracking = !auto_tracking;
-				auto_tracking ? cout << "auto tracking enabled" << endl : cout << "auto tracking disabled" << endl;
+				settings.toggleBool("auto_tracking");
+				settings.getBool("auto_tracking") ? cout << "auto tracking enabled" << endl : cout << "auto tracking disabled" << endl;
 			}
 
 			if (keys->checkPress(GLFW_KEY_9, false))

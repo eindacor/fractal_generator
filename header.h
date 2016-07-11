@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef HEADER_H
-#define HEADER_H
-
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -22,6 +19,7 @@
 #include <boost/random/variate_generator.hpp>
 #include <boost/random/normal_distribution.hpp>
 #include <boost/functional/hash.hpp>
+#include <typeinfo>
 #include "jeploot.h"
 
 //for bitmap creation
@@ -47,5 +45,3 @@ typedef std::pair<bool, float> random_switch;
 
 class matrix_creator;
 class fractal_generator;
-
-#endif
