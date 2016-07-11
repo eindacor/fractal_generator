@@ -7,6 +7,7 @@
 #include "matrix_creator.h"
 #include "color_manager.h"
 #include "settings_manager.h"
+#include "geometry_generator.h"
 
 class fractal_generator
 {
@@ -64,14 +65,11 @@ public:
 	void tickAnimation();
 	void swapMatrices();
 	void changeDirection();
-
 	void toggleSmooth() { smooth_render = !smooth_render; }
-
 	void cycleColorPalette();
-
 	void loadPointSequence(const vector<vec4> &sequence);
-
 	void printContext();
+	void cycleGeometryType();
 
 	vec3 getFocalPoint() const { return focal_point; }
 	float getAverageDelta() const { return average_delta; }
@@ -97,6 +95,7 @@ private:
 	vector<float> sizes_back;
 	matrix_creator mc;
 	color_manager color_man;
+	geometry_generator gm;
 	vec3 focal_point;
 	float average_delta, max_x, max_y, max_z;
 	
@@ -107,6 +106,7 @@ private:
 	color_palette random_palette_back = DEFAULT_COLOR_PALETTE;
 	GLenum line_mode = GL_LINES;
 	GLenum triangle_mode = 0;
+	geometry_type gt = DEFAULT_GEOMETRY_TYPE;
 
 	// all fields below have been moved to settings manager
 	float line_width = 1.0f;
@@ -132,7 +132,7 @@ private:
 	signed int refresh_min = 3;
 	signed int refresh_max = 15;
 	bool lighting_enabled = false;
-	bool sequence_loaded = false;
+	bool use_point_sequence = false;
 	bool refresh_loaded = false;
 	int refresh_value = 5;
 	bool is_2D;
@@ -142,11 +142,13 @@ private:
 	int scale_weight;
 	bool inverted = false;
 	string base_seed;
+	bool scale_matrices_enabled = false;
 	// above fields have been moved to settings manager
 
 	// current gen parameters	
 	vec4 origin = vec4(0.0f, 0.0f, 0.0f, 1.0f);	
-	vector<vec4> preloaded_sequence;	
+	vector<vec4> custom_sequence;
+	vector<vec4> point_sequence;
 	mat4 fractal_scale_matrix;
 
 	bool initialized = false;

@@ -89,23 +89,8 @@ void getSettings(settings_manager &settings)
 	cout << endl;
 	seed.erase(std::remove(seed.begin(), seed.end(), '\n'), seed.end());
 	settings.setString("base_seed", seed);
-
-	settings.setBool("refresh_enabled", getYesOrNo("refresh enabled?", settings.getBool("refresh_enabled")));
-
-	if (settings.getBool("refresh_enabled"))
-	{
-		string value;
-		cout << "refresh iterations: ";
-		std::getline(std::cin, value);
-		cout << endl;
-		if (value == "-1")
-			settings.setInt("refresh_value", -1);
-
-		else settings.setInt("refresh_value", (value == "" || value == "\n" || std::stoi(value) <= 0 || std::stoi(value) >= 50) ? 5 : std::stoi(value));
-	}
 	
 	settings.setBool("two_dimensional", getYesOrNo("2D mode?", settings.getBool("two_dimensional")));
-	settings.setBool("use_sequence", getYesOrNo("use preloaded point sequence?", settings.getBool("use_sequence")));
 
 	string point_count;
 	cout << "point count: ";
@@ -145,9 +130,6 @@ int main()
 
 	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 2.0f), 45.0f));
 
-	geometry_generator geo_gen;
-	vector<vec4> point_sequence = geo_gen.getDodecahedron(1.0f, true);
-
 	/*
 	SEEDS
 	f6ujfV4rTtvN991MBr5gOCiaQ6TrAPaJ
@@ -159,16 +141,6 @@ int main()
 
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glEnable(GL_MULTISAMPLE);
-
-	//TODO pass generator preferences rather than setting everything externally
-	if (settings.getBool("refresh_enabled"))
-	{
-		generator->enableRefreshMode();
-		generator->setRefreshValue(settings.getInt("refresh_value"));
-	}
-
-	if (settings.getBool("use_sequence"))
-		generator->loadPointSequence(point_sequence);
 
 	glfwSetTime(0);
 	float render_fps = 60.0f;

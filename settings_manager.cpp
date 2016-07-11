@@ -31,7 +31,7 @@ void settings_manager::init()
 
 	bool_settings["auto_tracking"] = false;
 	bool_settings["smooth"] = true;
-	bool_settings["use_sequence"] = false;
+	bool_settings["use_point_sequence"] = false;
 	bool_settings["two_dimensional"] = false;
 	bool_settings["refresh_enabled"] = false;
 	bool_settings["size_enabled"] = true;
@@ -46,6 +46,7 @@ void settings_manager::init()
 	bool_settings["print_context_on_swap"] = false;
 	bool_settings["lighting_enabled"] = false;
 	bool_settings["inverted"] = false;
+	bool_settings["scale_matrices_enabled"] = true;
 }
 
 string settings_manager::getString(string name) const

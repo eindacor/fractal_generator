@@ -113,7 +113,7 @@ vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &
 {
 	vector< pair<string, mat4> > matrix_vector;
 
-	int total_proportions = translate_weight + rotate_weight + scale_weight;
+	int total_proportions = translate_weight + rotate_weight + scale_matrices_enabled ? scale_weight : 0;
 
 	for (int i = 0; i < count; i++)
 	{
@@ -375,7 +375,7 @@ void fractal_generator::generateFractalFromPointSequence()
 
 	mat4 origin_matrix = glm::scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f));
 
-	for (int i = 0; i < vertex_count / preloaded_sequence.size(); i++)
+	for (int i = 0; i < vertex_count / point_sequence.size(); i++)
 	{
 		int matrix_index = smooth_render ? matrix_sequence.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
 		vec4 transformation_color = generateInterpolatedColor(matrix_index, matrix_index);
@@ -462,7 +462,7 @@ void fractal_generator::generateFractalFromPointSequenceWithRefresh()
 
 	signed int actual_refresh = refresh_value == -1 ? int(mc.getRandomFloatInRange(refresh_min, refresh_max)) : refresh_value;
 
-	for (int i = 0; i < vertex_count / preloaded_sequence.size() && num_matrices > 0; i++)
+	for (int i = 0; i < vertex_count / point_sequence.size() && num_matrices > 0; i++)
 	{
 		vec4 final_color = inverted ? vec4(0.0f, 0.0f, 0.0f, 1.0f) : vec4(1.0f);
 		float final_size = 10.0;
@@ -486,7 +486,7 @@ void fractal_generator::generateFractalFromPointSequenceWithRefresh()
 		final_color /= float(actual_refresh + 1);
 		final_size /= float(actual_refresh + 1);
 
-		for (const vec4 &point : preloaded_sequence)
+		for (const vec4 &point : point_sequence)
 		{
 			addNewPoint(final_matrix * point, final_color, final_size, points);
 		}
@@ -710,7 +710,7 @@ void fractal_generator::addPointSequenceAndIterate(
 	starting_color = (matrix_color_front * interpolation_state) + (matrix_color_back * (1.0f - interpolation_state));
 	starting_size = (point_size_front * interpolation_state) + (point_size_back * (1.0f - interpolation_state));
 
-	for (const vec4 &point : preloaded_sequence)
+	for (const vec4 &point : point_sequence)
 	{
 		vec4 point_to_add = final_matrix * point;
 
@@ -885,6 +885,9 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 	if (keys->checkPress(GLFW_KEY_2, false))
 		background_back_index == colors_front.size() - 1 ? background_back_index = 0 : background_back_index++;
 
+	if (keys->checkPress(GLFW_KEY_3, false))
+		cycleGeometryType();
+
 	if (keys->checkPress(GLFW_KEY_4, false))
 		adjustBackgroundBrightness(-0.1f);
 
@@ -1006,6 +1009,15 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		refresh_value == -1 ? refresh_value = refresh_min : refresh_value++;
 		cout << "refresh value: " << refresh_value << endl;
 	}
+
+	if (keys->checkPress(GLFW_KEY_MINUS, false))
+	{
+		scale_matrices_enabled = !scale_matrices_enabled;
+		scale_matrices_enabled ? cout << "scale matrices enabled" << endl : cout << "scale matrices disabled" << endl;
+	}
+
+	if (keys->checkPress(GLFW_KEY_EQUAL, false))
+		refresh_loaded = !refresh_loaded;
 }
 
 void fractal_generator::tickAnimation() {
@@ -1082,7 +1094,7 @@ void fractal_generator::regenerateFractal()
 {
 	if (refresh_loaded)
 	{
-		if (sequence_loaded)
+		if (use_point_sequence)
 			generateFractalFromPointSequenceWithRefresh();
 
 		else generateFractalWithRefresh();
@@ -1090,7 +1102,7 @@ void fractal_generator::regenerateFractal()
 
 	else
 	{
-		if (sequence_loaded)
+		if (use_point_sequence)
 			generateFractalFromPointSequence();
 
 		else generateFractal();
@@ -1117,8 +1129,10 @@ void fractal_generator::loadPointSequence(const vector<vec4> &sequence)
 	if (sequence.size() == 0)
 		return;
 
-	preloaded_sequence = sequence;
-	sequence_loaded = true;
+	custom_sequence = sequence;
+	point_sequence = custom_sequence;
+	gt = LOADED_SEQUENCE;
+	use_point_sequence = true;
 }
 
 void fractal_generator::printContext()
@@ -1164,7 +1178,8 @@ void fractal_generator::printContext()
 	randomize_alpha ? cout << "alpha randomization enabled (" << alpha_min << ", " << alpha_max << ")" << endl : cout << "alpha randomization disabled" << endl;
 	refresh_loaded ? cout << "refresh mode enabled (" << refresh_value << ")" << endl : cout << "refresh mode disabled" << endl;
 	is_2D ? cout << "2D mode enabled" << endl : cout << "2D mode disabled" << endl;
-	sequence_loaded ? cout << "point sequence loaded" << endl : cout << "point sequence not loaded" << endl;
+	scale_matrices_enabled ? cout << "scale matrices enabled" << endl : cout << "scale matrices disabled" << endl;
+	cout << "geometry type: " << getStringFromGeometryType(gt) << endl;
 	cout << "------------------------------------------------" << endl;
 }
 
@@ -1257,4 +1272,40 @@ void fractal_generator::addPalettePointsAndBufferData(const vector<float> &verte
 	vector<float> palette_points = getPalettePoints();
 	all_data.insert(all_data.end(), palette_points.begin(), palette_points.end());
 	bufferData(all_data);
+}
+
+void fractal_generator::cycleGeometryType()
+{
+	if (gt == DEFAULT_GEOMETRY_TYPE)
+		gt = (geometry_type)0;
+
+	else gt = geometry_type(int(gt) + 1);
+
+	if (gt == LOADED_SEQUENCE && custom_sequence.size() == 0)
+		gt = DEFAULT_GEOMETRY_TYPE;
+
+	use_point_sequence = DEFAULT_GEOMETRY_TYPE == gt ? false : true;
+
+	if (use_point_sequence)
+	{
+		float random_width = mc.getRandomFloatInRange(0.2f, 1.0f);
+		float random_height = mc.getRandomFloatInRange(0.2f, 1.0f);
+		float random_depth = mc.getRandomFloatInRange(0.2f, 1.0f);
+
+		switch (gt)
+		{
+		case TRIANGLE: point_sequence = gm.getTriangle(random_width); break;
+		case RECTANGLE: point_sequence = gm.getRectangle(random_width, random_height); break;
+		case SQUARE: point_sequence = gm.getSquare(random_width); break;
+		case CUBOID: point_sequence = gm.getCuboid(random_width, random_height, random_depth); break;
+		case CUBE: point_sequence = gm.getCube(random_width); break;
+		case TETRAHEDRON: point_sequence = gm.getTetrahedron(random_width); break;
+		case DODECAHEDRON: point_sequence = gm.getDodecahedron(random_width); break;
+		case LOADED_SEQUENCE: point_sequence = custom_sequence;
+		case DEFAULT_GEOMETRY_TYPE: break;
+		default: break;
+		}
+	}
+
+	cout << "geometry type: " << getStringFromGeometryType(gt) << endl;
 }

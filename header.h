@@ -1,5 +1,8 @@
 #pragma once
 
+#define THETA 1.61803398875f
+#define PI 3.14159f
+
 #include <string>
 #include <vector>
 #include <algorithm>
