@@ -883,7 +883,11 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		background_front_index == colors_front.size() - 1 ? background_front_index = 0 : background_front_index++;
 
 	if (keys->checkPress(GLFW_KEY_2, false))
-		background_back_index == colors_front.size() - 1 ? background_back_index = 0 : background_back_index++;
+	{
+		solid_geometry = !solid_geometry;
+		gm.setExportAsTriangles(solid_geometry);
+		solid_geometry ? cout << "solid geometry enabled" << endl : cout << "solid geometry disabled" << endl;
+	}
 
 	if (keys->checkPress(GLFW_KEY_3, false))
 		cycleGeometryType();
@@ -1300,6 +1304,7 @@ void fractal_generator::cycleGeometryType()
 		case CUBOID: point_sequence = gm.getCuboid(random_width, random_height, random_depth); break;
 		case CUBE: point_sequence = gm.getCube(random_width); break;
 		case TETRAHEDRON: point_sequence = gm.getTetrahedron(random_width); break;
+		case OCTAHEDRON: point_sequence = gm.getOctahedron(random_width); break;
 		case DODECAHEDRON: point_sequence = gm.getDodecahedron(random_width); break;
 		case LOADED_SEQUENCE: point_sequence = custom_sequence;
 		case DEFAULT_GEOMETRY_TYPE: break;

@@ -143,6 +143,7 @@ private:
 	bool inverted = false;
 	string base_seed;
 	bool scale_matrices_enabled = false;
+	bool solid_geometry = true;
 	// above fields have been moved to settings manager
 
 	// current gen parameters	

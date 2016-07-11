@@ -5,7 +5,7 @@
 #define BASE_LENGTH 2.0f * 0.61803398875f
 #define HYPOTENUSE_LENGTH 2.0f
 
-enum geometry_type { TRIANGLE, RECTANGLE, SQUARE, CUBOID, CUBE, TETRAHEDRON, DODECAHEDRON, LOADED_SEQUENCE, DEFAULT_GEOMETRY_TYPE };
+enum geometry_type { TRIANGLE, RECTANGLE, SQUARE, CUBOID, CUBE, TETRAHEDRON, OCTAHEDRON, DODECAHEDRON, LOADED_SEQUENCE, DEFAULT_GEOMETRY_TYPE };
 
 string getStringFromGeometryType(geometry_type gt);
 
@@ -18,6 +18,7 @@ public:
 	vector<vec4> getCube(float size) const { return getCuboid(size, size, size); }
 	vector<vec4> getTriangle(float size) const;
 	vector<vec4> getTetrahedron(float size) const;
+	vector<vec4> getOctahedron(float size) const;
 	vector<vec4> getDodecahedron(float size) const;
 
 	void setExportAsTriangles(bool b) { export_as_triangles = b; }

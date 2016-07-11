@@ -10,6 +10,7 @@ string getStringFromGeometryType(geometry_type gt)
 	case CUBOID: return "cuboid";
 	case CUBE: return "cube";
 	case TETRAHEDRON: return "tetrahedron";
+	case OCTAHEDRON: return "octahedron";
 	case DODECAHEDRON: return "dodecahedron";
 	case LOADED_SEQUENCE: return "custom_sequence";
 	case DEFAULT_GEOMETRY_TYPE: return "points";
@@ -27,20 +28,20 @@ vector<vec4> geometry_generator::getRectangle(float width, float height) const
 	if (export_as_triangles)
 	{
 		point_sequence.push_back(vec4(-1.0f * half_width, -1.0f * half_height, 0.0f, 1.0f));
-		point_sequence.push_back(vec4(-1.0f * half_width, 1.0f * half_height, 0.0f, 1.0f));
-		point_sequence.push_back(vec4(1.0f * half_width, 1.0f * half_height, 0.0f, 1.0f));
+		point_sequence.push_back(vec4(-1.0f * half_width, half_height, 0.0f, 1.0f));
+		point_sequence.push_back(vec4(half_width, half_height, 0.0f, 1.0f));
 
-		point_sequence.push_back(vec4(1.0f * half_width, 1.0f * half_height, 0.0f, 1.0f));
-		point_sequence.push_back(vec4(1.0f * half_width, -1.0f * half_height, 0.0f, 1.0f));
+		point_sequence.push_back(vec4(half_width, half_height, 0.0f, 1.0f));
+		point_sequence.push_back(vec4(half_width, -1.0f * half_height, 0.0f, 1.0f));
 		point_sequence.push_back(vec4(-1.0f * half_width, -1.0f * half_height, 0.0f, 1.0f));
 	}
 
 	else
 	{
 		point_sequence.push_back(vec4(-1.0f * half_width, -1.0f * half_height, 0.0f, 1.0f));
-		point_sequence.push_back(vec4(-1.0f * half_width, 1.0f * half_height, 0.0f, 1.0f));
-		point_sequence.push_back(vec4(1.0f * half_width, 1.0f * half_height, 0.0f, 1.0f));
-		point_sequence.push_back(vec4(1.0f * half_width, -1.0f * half_height, 0.0f, 1.0f));
+		point_sequence.push_back(vec4(-1.0f * half_width, half_height, 0.0f, 1.0f));
+		point_sequence.push_back(vec4(half_width, half_height, 0.0f, 1.0f));
+		point_sequence.push_back(vec4(half_width, -1.0f * half_height, 0.0f, 1.0f));
 	}
 
 	return point_sequence;
@@ -113,14 +114,14 @@ vector<vec4> geometry_generator::getCuboid(float width, float height, float dept
 
 	else
 	{
-		point_sequence.push_back(vec4(-1.0f * half_width, -1.0f * half_height, 1.0f * half_depth, 1.0f));
-		point_sequence.push_back(vec4(-1.0f * half_width, 1.0f * half_height, 1.0f * half_depth, 1.0f));
-		point_sequence.push_back(vec4(1.0f * half_width, 1.0f * half_height, 1.0f * half_depth, 1.0f));
-		point_sequence.push_back(vec4(1.0f * half_width, -1.0f * half_height, 1.0f * half_depth, 1.0f));
+		point_sequence.push_back(vec4(-1.0f * half_width, -1.0f * half_height, half_depth, 1.0f));
+		point_sequence.push_back(vec4(-1.0f * half_width, half_height, half_depth, 1.0f));
+		point_sequence.push_back(vec4(half_width, half_height, half_depth, 1.0f));
+		point_sequence.push_back(vec4(half_width, -1.0f * half_height, half_depth, 1.0f));
 		point_sequence.push_back(vec4(-1.0f * half_width, -1.0f * half_height, -1.0f * half_depth, 1.0f));
-		point_sequence.push_back(vec4(-1.0f * half_width, 1.0f * half_height, -1.0f * half_depth, 1.0f));
-		point_sequence.push_back(vec4(1.0f * half_width, 1.0f * half_height, -1.0f * half_depth, 1.0f));
-		point_sequence.push_back(vec4(1.0f * half_width, -1.0f * half_height, -1.0f * half_depth, 1.0f));
+		point_sequence.push_back(vec4(-1.0f * half_width, half_height, -1.0f * half_depth, 1.0f));
+		point_sequence.push_back(vec4(half_width, half_height, -1.0f * half_depth, 1.0f));
+		point_sequence.push_back(vec4(half_width, -1.0f * half_height, -1.0f * half_depth, 1.0f));
 	}
 
 	return point_sequence;
@@ -133,8 +134,8 @@ vector<vec4> geometry_generator::getTriangle(float size) const
 	vector<vec4> point_sequence;
 	
 	point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, 0.0f, 1.0f));
-	point_sequence.push_back(vec4(0.0f, 1.0f * half_height, 0.0f, 1.0f));
-	point_sequence.push_back(vec4(1.0f * half_height, 1.0f * half_height, 0.0f, 1.0f));
+	point_sequence.push_back(vec4(0.0f, half_height, 0.0f, 1.0f));
+	point_sequence.push_back(vec4(half_height, -1.0f * half_height, 0.0f, 1.0f));
 
 	return point_sequence;
 }
@@ -146,30 +147,84 @@ vector<vec4> geometry_generator::getTetrahedron(float size) const
 
 	if (export_as_triangles)
 	{
-		point_sequence.push_back(vec4(-1.0f * half_height, 1.0f * half_height, 1.0f * half_height, 1.0f));	//A
+		point_sequence.push_back(vec4(-1.0f * half_height, half_height, half_height, 1.0f));	//A
 		point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, -1.0f * half_height, 1.0f));	//B
-		point_sequence.push_back(vec4(1.0f * half_height, -1.0f * half_height, 1.0f * half_height, 1.0f));	//C
+		point_sequence.push_back(vec4(half_height, -1.0f * half_height, half_height, 1.0f));	//C
 
-		point_sequence.push_back(vec4(1.0f * half_height, -1.0f * half_height, 1.0f * half_height, 1.0f));	//C
-		point_sequence.push_back(vec4(-1.0f * half_height, 1.0f * half_height, 1.0f * half_height, 1.0f));	//A
-		point_sequence.push_back(vec4(1.0f * half_height, 1.0f * half_height, -1.0f * half_height, 1.0f));	//D
+		point_sequence.push_back(vec4(half_height, -1.0f * half_height, half_height, 1.0f));	//C
+		point_sequence.push_back(vec4(-1.0f * half_height, half_height, half_height, 1.0f));	//A
+		point_sequence.push_back(vec4(half_height, half_height, -1.0f * half_height, 1.0f));	//D
 
-		point_sequence.push_back(vec4(1.0f * half_height, 1.0f * half_height, -1.0f * half_height, 1.0f));	//D
-		point_sequence.push_back(vec4(-1.0f * half_height, 1.0f * half_height, 1.0f * half_height, 1.0f));	//A
+		point_sequence.push_back(vec4(half_height, half_height, -1.0f * half_height, 1.0f));	//D
+		point_sequence.push_back(vec4(-1.0f * half_height, half_height, half_height, 1.0f));	//A
 		point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, -1.0f * half_height, 1.0f));	//B
 
-		point_sequence.push_back(vec4(1.0f * half_height, 1.0f * half_height, -1.0f * half_height, 1.0f));	//D
-		point_sequence.push_back(vec4(1.0f * half_height, -1.0f * half_height, 1.0f * half_height, 1.0f));	//C
+		point_sequence.push_back(vec4(half_height, half_height, -1.0f * half_height, 1.0f));	//D
+		point_sequence.push_back(vec4(half_height, -1.0f * half_height, half_height, 1.0f));	//C
 		point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, -1.0f * half_height, 1.0f));	//B
 	}
 
 	else
 	{
-		point_sequence.push_back(vec4(-1.0f * half_height, 1.0f * half_height, 1.0f * half_height, 1.0f));	//A
+		point_sequence.push_back(vec4(-1.0f * half_height, half_height, half_height, 1.0f));	//A
 		point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, -1.0f * half_height, 1.0f));	//B
-		point_sequence.push_back(vec4(1.0f * half_height, -1.0f * half_height, 1.0f * half_height, 1.0f));	//C
-		point_sequence.push_back(vec4(1.0f * half_height, 1.0f * half_height, -1.0f * half_height, 1.0f));	//D
+		point_sequence.push_back(vec4(half_height, -1.0f * half_height, half_height, 1.0f));	//C
+		point_sequence.push_back(vec4(half_height, half_height, -1.0f * half_height, 1.0f));	//D
 
+	}
+
+	return point_sequence;
+}
+
+vector<vec4> geometry_generator::getOctahedron(float size) const
+{
+	float half_height = size / 2.0f;
+	vector<vec4> point_sequence;
+
+	if (export_as_triangles)
+	{
+		//AEB
+		point_sequence.push_back(vec4(0.0f, half_height, 0.0f, 1.0f));	//A
+		point_sequence.push_back(vec4(-1.0f * half_height, 0.0f, 0.0f, 1.0f));	//E
+		point_sequence.push_back(vec4(0.0f, 0.0f, half_height, 1.0f));	//B
+		//ABC
+		point_sequence.push_back(vec4(0.0f, half_height, 0.0f, 1.0f));	//A
+		point_sequence.push_back(vec4(0.0f, 0.0f, half_height, 1.0f));	//B
+		point_sequence.push_back(vec4(half_height, 0.0f, 0.0f, 1.0f));	//C
+		//ACD
+		point_sequence.push_back(vec4(0.0f, half_height, 0.0f, 1.0f));	//A
+		point_sequence.push_back(vec4(half_height, 0.0f, 0.0f, 1.0f));	//C
+		point_sequence.push_back(vec4(0.0f, 0.0f, -1.0f * half_height, 1.0f));	//D
+		//ADE
+		point_sequence.push_back(vec4(0.0f, half_height, 0.0f, 1.0f));	//A
+		point_sequence.push_back(vec4(0.0f, 0.0f, -1.0f * half_height, 1.0f));	//D
+		point_sequence.push_back(vec4(-1.0f * half_height, 0.0f, 0.0f, 1.0f));	//E
+		//FCB
+		point_sequence.push_back(vec4(0.0f, -1.0f * half_height, 0.0f, 1.0f));	//F
+		point_sequence.push_back(vec4(half_height, 0.0f, 0.0f, 1.0f));	//C
+		point_sequence.push_back(vec4(0.0f, 0.0f, half_height, 1.0f));	//B
+		//FDC
+		point_sequence.push_back(vec4(0.0f, -1.0f * half_height, 0.0f, 1.0f));	//F
+		point_sequence.push_back(vec4(0.0f, 0.0f, -1.0f * half_height, 1.0f));	//D
+		point_sequence.push_back(vec4(half_height, 0.0f, 0.0f, 1.0f));	//C
+		//FED
+		point_sequence.push_back(vec4(0.0f, -1.0f * half_height, 0.0f, 1.0f));	//F
+		point_sequence.push_back(vec4(-1.0f * half_height, 0.0f, 0.0f, 1.0f));	//E
+		point_sequence.push_back(vec4(0.0f, 0.0f, -1.0f * half_height, 1.0f));	//D
+		//FBE
+		point_sequence.push_back(vec4(0.0f, -1.0f * half_height, 0.0f, 1.0f));	//F
+		point_sequence.push_back(vec4(0.0f, 0.0f, half_height, 1.0f));	//B
+		point_sequence.push_back(vec4(-1.0f * half_height, 0.0f, 0.0f, 1.0f));	//E
+	}
+
+	else
+	{
+		point_sequence.push_back(vec4(0.0f, half_height, 0.0f, 1.0f));	//A
+		point_sequence.push_back(vec4(0.0f, 0.0f, half_height, 1.0f));	//B
+		point_sequence.push_back(vec4(half_height, 0.0f, 0.0f, 1.0f));	//C
+		point_sequence.push_back(vec4(0.0f, 0.0f, -1.0f * half_height, 1.0f));	//D
+		point_sequence.push_back(vec4(-1.0f * half_height, 0.0f, 0.0f, 1.0f));	//E
+		point_sequence.push_back(vec4(0.0f, -1.0f * half_height, 0.0f, 1.0f));	//F
 	}
 
 	return point_sequence;
