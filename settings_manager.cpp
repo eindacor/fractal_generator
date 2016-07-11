@@ -46,7 +46,8 @@ void settings_manager::init()
 	bool_settings["print_context_on_swap"] = false;
 	bool_settings["lighting_enabled"] = false;
 	bool_settings["inverted"] = false;
-	bool_settings["scale_matrices_enabled"] = true;
+	bool_settings["scale_matrices"] = true;
+	bool_settings["solid_geometry"] = true;
 }
 
 string settings_manager::getString(string name) const

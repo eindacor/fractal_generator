@@ -9,7 +9,7 @@ fractal_generator::fractal_generator(
 	base_seed = mc.generateAlphanumericString(32);
 
 	context = con;
-	is_2D = two_dimensional;
+	sm.setBool("two_dimensional", two_dimensional);
 	setMatrices();
 	initialized = false;
 
@@ -28,7 +28,7 @@ fractal_generator::fractal_generator(
 	base_seed = randomization_seed;
 
 	context = con;
-	is_2D = two_dimensional;
+	sm.setBool("two_dimensional", two_dimensional);
 	setMatrices();
 	initialized = false;
 
@@ -113,7 +113,7 @@ vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &
 {
 	vector< pair<string, mat4> > matrix_vector;
 
-	int total_proportions = translate_weight + rotate_weight + scale_matrices_enabled ? scale_weight : 0;
+	int total_proportions = translate_weight + rotate_weight + sm.getBool("scale_matrices") ? scale_weight : 0;
 
 	for (int i = 0; i < count; i++)
 	{
@@ -135,15 +135,15 @@ vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &
 		switch (matrix_type)
 		{
 		case 0:
-			matrix_to_add = is_2D ? mc.getRandomTranslation2D() : mc.getRandomTranslation();
+			matrix_to_add = sm.getBool("two_dimensional") ? mc.getRandomTranslation2D() : mc.getRandomTranslation();
 			matrix_category = "translate";
 			break;
 		case 1:
-			matrix_to_add = is_2D ? mc.getRandomRotation2D() : mc.getRandomRotation();
+			matrix_to_add = sm.getBool("two_dimensional") ? mc.getRandomRotation2D() : mc.getRandomRotation();
 			matrix_category = "rotate";
 			break;
 		case 2:
-			matrix_to_add = is_2D ? mc.getRandomScale2D() : mc.getRandomScale();
+			matrix_to_add = sm.getBool("two_dimensional") ? mc.getRandomScale2D() : mc.getRandomScale();
 			matrix_category = "scale";
 			break;
 		default: break;
@@ -161,10 +161,10 @@ vector<vec4> fractal_generator::generateColorVector(const vec4 &seed, color_pale
 
 	color_set = color_man.generatePaletteFromSeed(seed, palette, count, random_selection);
 
-	if (randomize_alpha)
+	if (sm.getBool("randomize_alpha"))
 		color_man.randomizeAlpha(color_set, alpha_min, alpha_max);
 
-	if (randomize_lightness)
+	if (sm.getBool("randomize_lightness"))
 		color_man.modifyLightness(color_set, mc.getRandomFloatInRange(0.3, 1.2f));
 
 	return color_set;
@@ -249,7 +249,7 @@ void fractal_generator::setMatrices()
 
 void fractal_generator::swapMatrices() 
 {
-	if (reverse)
+	if (sm.getBool("reverse"))
 		generation--;
 
 	else generation++;
@@ -258,7 +258,7 @@ void fractal_generator::swapMatrices()
 	mc.seed(generation_seed);
 
 	//TODO use pointers instead of loaded if statements
-	if (!reverse)
+	if (!sm.getBool("reverse"))
 	{
 		matrices_back = matrices_front;
 		colors_back = colors_front;
@@ -298,11 +298,6 @@ void fractal_generator::swapMatrices()
 
 	if (print_context_on_swap)
 		printContext();
-}
-
-void fractal_generator::changeDirection()
-{
-	reverse = !reverse;
 }
 
 void fractal_generator::cycleColorPalette()
@@ -370,14 +365,14 @@ void fractal_generator::generateFractalFromPointSequence()
 
 	int num_matrices = matrices_front.size();
 
-	vec4 point_color = inverted ? vec4(0.0f, 0.0f, 0.0f, 1.0f) : vec4(1.0f);
+	vec4 point_color = sm.getBool("inverted") ? vec4(0.0f, 0.0f, 0.0f, 1.0f) : vec4(1.0f);
 	float starting_size = 10.0;
 
 	mat4 origin_matrix = glm::scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f));
 
 	for (int i = 0; i < vertex_count / point_sequence.size(); i++)
 	{
-		int matrix_index = smooth_render ? matrix_sequence.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+		int matrix_index = sm.getBool("smooth_render") ? matrix_sequence.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
 		vec4 transformation_color = generateInterpolatedColor(matrix_index, matrix_index);
 		float transformation_size = generateInterpolatedSize(matrix_index);
 
@@ -395,12 +390,12 @@ void fractal_generator::generateFractal()
 	int num_matrices = matrices_front.size();
 
 	vec4 starting_point = origin;
-	vec4 point_color = inverted ? vec4(0.0f, 0.0f, 0.0f, 1.0f) : vec4(1.0f);
+	vec4 point_color = sm.getBool("inverted") ? vec4(0.0f, 0.0f, 0.0f, 1.0f) : vec4(1.0f);
 	float starting_size = 10.0;
 
 	for (int i = 0; i < vertex_count && num_matrices > 0; i++)
 	{
-		int matrix_index = smooth_render ? matrix_sequence.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+		int matrix_index = sm.getBool("smooth_render") ? matrix_sequence.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
 		
 		vec4 transformation_color = generateInterpolatedColor(matrix_index, matrix_index);
 		float transformation_size = generateInterpolatedSize(matrix_index);
@@ -421,13 +416,13 @@ void fractal_generator::generateFractalWithRefresh()
 
 	for (int i = 0; i < vertex_count && num_matrices > 0; i++)
 	{
-		vec4 point_color = inverted ? vec4(0.0f, 0.0f, 0.0f, 1.0f) : vec4(1.0f);
+		vec4 point_color = sm.getBool("inverted") ? vec4(0.0f, 0.0f, 0.0f, 1.0f) : vec4(1.0f);
 		vec4 new_point = origin;
 		float new_size = 10.0f;
 
 		for (int n = 0; n < actual_refresh; n++)
 		{
-			int matrix_index = smooth_render ? matrix_sequence.at((i + n) % matrix_sequence.size()) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+			int matrix_index = sm.getBool("smooth_render") ? matrix_sequence.at((i + n) % matrix_sequence.size()) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
 
 			mat4 matrix_front = matrices_front.at(matrix_index).second;
 			mat4 matrix_back = matrices_back.at(matrix_index).second;
@@ -464,13 +459,13 @@ void fractal_generator::generateFractalFromPointSequenceWithRefresh()
 
 	for (int i = 0; i < vertex_count / point_sequence.size() && num_matrices > 0; i++)
 	{
-		vec4 final_color = inverted ? vec4(0.0f, 0.0f, 0.0f, 1.0f) : vec4(1.0f);
+		vec4 final_color = sm.getBool("inverted") ? vec4(0.0f, 0.0f, 0.0f, 1.0f) : vec4(1.0f);
 		float final_size = 10.0;
 		mat4 final_matrix = glm::scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f));
 
 		for (int n = 0; n < actual_refresh; n++)
 		{
-			int matrix_index = smooth_render ? matrix_sequence.at((i + n) % matrix_sequence.size()) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+			int matrix_index = sm.getBool("smooth_render") ? matrix_sequence.at((i + n) % matrix_sequence.size()) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
 
 			mat4 matrix_front = matrices_front.at(matrix_index).second;
 			mat4 matrix_back = matrices_back.at(matrix_index).second;
@@ -861,7 +856,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		}
 	}
 
-	if (keys->checkPress(GLFW_KEY_K, false) && enable_triangles && !is_2D)
+	if (keys->checkPress(GLFW_KEY_K, false) && enable_triangles && !sm.getBool("two_dimensional"))
 	{
 		switch (triangle_mode)
 		{
@@ -884,9 +879,9 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 	if (keys->checkPress(GLFW_KEY_2, false))
 	{
-		solid_geometry = !solid_geometry;
-		gm.setExportAsTriangles(solid_geometry);
-		solid_geometry ? cout << "solid geometry enabled" << endl : cout << "solid geometry disabled" << endl;
+		sm.toggleBool("solid_geometry");
+		gm.setExportAsTriangles(sm.getBool("solid_geometry"));
+		sm.getBool("solid_geometry") ? cout << "solid geometry enabled" << endl : cout << "solid geometry disabled" << endl;
 	}
 
 	if (keys->checkPress(GLFW_KEY_3, false))
@@ -900,8 +895,8 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 	if (keys->checkPress(GLFW_KEY_Q, false)) 
 	{
-		randomize_lightness = !randomize_lightness;
-		if (randomize_lightness)
+		sm.toggleBool("randomize_lightness");
+		if (sm.getBool("randomize_lightness"))
 			cout << "randomize lightness enabled" << endl;
 
 		else cout << "randomize lightness disabled" << endl;
@@ -909,8 +904,8 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 	if (keys->checkPress(GLFW_KEY_U, false))
 	{
-		randomize_alpha = !randomize_alpha;
-		if (randomize_alpha)
+		sm.toggleBool("randomize_alpha");
+		if (sm.getBool("randomize_alpha"))
 			cout << "randomize alpha enabled" << endl;
 
 		else cout << "randomize alpha disabled" << endl;
@@ -959,7 +954,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		regenerateFractal();
 
 	if (keys->checkPress(GLFW_KEY_Z, false))
-		toggleSmooth();
+		sm.toggleBool("smooth_render");
 
 	if (keys->checkPress(GLFW_KEY_Y, false))
 	{
@@ -972,7 +967,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		printContext();
 
 	if (keys->checkPress(GLFW_KEY_APOSTROPHE, false))
-		changeDirection();
+		sm.toggleBool("reverse");
 
 	if (keys->checkPress(GLFW_KEY_BACKSLASH, false))
 		print_context_on_swap = !print_context_on_swap;
@@ -997,8 +992,8 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 	if (keys->checkPress(GLFW_KEY_8, false))
 	{
-		lighting_enabled = !lighting_enabled;
-		glUniform1i(context->getShaderGLint("lighting_enabled"), lighting_enabled ? 1 : 0);
+		sm.toggleBool("lighting_enabled");
+		glUniform1i(context->getShaderGLint("lighting_enabled"), sm.getBool("lighting_enabled") ? 1 : 0);
 		updateBackground();
 	}
 
@@ -1016,12 +1011,12 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 	if (keys->checkPress(GLFW_KEY_MINUS, false))
 	{
-		scale_matrices_enabled = !scale_matrices_enabled;
-		scale_matrices_enabled ? cout << "scale matrices enabled" << endl : cout << "scale matrices disabled" << endl;
+		sm.toggleBool("scale_matrices");
+		sm.getBool("scale_matrices") ? cout << "scale matrices enabled" << endl : cout << "scale matrices disabled" << endl;
 	}
 
 	if (keys->checkPress(GLFW_KEY_EQUAL, false))
-		refresh_loaded = !refresh_loaded;
+		sm.toggleBool("refresh_enabled");
 }
 
 void fractal_generator::tickAnimation() {
@@ -1029,7 +1024,7 @@ void fractal_generator::tickAnimation() {
 
 	float actual_increment = glm::clamp(interpolation_increment * increment_coefficient * increment_coefficient, interpolation_increment * 0.05f, interpolation_increment);
 
-	reverse ? interpolation_state -= actual_increment : interpolation_state += actual_increment;
+	sm.getBool("reverse") ? interpolation_state -= actual_increment : interpolation_state += actual_increment;
 
 	if (interpolation_state <= 0.0f)
 	{
@@ -1049,15 +1044,15 @@ void fractal_generator::tickAnimation() {
 
 void fractal_generator::updateBackground()
 {
-	if (lighting_enabled)
-		inverted ? context->setBackgroundColor(vec4(1.0f, 1.0f, 1.0f, 1.0f)) : context->setBackgroundColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	if (sm.getBool("lighting_enabled"))
+		sm.getBool("inverted") ? context->setBackgroundColor(vec4(1.0f, 1.0f, 1.0f, 1.0f)) : context->setBackgroundColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	else
 	{
 		vec4 new_background = generateInterpolatedColor(background_front_index, background_back_index);
 		color_man.adjustLightness(new_background, 0.1f);
 
-		if (inverted)
+		if (sm.getBool("inverted"))
 			new_background = vec4(1.0f) - new_background;
 
 		background_color = new_background;
@@ -1067,8 +1062,8 @@ void fractal_generator::updateBackground()
 
 void fractal_generator::invertColors()
 {
-	inverted = !inverted;
-	glUniform1i(context->getShaderGLint("invert_colors"), inverted ? 1 : 0);
+	sm.toggleBool("inverted");
+	glUniform1i(context->getShaderGLint("invert_colors"), sm.getBool("inverted") ? 1 : 0);
 	updateBackground();
 }
 
@@ -1096,7 +1091,7 @@ void fractal_generator::newColors()
 
 void fractal_generator::regenerateFractal()
 {
-	if (refresh_loaded)
+	if (sm.getBool("refresh_enabled"))
 	{
 		if (use_point_sequence)
 			generateFractalFromPointSequenceWithRefresh();
@@ -1115,7 +1110,7 @@ void fractal_generator::regenerateFractal()
 
 void fractal_generator::applyBackground(const int &num_samples)
 {
-	background_color = inverted ? vec4(1.0f) - getSampleColor(num_samples, colors_front) : getSampleColor(num_samples, colors_front);
+	background_color = sm.getBool("inverted") ? vec4(1.0f) - getSampleColor(num_samples, colors_front) : getSampleColor(num_samples, colors_front);
 
 	color_man.adjustLightness(background_color, jep::floatRoll(0.0f, 1.0f, 2));
 	context->setBackgroundColor(background_color);
@@ -1145,12 +1140,12 @@ void fractal_generator::printContext()
 	cout << "base seed: " << base_seed << endl;
 	cout << "generation seed: " << generation_seed << endl;
 	cout << "current generation: " << generation;
-	reverse ? cout << " <-" << endl : cout << " ->" << endl;
+	sm.getBool("reverse") ? cout << " <-" << endl : cout << " ->" << endl;
 
 	printMatrices();
 
 	cout << "point count: " << vertex_count << endl;
-	refresh_loaded ? cout << "refresh enabled (" << refresh_value << ")" << endl : cout << "refresh disabled" << endl;
+	sm.getBool("refresh_enabled") ? cout << "refresh enabled (" << refresh_value << ")" << endl : cout << "refresh disabled" << endl;
 	cout << "focal point: " + glm::to_string(focal_point) << endl;
 	cout << "max x: " << max_x << endl;
 	cout << "max y: " << max_y << endl;
@@ -1177,12 +1172,12 @@ void fractal_generator::printContext()
 	cout << "line width: " << line_width << endl;
 	cout << "interpolation state: " << interpolation_state << endl;
 	cout << "current scale: " << fractal_scale << endl;
-	smooth_render ? cout << "smooth rendering enabled" << endl : cout << "smooth rendering disabled" << endl;
-	randomize_lightness ? cout << "lightness randomization enabled" << endl : cout << "lightness randomization disabled" << endl;
-	randomize_alpha ? cout << "alpha randomization enabled (" << alpha_min << ", " << alpha_max << ")" << endl : cout << "alpha randomization disabled" << endl;
-	refresh_loaded ? cout << "refresh mode enabled (" << refresh_value << ")" << endl : cout << "refresh mode disabled" << endl;
-	is_2D ? cout << "2D mode enabled" << endl : cout << "2D mode disabled" << endl;
-	scale_matrices_enabled ? cout << "scale matrices enabled" << endl : cout << "scale matrices disabled" << endl;
+	sm.getBool("smooth_render") ? cout << "smooth rendering enabled" << endl : cout << "smooth rendering disabled" << endl;
+	sm.getBool("randomize_lightness") ? cout << "lightness randomization enabled" << endl : cout << "lightness randomization disabled" << endl;
+	sm.getBool("randomize_alpha") ? cout << "alpha randomization enabled (" << alpha_min << ", " << alpha_max << ")" << endl : cout << "alpha randomization disabled" << endl;
+	sm.getBool("refresh_enabled") ? cout << "refresh mode enabled (" << refresh_value << ")" << endl : cout << "refresh mode disabled" << endl;
+	sm.getBool("two_dimensional") ? cout << "2D mode enabled" << endl : cout << "2D mode disabled" << endl;
+	sm.getBool("scale_matrices") ? cout << "scale matrices enabled" << endl : cout << "scale matrices disabled" << endl;
 	cout << "geometry type: " << getStringFromGeometryType(gt) << endl;
 	cout << "------------------------------------------------" << endl;
 }

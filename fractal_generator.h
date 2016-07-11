@@ -37,9 +37,6 @@ public:
 	void generateFractalWithRefresh();
 	void generateFractalFromPointSequenceWithRefresh();
 
-	void enableRefreshMode() { refresh_loaded = true; }
-	void setRefreshValue(int value) { refresh_value = value; }
-
 	void renderFractal(const int &image_width, const int &image_height, const int &matrix_sequence_count);
 
 	//vector<mat4> generateMatrixSequence(const vector<int> &matrix_indices) const;
@@ -64,8 +61,6 @@ public:
 
 	void tickAnimation();
 	void swapMatrices();
-	void changeDirection();
-	void toggleSmooth() { smooth_render = !smooth_render; }
 	void cycleColorPalette();
 	void loadPointSequence(const vector<vec4> &sequence);
 	void printContext();
@@ -117,33 +112,23 @@ private:
 	bool show_palette = false;
 	float interpolation_state = 0.0f;
 	float interpolation_increment = 0.02f;
-	bool smooth_render = true;	
 	int background_front_index = 0;
 	int background_back_index = 0;
-	bool randomize_lightness = true;
-	bool randomize_alpha = true;
 	vec4 seed_color_front;
 	vec4 seed_color_back;
 	float alpha_min;
 	float alpha_max;
 	signed int generation = 0;
-	bool reverse = false;
 	bool print_context_on_swap = false;
 	signed int refresh_min = 3;
 	signed int refresh_max = 15;
-	bool lighting_enabled = false;
 	bool use_point_sequence = false;
-	bool refresh_loaded = false;
 	int refresh_value = 5;
-	bool is_2D;
 	float fractal_scale = 1.0f;
 	int translate_weight;
 	int rotate_weight;
 	int scale_weight;
-	bool inverted = false;
 	string base_seed;
-	bool scale_matrices_enabled = false;
-	bool solid_geometry = true;
 	// above fields have been moved to settings manager
 
 	// current gen parameters	
