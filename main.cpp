@@ -200,7 +200,7 @@ int main()
 
 			if (keys->checkPress(GLFW_KEY_0, false))
 			{
-				settings.auto_tracking;
+				settings.auto_tracking = !settings.auto_tracking;
 				settings.auto_tracking ? cout << "auto tracking enabled" << endl : cout << "auto tracking disabled" << endl;
 			}
 

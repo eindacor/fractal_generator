@@ -7,7 +7,7 @@ void settings_manager::randomize(const matrix_creator &mc)
 	generation = 0;
 
 	refresh_value = int(mc.getRandomFloatInRange(refresh_min, refresh_max));
-	num_matrices = int(mc.getRandomFloatInRange(3, 12));
+	num_matrices = int(mc.getRandomFloatInRange(3, 20));
 	translate_weight = int(mc.getRandomFloatInRange(1, 10));
 	rotate_weight = int(mc.getRandomFloatInRange(1, 10));
 	scale_weight = int(mc.getRandomFloatInRange(1, 10));

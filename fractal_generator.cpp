@@ -193,11 +193,6 @@ void fractal_generator::setMatrices()
 	mc.seed(generation_seed);
 	color_man.seed(generation_seed);
 
-	int num_matrices = int(mc.getRandomFloatInRange(2, 10));
-	sm.translate_weight = int(mc.getRandomFloatInRange(1, 10));
-	sm.rotate_weight = int(mc.getRandomFloatInRange(1, 10));
-	sm.scale_weight = int(mc.getRandomFloatInRange(1, 10));
-
 	/*int num_matrices = int(mc.getRandomFloatInRange(3, 7));
 	translate_weight = int(mc.getRandomFloatInRange(4, 6));
 	rotate_weight = int(mc.getRandomFloatInRange(4, 6));
@@ -205,7 +200,7 @@ void fractal_generator::setMatrices()
 
 	for (int i = 0; i < vertex_count; i++)
 	{
-		matrix_sequence.push_back(int(mc.getRandomFloatInRange(0.0f, float(num_matrices))));
+		matrix_sequence.push_back(int(mc.getRandomFloatInRange(0.0f, float(sm.num_matrices))));
 	}
 
 	int random_palette_index = int(mc.getRandomFloatInRange(0.0f, float(DEFAULT_COLOR_PALETTE)));
@@ -225,30 +220,30 @@ void fractal_generator::setMatrices()
 	sm.alpha_max = 1.0f;
 
 	//front data set
-	matrices_front = generateMatrixVector(num_matrices);
+	matrices_front = generateMatrixVector(sm.num_matrices);
 	seed_color_front = mc.getRandomVec4FromColorRanges(
 		0.0f, 1.0f,		// red range
 		0.0f, 1.0f,		// green range
 		0.0f, 1.0f,		// blue range
 		sm.alpha_min, sm.alpha_max		// alpha range
 		);
-	colors_front = generateColorVector(seed_color_front, sm.palette_front, num_matrices, sm.random_palette_front);
-	sizes_front = generateSizeVector(num_matrices);
+	colors_front = generateColorVector(seed_color_front, sm.palette_front, sm.num_matrices, sm.random_palette_front);
+	sizes_front = generateSizeVector(sm.num_matrices);
 	
 	//back data set
 	sm.generation++;
 	generation_seed = base_seed + "_" + std::to_string(sm.generation);
 	mc.seed(generation_seed);
 	color_man.seed(generation_seed);
-	matrices_back = generateMatrixVector(num_matrices);
+	matrices_back = generateMatrixVector(sm.num_matrices);
 	seed_color_back = mc.getRandomVec4FromColorRanges(
 		0.0f, 1.0f,		// red range
 		0.0f, 1.0f,		// green range
 		0.0f, 1.0f,		// blue range
 		sm.alpha_min, sm.alpha_max		// alpha range
 		);
-	colors_back = generateColorVector(seed_color_back, sm.palette_back, num_matrices, sm.random_palette_back);
-	sizes_back = generateSizeVector(num_matrices);
+	colors_back = generateColorVector(seed_color_back, sm.palette_back, sm.num_matrices, sm.random_palette_back);
+	sizes_back = generateSizeVector(sm.num_matrices);
 }
 
 void fractal_generator::swapMatrices() 
