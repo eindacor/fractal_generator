@@ -1305,6 +1305,7 @@ void fractal_generator::cycleGeometryType()
 		case TETRAHEDRON: sm.point_sequence = gm.getTetrahedron(random_width); break;
 		case OCTAHEDRON: sm.point_sequence = gm.getOctahedron(random_width); break;
 		case DODECAHEDRON: sm.point_sequence = gm.getDodecahedron(random_width); break;
+		case ICOSAHEDRON: sm.point_sequence = gm.getIcosahedron(random_width); break;
 		case LOADED_SEQUENCE: sm.point_sequence = custom_sequence;
 		case DEFAULT_GEOMETRY_TYPE: break;
 		default: break;

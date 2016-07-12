@@ -7,7 +7,7 @@ void settings_manager::randomize(const matrix_creator &mc)
 	generation = 0;
 
 	refresh_value = int(mc.getRandomFloatInRange(refresh_min, refresh_max));
-	num_matrices = int(mc.getRandomFloatInRange(2, 10));
+	num_matrices = int(mc.getRandomFloatInRange(3, 12));
 	translate_weight = int(mc.getRandomFloatInRange(1, 10));
 	rotate_weight = int(mc.getRandomFloatInRange(1, 10));
 	scale_weight = int(mc.getRandomFloatInRange(1, 10));
@@ -76,6 +76,7 @@ void settings_manager::randomize(const matrix_creator &mc)
 		case TETRAHEDRON: point_sequence = gm.getTetrahedron(random_width); break;
 		case OCTAHEDRON: point_sequence = gm.getOctahedron(random_width); break;
 		case DODECAHEDRON: point_sequence = gm.getDodecahedron(random_width); break;
+		case ICOSAHEDRON: point_sequence = gm.getIcosahedron(random_width); break;
 		case LOADED_SEQUENCE: geo_type = DEFAULT_GEOMETRY_TYPE;
 		case DEFAULT_GEOMETRY_TYPE:
 		default: use_point_sequence = false;
