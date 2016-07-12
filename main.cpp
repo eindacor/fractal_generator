@@ -88,29 +88,29 @@ void getSettings(settings_manager &settings)
 	std::getline(std::cin, seed);
 	cout << endl;
 	seed.erase(std::remove(seed.begin(), seed.end(), '\n'), seed.end());
-	settings.setString("base_seed", seed);
+	settings.base_seed = seed;
 	
-	settings.setBool("two_dimensional", getYesOrNo("2D mode?", settings.getBool("two_dimensional")));
+	settings.two_dimensional = getYesOrNo("2D mode?", settings.two_dimensional);
 
 	string point_count;
 	cout << "point count: ";
 	std::getline(std::cin, point_count);
 	cout << endl;
-	settings.setInt("num_points", (point_count == "" || point_count == "\n" || std::stoi(point_count) <= 0) ? 10000 : std::stoi(point_count));
+	settings.num_points = (point_count == "" || point_count == "\n" || std::stoi(point_count) <= 0) ? 10000 : std::stoi(point_count);
 
 	string window_width_input;
 	cout << "window width: ";
 	std::getline(std::cin, window_width_input);
 	cout << endl;
 	int window_width = (window_width_input == "" || window_width_input == "\n") ? 1366 : std::stoi(window_width_input);
-	settings.setInt("window_width", glm::clamp(window_width, 600, 4096));
+	settings.window_width = glm::clamp(window_width, 300, 4096);
 
 	string window_height_input;
 	cout << "window height: ";
 	std::getline(std::cin, window_height_input);
 	cout << endl;
 	int window_height = (window_height_input == "" || window_height_input == "\n") ? 768 : std::stoi(window_height_input);
-	settings.setInt("window_height", glm::clamp(window_height, 600, 4096));
+	settings.window_height = glm::clamp(window_height, 300, 4096);
 }
 
 int main()
@@ -119,13 +119,13 @@ int main()
 	getSettings(settings);
 	matrix_creator mc;
 
-	if (settings.getString("base_seed").size() == 0)
-		settings.setString("base_seed", mc.generateAlphanumericString(32));
+	if (settings.base_seed.size() == 0)
+		settings.base_seed = mc.generateAlphanumericString(32);
 
 	float eye_level = 0.0f;
-	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, settings.getInt("window_width"), settings.getInt("window_height"), true));
+	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, settings.window_width, settings.window_height, true));
 
-	shared_ptr<fractal_generator> generator(new fractal_generator(settings.getString("base_seed"), context, settings.getInt("num_points"), settings.getBool("two_dimensional")));
+	shared_ptr<fractal_generator> generator(new fractal_generator(settings.base_seed, context, settings.num_points, settings.two_dimensional));
 	shared_ptr<key_handler> keys(new key_handler(context));
 
 	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 2.0f), 45.0f));
@@ -183,7 +183,7 @@ int main()
 				generator->tickAnimation();
 			}
 
-			if (settings.getBool("auto_tracking") && !paused)
+			if (settings.auto_tracking && !paused)
 			{
 				float average_delta = generator->getAverageDelta();
 				camera->setPosition(generator->getFocalPoint() + vec3(average_delta * 6.0f));
@@ -200,8 +200,8 @@ int main()
 
 			if (keys->checkPress(GLFW_KEY_0, false))
 			{
-				settings.toggleBool("auto_tracking");
-				settings.getBool("auto_tracking") ? cout << "auto tracking enabled" << endl : cout << "auto tracking disabled" << endl;
+				settings.auto_tracking;
+				settings.auto_tracking ? cout << "auto tracking enabled" << endl : cout << "auto tracking disabled" << endl;
 			}
 
 			if (keys->checkPress(GLFW_KEY_9, false))
@@ -249,6 +249,14 @@ int main()
 
 			if (keys->checkPress(GLFW_KEY_SLASH, false))
 				growth_paused = !growth_paused;
+
+			if (keys->checkPress(GLFW_KEY_SPACE, false))
+			{
+				settings.base_seed = mc.generateAlphanumericString(32);
+				shared_ptr<fractal_generator> new_generator(new fractal_generator(settings.base_seed, context, settings.num_points, settings.two_dimensional));
+				generator = new_generator;
+				generator->printContext();
+			}
 
 			glfwSetTime(0.0f);
 		}

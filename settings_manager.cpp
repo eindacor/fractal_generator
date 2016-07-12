@@ -1,191 +1,84 @@
 #include "settings_manager.h"
 
-void settings_manager::init()
+void settings_manager::randomize(const matrix_creator &mc)
 {
-	string_settings["base_seed"] = "";	
+	background_front_index = 0;
+	background_back_index = 0;
+	generation = 0;
 
-	int_settings["refresh_value"] = 5;	
-	int_settings["num_points"] = 10000;
-	int_settings["window_width"] = 1366;
-	int_settings["window_height"] = 768;
-	int_settings["background_front_index"] = 0;
-	int_settings["background_back_index"] = 0;
-	int_settings["generation"] = 0;
-	int_settings["refresh_min"] = 3;
-	int_settings["refresh_max"] = 15;
-	int_settings["translate_weight"] = 1; //randomize
-	int_settings["rotate_weight"] = 1; //randomize
-	int_settings["scale_weight"] = 1; //randomize
-	int_settings["num_matrices"] = 5; //randomize
-
-	/*int num_matrices = int(mc.getRandomFloatInRange(2, 10));
+	refresh_value = int(mc.getRandomFloatInRange(refresh_min, refresh_max));
+	num_matrices = int(mc.getRandomFloatInRange(2, 10));
 	translate_weight = int(mc.getRandomFloatInRange(1, 10));
 	rotate_weight = int(mc.getRandomFloatInRange(1, 10));
-	scale_weight = int(mc.getRandomFloatInRange(1, 10));*/
+	scale_weight = int(mc.getRandomFloatInRange(1, 10));
 
-	float_settings["line_width"] = 1.0f;
-	float_settings["interpolation_state"] = 0.0f;
-	float_settings["interpolation_increment"] = 0.02f;
-	float_settings["alpha_min"] = 0.0f;
-	float_settings["alpha_max"] = 1.0f;
+	use_point_sequence = mc.getRandomFloat() < 0.5f;
+	two_dimensional = mc.getRandomFloat() < 0.2f;
+	refresh_enabled = mc.getRandomFloat() < 0.5f;
+	size_enabled = mc.getRandomFloat() < 0.5f;
+	show_points = true;
+	enable_triangles = mc.getRandomFloat() < 0.4f;
+	enable_lines = mc.getRandomFloat() < 0.4f;
+	smooth_render = mc.getRandomFloat() < 0.8f;
+	randomize_lightness = mc.getRandomFloat() < 0.8f;
+	randomize_alpha = mc.getRandomFloat() < 0.8f;
+	lighting_enabled = mc.getRandomFloat() < 0.5f;
+	inverted = mc.getRandomFloat() < 0.5f;
+	scale_matrices = mc.getRandomFloat() < 0.5f;
 
-	bool_settings["auto_tracking"] = false;
-	bool_settings["smooth"] = true;
-	bool_settings["use_point_sequence"] = false;
-	bool_settings["two_dimensional"] = false;
-	bool_settings["refresh_enabled"] = false;
-	bool_settings["size_enabled"] = true;
-	bool_settings["show_points"] = true;
-	bool_settings["enable_triangles"] = false;
-	bool_settings["enable_lines"] = false;
-	bool_settings["show_palette"] = false;
-	bool_settings["smooth_render"] = true;
-	bool_settings["randomize_lightness"] = true;
-	bool_settings["randomize_alpha"] = true;
-	bool_settings["reverse"] = false;
-	bool_settings["print_context_on_swap"] = false;
-	bool_settings["lighting_enabled"] = false;
-	bool_settings["inverted"] = false;
-	bool_settings["scale_matrices"] = true;
-	bool_settings["solid_geometry"] = true;
-}
-
-string settings_manager::getString(string name) const
-{
-	if (string_settings.find(name) != string_settings.cend())
-		return string_settings.at(name);
-
-	else return "";
-}
-
-int settings_manager::getInt(string name) const
-{
-	if (int_settings.find(name) != int_settings.cend())
-		return int_settings.at(name);
-
-	else return -1;
-}
-
-bool settings_manager::getBool(string name) const
-{
-	if (bool_settings.find(name) != bool_settings.cend())
-		return bool_settings.at(name);
-
-	else return false;
-}
-
-float settings_manager::getFloat(string name) const
-{
-	if (float_settings.find(name) != float_settings.cend())
-		return float_settings.at(name);
-
-	else return 0.0f;
-}
-
-bool settings_manager::setString(string name, string value)
-{
-	if (string_settings.find(name) != string_settings.cend())
+	if (mc.getRandomFloat() < 0.8f)
 	{
-		string_settings[name] = value;
-		return true;
+		color_palette synced_palette = color_palette((int)mc.getRandomFloatInRange(0, (int)DEFAULT_COLOR_PALETTE));
+		palette_front = synced_palette;
+		palette_back = synced_palette;
 	}
 
-	else return false;
-}
-
-bool settings_manager::setInt(string name, int value)
-{
-	if (int_settings.find(name) != int_settings.cend())
+	else
 	{
-		int_settings[name] = value;
-		return true;
+		palette_front = color_palette((int)mc.getRandomFloatInRange(0, (int)DEFAULT_COLOR_PALETTE));
+		palette_back = color_palette((int)mc.getRandomFloatInRange(0, (int)DEFAULT_COLOR_PALETTE));
 	}
 
-	else return false;
-}
-
-bool settings_manager::setBool(string name, bool value)
-{
-	if (bool_settings.find(name) != bool_settings.cend())
+	int random_line_mode = int(mc.getRandomFloat() * 3.0f);	
+	switch (random_line_mode)
 	{
-		bool_settings[name] = value;
-		return true;
+	case 0: line_mode = GL_LINES; break;
+	case 1: line_mode = GL_LINE_STRIP; break;
+	case 2: line_mode = 0; break;
+	default: break;
 	}
 
-	else return false;
-}
-
-bool settings_manager::setFloat(string name, float value)
-{
-	if (float_settings.find(name) != float_settings.cend())
+	int random_triangle_mode = int(mc.getRandomFloat() * 4.0f);
+	switch (random_triangle_mode)
 	{
-		float_settings[name] = value;
-		return true;
+	case 0: triangle_mode = GL_TRIANGLES; break;
+	case 1: triangle_mode = GL_TRIANGLE_STRIP; break;
+	case 2: triangle_mode = GL_TRIANGLE_FAN; break;
+	case 3: triangle_mode = 0; break;
+	default: break;
 	}
 
-	else return false;
-}
+	geo_type = geometry_type((int)mc.getRandomFloatInRange(0, (int)DEFAULT_GEOMETRY_TYPE));
 
-bool settings_manager::addString(string name, string value)
-{
-	if (string_settings.find(name) == string_settings.cend())
+	if (use_point_sequence)
 	{
-		string_settings[name] = value;
-		return true;
+		float random_width = mc.getRandomFloatInRange(0.2f, 1.0f);
+		float random_height = mc.getRandomFloatInRange(0.2f, 1.0f);
+		float random_depth = mc.getRandomFloatInRange(0.2f, 1.0f);
+
+		switch (geo_type)
+		{
+		case TRIANGLE: point_sequence = gm.getTriangle(random_width); break;
+		case RECTANGLE: point_sequence = gm.getRectangle(random_width, random_height); break;
+		case SQUARE: point_sequence = gm.getSquare(random_width); break;
+		case CUBOID: point_sequence = gm.getCuboid(random_width, random_height, random_depth); break;
+		case CUBE: point_sequence = gm.getCube(random_width); break;
+		case TETRAHEDRON: point_sequence = gm.getTetrahedron(random_width); break;
+		case OCTAHEDRON: point_sequence = gm.getOctahedron(random_width); break;
+		case DODECAHEDRON: point_sequence = gm.getDodecahedron(random_width); break;
+		case LOADED_SEQUENCE: geo_type = DEFAULT_GEOMETRY_TYPE;
+		case DEFAULT_GEOMETRY_TYPE:
+		default: use_point_sequence = false;
+		}
 	}
-
-	else return false;
 }
-
-bool settings_manager::addInt(string name, int value)
-{
-	if (int_settings.find(name) == int_settings.cend())
-	{
-		int_settings[name] = value;
-		return true;
-	}
-
-	else return false;
-}
-
-bool settings_manager::addBool(string name, bool value)
-{
-	if (bool_settings.find(name) == bool_settings.cend())
-	{
-		bool_settings[name] = value;
-		return true;
-	}
-
-	else return false;
-}
-
-bool settings_manager::addFloat(string name, float value)
-{
-	if (float_settings.find(name) == float_settings.cend())
-	{
-		float_settings[name] = value;
-		return true;
-	}
-
-	else return false;
-}
-
-bool settings_manager::toggleBool(string name)
-{
-	if (bool_settings.find(name) != bool_settings.cend())
-	{
-		bool_settings[name] = !bool_settings.at(name);
-		return true;
-	}
-
-	else return false;
-}
-
-void settings_manager::copySettings(const settings_manager &other)
-{
-	string_settings = other.string_settings;
-	int_settings = other.int_settings;
-	float_settings = other.float_settings;
-	bool_settings = other.bool_settings;
-}
-

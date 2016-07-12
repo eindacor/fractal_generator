@@ -52,7 +52,7 @@ public:
 	void regenerateFractal();
 
 	vec4 getSampleColor(const int &samples, const vector<vec4> &color_pool) const;
-	float getLineWidth() const { return line_width; }
+	float getLineWidth() const { return sm.line_width; }
 
 	void printMatrices() const;
 
@@ -69,16 +69,17 @@ public:
 	vec3 getFocalPoint() const { return focal_point; }
 	float getAverageDelta() const { return average_delta; }
 
-	signed int getGeneration() const { return generation; }
+	signed int getGeneration() const { return sm.generation; }
 
 	vector<vec4> getColorsFront() const { return colors_front; }
 	vector<vec4> getColorsBack() const { return colors_back; }
-	float getInterpolationState() const { return interpolation_state; }
+	float getInterpolationState() const { return sm.interpolation_state; }
 
 	settings_manager getSettings() const { return sm; }
 
 private:
 	settings_manager sm;
+	string base_seed;
 	string generation_seed;
 	vector<unsigned int> matrix_sequence;
 	vector< pair<string, mat4> > matrices_front;
@@ -86,6 +87,8 @@ private:
 	vector<vec4> colors_front;
 	vector<vec4> colors_back;
 	vec4 background_color;
+	vec4 seed_color_front;
+	vec4 seed_color_back;
 	vector<float> sizes_front;
 	vector<float> sizes_back;
 	matrix_creator mc;
@@ -94,47 +97,9 @@ private:
 	vec3 focal_point;
 	float average_delta, max_x, max_y, max_z;
 	
-	// rendering parameters
-	color_palette palette_front = RANDOM_PALETTE;
-	color_palette palette_back = RANDOM_PALETTE;
-	color_palette random_palette_front = DEFAULT_COLOR_PALETTE;
-	color_palette random_palette_back = DEFAULT_COLOR_PALETTE;
-	GLenum line_mode = GL_LINES;
-	GLenum triangle_mode = 0;
-	geometry_type gt = DEFAULT_GEOMETRY_TYPE;
-
-	// all fields below have been moved to settings manager
-	float line_width = 1.0f;
-	bool size_enabled = true;	
-	bool show_points = true;
-	bool enable_triangles = false;
-	bool enable_lines = false;
-	bool show_palette = false;
-	float interpolation_state = 0.0f;
-	float interpolation_increment = 0.02f;
-	int background_front_index = 0;
-	int background_back_index = 0;
-	vec4 seed_color_front;
-	vec4 seed_color_back;
-	float alpha_min;
-	float alpha_max;
-	signed int generation = 0;
-	bool print_context_on_swap = false;
-	signed int refresh_min = 3;
-	signed int refresh_max = 15;
-	bool use_point_sequence = false;
-	int refresh_value = 5;
-	float fractal_scale = 1.0f;
-	int translate_weight;
-	int rotate_weight;
-	int scale_weight;
-	string base_seed;
-	// above fields have been moved to settings manager
-
 	// current gen parameters	
 	vec4 origin = vec4(0.0f, 0.0f, 0.0f, 1.0f);	
 	vector<vec4> custom_sequence;
-	vector<vec4> point_sequence;
 	mat4 fractal_scale_matrix;
 
 	bool initialized = false;
