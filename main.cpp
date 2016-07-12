@@ -256,6 +256,13 @@ int main()
 				shared_ptr<fractal_generator> new_generator(new fractal_generator(settings.base_seed, context, settings.num_points, settings.two_dimensional));
 				generator = new_generator;
 				generator->printContext();
+				frame_counter = 0;
+				counter_increment = 1;
+				show_growth = true;
+				smooth_lines = true;
+				paused = false;
+				reverse = false;
+				growth_paused = false;
 			}
 
 			glfwSetTime(0.0f);

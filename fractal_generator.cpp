@@ -9,6 +9,7 @@ fractal_generator::fractal_generator(
 	base_seed = mc.generateAlphanumericString(32);
 
 	context = con;
+	mc.seed(base_seed);
 	sm.randomize(mc);
 	sm.two_dimensional = two_dimensional;
 	setMatrices();
@@ -29,6 +30,7 @@ fractal_generator::fractal_generator(
 	base_seed = randomization_seed;
 
 	context = con;
+	mc.seed(base_seed);
 	sm.randomize(mc);
 	sm.two_dimensional = two_dimensional;
 	setMatrices();
