@@ -25,6 +25,7 @@ void settings_manager::randomize(const matrix_creator &mc)
 	lighting_enabled = mc.getRandomFloat() < 0.5f;
 	inverted = mc.getRandomFloat() < 0.5f;
 	scale_matrices = mc.getRandomFloat() < 0.5f;
+	line_width = mc.getRandomFloatInRange(1.0f, 8.0f);
 
 	if (mc.getRandomFloat() < 0.8f)
 	{

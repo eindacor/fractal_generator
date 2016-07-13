@@ -912,21 +912,13 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 	if (keys->checkPress(GLFW_KEY_PERIOD, false))
 	{
-		if (sm.line_width == 5.0f)
-			sm.line_width = 1.0f;
-
-		else sm.line_width += 1.0f;
-
+		sm.line_width = glm::clamp(sm.line_width + 1.0f, 1.0f, 8.0f);
 		glLineWidth(sm.line_width);
 	}
 
 	if (keys->checkPress(GLFW_KEY_COMMA, false))
 	{
-		if (sm.line_width == 1.0f)
-			sm.line_width = 5.0f;
-
-		else sm.line_width -= 1.0f;
-
+		sm.line_width = glm::clamp(sm.line_width - 1.0f, 1.0f, 8.0f);
 		glLineWidth(sm.line_width);
 	}
 
