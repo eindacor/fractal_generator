@@ -20,8 +20,16 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	cout << "rendering image..." << endl;
 	vec4 background_color = context->getBackgroundColor();
 
-	GLsizei width(context->getWindowWidth() * image_scale);
-	GLsizei height(context->getWindowHeight() * image_scale);
+	string resolution_input;
+	cout << "resolution: ";
+	std::getline(std::cin, resolution_input);
+	cout << endl;
+	int image_height = glm::clamp((resolution_input == "" || resolution_input == "\n") ? int(context->getWindowHeight() * image_scale) : std::stoi(resolution_input), 100, 5000);
+
+	int image_width = int(float(image_height) * float(context->getAspectRatio()));
+
+	GLsizei width(image_width);
+	GLsizei height(image_height);
 
 	//RGBA8 2D texture, 24 bit depth texture
 	GLuint color_tex, fb, depth_rb;
