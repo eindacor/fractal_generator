@@ -124,7 +124,7 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 		ColorTranslator ct();
 		Color pixel_color;
 		pixel_color = pixel_color.FromArgb(Byte(texture_pixels[texture_index + 3]), Byte(texture_pixels[texture_index]), Byte(texture_pixels[texture_index + 1]), Byte(texture_pixels[texture_index + 2]));
-		output_bitmap.SetPixel(i % width, i / width, pixel_color);
+		output_bitmap.SetPixel(i % width, height - (i / width) - 1, pixel_color);
 	}
 
 	delete[] texture_pixels;
