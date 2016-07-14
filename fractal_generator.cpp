@@ -216,9 +216,6 @@ void fractal_generator::setMatrices()
 	colors_back.clear();
 	sizes_back.clear();
 
-	sm.alpha_min = 0.5f;
-	sm.alpha_max = 1.0f;
-
 	//front data set
 	matrices_front = generateMatrixVector(sm.num_matrices);
 	seed_color_front = mc.getRandomVec4FromColorRanges(
@@ -874,13 +871,15 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		sm.show_points = !sm.show_points;
 
 	if (keys->checkPress(GLFW_KEY_1, false))
-		sm.background_front_index == colors_front.size() - 1 ? sm.background_front_index = 0 : sm.background_front_index++;
+	{
+		sm.background_front_index + 1 == colors_front.size() ? sm.background_front_index = 0 : sm.background_front_index++;
+		sm.background_back_index = sm.background_front_index;
+		updateBackground();
+	}	
 
 	if (keys->checkPress(GLFW_KEY_2, false))
 	{
-		sm.solid_geometry = !sm.solid_geometry;
-		gm.setExportAsTriangles(sm.solid_geometry);
-		sm.solid_geometry ? cout << "solid geometry enabled" << endl : cout << "solid geometry disabled" << endl;
+		//CURRENTLY AVAILABLE
 	}
 
 	if (keys->checkPress(GLFW_KEY_3, false))

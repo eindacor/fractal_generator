@@ -27,6 +27,9 @@ void settings_manager::randomize(const matrix_creator &mc)
 	scale_matrices = mc.getRandomFloat() < 0.5f;
 	line_width = mc.getRandomFloat();
 
+	alpha_min = mc.getRandomFloatInRange(0.0f, 0.5f);
+	alpha_max = mc.getRandomFloatInRange(0.5f, 1.0f);
+
 	GLfloat width_range[2];
 	glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, width_range);
 	glLineWidth(GLfloat(line_width) * width_range[1]);
