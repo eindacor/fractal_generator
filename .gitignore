@@ -2,4 +2,5 @@
 *.psd
 *.iobj
 *.ipdb
+*.jpg
 /screens/*
