@@ -15,8 +15,8 @@ public:
 
 	int refresh_value = 5;
 	int num_points = 10000;
-	int window_width = 1366;
-	int window_height = 768;
+	int window_width = 800;
+	int window_height = 800;
 	int background_front_index = 0;
 	int background_back_index = 0;
 	int generation = 0;

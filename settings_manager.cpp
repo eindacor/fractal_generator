@@ -7,7 +7,7 @@ void settings_manager::randomize(const matrix_creator &mc)
 	generation = 0;
 
 	refresh_value = int(mc.getRandomFloatInRange(refresh_min, refresh_max));
-	num_matrices = int(mc.getRandomFloatInRange(3, 20));
+	num_matrices = int(mc.getRandomFloatInRange(3, 12));
 	translate_weight = int(mc.getRandomFloatInRange(1, 10));
 	rotate_weight = int(mc.getRandomFloatInRange(1, 10));
 	scale_weight = int(mc.getRandomFloatInRange(1, 10));
@@ -25,7 +25,11 @@ void settings_manager::randomize(const matrix_creator &mc)
 	lighting_enabled = mc.getRandomFloat() < 0.5f;
 	inverted = mc.getRandomFloat() < 0.5f;
 	scale_matrices = mc.getRandomFloat() < 0.5f;
-	line_width = mc.getRandomFloatInRange(1.0f, 8.0f);
+	line_width = mc.getRandomFloat();
+
+	GLfloat width_range[2];
+	glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, width_range);
+	glLineWidth(GLfloat(line_width) * width_range[1]);
 
 	if (mc.getRandomFloat() < 0.8f)
 	{

@@ -912,21 +912,25 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 	if (keys->checkPress(GLFW_KEY_PERIOD, false))
 	{
-		sm.line_width = glm::clamp(sm.line_width + 1.0f, 1.0f, 8.0f);
-		glLineWidth(sm.line_width);
+		sm.line_width = glm::clamp(sm.line_width + 0.1f, 0.1f, 1.0f);
+		GLfloat width_range[2];
+		glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, width_range);
+		glLineWidth(GLfloat(sm.line_width) * width_range[1]);
 	}
 
 	if (keys->checkPress(GLFW_KEY_COMMA, false))
 	{
-		sm.line_width = glm::clamp(sm.line_width - 1.0f, 1.0f, 8.0f);
-		glLineWidth(sm.line_width);
+		sm.line_width = glm::clamp(sm.line_width - 0.1f, 0.1f, 1.0f);
+		GLfloat width_range[2];
+		glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, width_range);
+		glLineWidth(GLfloat(sm.line_width) * width_range[1]);
 	}
 
 	if (keys->checkPress(GLFW_KEY_B))
 	{
 		sm.fractal_scale *= 1.1f;
 		fractal_scale_matrix = glm::scale(mat4(1.0f), vec3(sm.fractal_scale, sm.fractal_scale, sm.fractal_scale));
-		glUniformMatrix4fv(context->getShaderGLint("sm.fractal_scale"), 1, GL_FALSE, &fractal_scale_matrix[0][0]);
+		glUniformMatrix4fv(context->getShaderGLint("fractal_scale"), 1, GL_FALSE, &fractal_scale_matrix[0][0]);
 		cout << "scale: " << sm.fractal_scale << endl;
 	}
 
@@ -1097,6 +1101,9 @@ void fractal_generator::regenerateFractal()
 
 		else generateFractal();
 	}
+
+	glUniform1i(context->getShaderGLint("invert_colors"), sm.inverted ? 1 : 0);
+	glUniform1i(context->getShaderGLint("lighting_enabled"), sm.lighting_enabled ? 1 : 0);
 }
 
 void fractal_generator::applyBackground(const int &num_samples)
@@ -1169,6 +1176,8 @@ void fractal_generator::printContext()
 	sm.refresh_enabled ? cout << "refresh mode enabled (" << sm.refresh_value << ")" << endl : cout << "refresh mode disabled" << endl;
 	sm.two_dimensional ? cout << "2D mode enabled" << endl : cout << "2D mode disabled" << endl;
 	sm.scale_matrices ? cout << "scale matrices enabled" << endl : cout << "scale matrices disabled" << endl;
+	if (sm.inverted)
+		cout << "inverted colors" << endl;
 	cout << "geometry type: " << getStringFromGeometryType(sm.geo_type) << endl;
 	cout << "------------------------------------------------" << endl;
 }

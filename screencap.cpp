@@ -80,9 +80,7 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	glEnable(GL_DEPTH_TEST);
 
 	glUniform1f(context->getShaderGLint("point_size_scale"), image_scale);
-	glLineWidth(image_scale * 2.0f * fg.getLineWidth());
 	fg.drawFractal();
-	glLineWidth(fg.getLineWidth());
 	glUniform1f(context->getShaderGLint("point_size_scale"), 1.0f);
 
 	string filename;

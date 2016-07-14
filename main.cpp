@@ -102,14 +102,14 @@ void getSettings(settings_manager &settings)
 	cout << "window width: ";
 	std::getline(std::cin, window_width_input);
 	cout << endl;
-	int window_width = (window_width_input == "" || window_width_input == "\n") ? 1366 : std::stoi(window_width_input);
+	int window_width = (window_width_input == "" || window_width_input == "\n") ? 800 : std::stoi(window_width_input);
 	settings.window_width = glm::clamp(window_width, 300, 4096);
 
 	string window_height_input;
 	cout << "window height: ";
 	std::getline(std::cin, window_height_input);
 	cout << endl;
-	int window_height = (window_height_input == "" || window_height_input == "\n") ? 768 : std::stoi(window_height_input);
+	int window_height = (window_height_input == "" || window_height_input == "\n") ? 800 : std::stoi(window_height_input);
 	settings.window_height = glm::clamp(window_height, 300, 4096);
 }
 
@@ -148,7 +148,7 @@ int main()
 	clock_t start = clock();
 	unsigned int frame_counter = 0;
 	unsigned int counter_increment = 1;
-	bool show_growth = true;
+	bool show_growth = false;
 	bool smooth_lines = true;
 	bool paused = false;
 	bool reverse = false;
@@ -258,7 +258,6 @@ int main()
 				generator->printContext();
 				frame_counter = 0;
 				counter_increment = 1;
-				show_growth = true;
 				smooth_lines = true;
 				paused = false;
 				reverse = false;
