@@ -20,6 +20,7 @@ public:
 	vector<vec4> getTetrahedron(float size) const;
 	vector<vec4> getOctahedron(float size) const;
 	vector<vec4> getDodecahedron(float size) const;
+	vector<vec4> getUnorderedDodecahedron(float size) const;
 	vector<vec4> getIcosahedron(float size) const;
 
 	void setExportAsTriangles(bool b) { export_as_triangles = b; }

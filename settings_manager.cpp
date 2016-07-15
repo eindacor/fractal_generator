@@ -26,6 +26,7 @@ void settings_manager::randomize(const matrix_creator &mc)
 	inverted = mc.getRandomFloat() < 0.5f;
 	scale_matrices = mc.getRandomFloat() < 0.5f;
 	line_width = mc.getRandomFloat();
+	show_growth = mc.getRandomFloat() < 0.25f;
 
 	alpha_min = mc.getRandomFloatInRange(0.0f, 0.5f);
 	alpha_max = mc.getRandomFloatInRange(0.5f, 1.0f);

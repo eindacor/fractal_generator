@@ -76,6 +76,7 @@ public:
 	float getInterpolationState() const { return sm.interpolation_state; }
 
 	settings_manager getSettings() const { return sm; }
+	void setGrowth(bool b) { sm.show_growth = b; }
 
 private:
 	settings_manager sm;

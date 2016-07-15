@@ -136,7 +136,8 @@ int main()
 	3LE1GoVEb1W9jV1GwrTyfMLVMYs8ipYT
 	bdUUhVCQm5hLMzy85HPY30Ipzjv3S9uN
 	fiUppj1hoBZyIZ2Vzq0NlGkdNUUKvcOM
-	DeOBqMmyPGjnqXzxyCXyOD0mMt8QMkFn   <- animated
+	DeOBqMmyPGjnqXzxyCXyOD0mMt8QMkFn	<-animated
+	Aaiq5FNAH3UABa5ePYNvMZ9DPSX9W9eC	<-animated
 	*/
 
 	glfwWindowHint(GLFW_SAMPLES, 4);
@@ -148,7 +149,6 @@ int main()
 	clock_t start = clock();
 	unsigned int frame_counter = 0;
 	unsigned int counter_increment = 1;
-	bool show_growth = false;
 	bool smooth_lines = true;
 	bool paused = false;
 	bool reverse = false;
@@ -166,10 +166,10 @@ int main()
 			glfwPollEvents();
 			context->clearBuffers();
 
-			glUniform1i(context->getShaderGLint("enable_growth_animation"), show_growth ? 1 : 0);
+			glUniform1i(context->getShaderGLint("enable_growth_animation"), generator->getSettings().show_growth ? 1 : 0);
 			glUniform1i(context->getShaderGLint("frame_count"), frame_counter);
 
-			if (!paused && show_growth)
+			if (!paused && generator->getSettings().show_growth)
 			{
 				if (!growth_paused && reverse && frame_counter > counter_increment)
 					frame_counter -= counter_increment;
@@ -214,9 +214,6 @@ int main()
 			if (keys->checkPress(GLFW_KEY_ESCAPE))
 				finished = true;
 
-			if (keys->checkPress(GLFW_KEY_J, false))
-				show_growth = !show_growth;
-
 			if (keys->checkPress(GLFW_KEY_G, false))
 			{
 				if (counter_increment != 100)
@@ -235,7 +232,7 @@ int main()
 			if (keys->checkPress(GLFW_KEY_R, false))
 			{
 				frame_counter = 0;
-				show_growth = true;
+				generator->setGrowth(true);
 				paused = false;
 			}
 

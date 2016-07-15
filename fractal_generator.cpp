@@ -925,6 +925,9 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		glLineWidth(GLfloat(sm.line_width) * width_range[1]);
 	}
 
+	if (keys->checkPress(GLFW_KEY_J, false))
+		sm.show_growth = !sm.show_growth;
+
 	if (keys->checkPress(GLFW_KEY_B))
 	{
 		sm.fractal_scale *= 1.1f;

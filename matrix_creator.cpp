@@ -173,3 +173,15 @@ string matrix_creator::generateAlphanumericString(int num_chars)
 
 	return random_string;
 }
+
+vector<mat4> matrix_creator::getMatricesFromPointSequence(const vector<vec4> &vertices) const
+{
+	vector<mat4> matrices;
+
+	for (const vec4 vertex : vertices)
+	{
+		matrices.push_back(glm::translate(mat4(1.0f), vec3(vertex)));
+	}
+
+	return matrices;
+}

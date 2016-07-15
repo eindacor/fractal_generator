@@ -57,6 +57,7 @@ public:
 	bool inverted = false;
 	bool scale_matrices = true;
 	bool solid_geometry = true;
+	bool show_growth = false;
 
 	void randomize(const matrix_creator &mc);
 

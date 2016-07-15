@@ -233,6 +233,19 @@ vector<vec4> geometry_generator::getOctahedron(float size) const
 
 vector<vec4> geometry_generator::getDodecahedron(float size) const
 {
+	vector<vec4> point_sequence = orderDodecahedron(getUnorderedDodecahedron(size));
+
+	mat4 scale_matrix = glm::scale(mat4(1.0f), vec3(size, size, size));
+	for (vec4 &point : point_sequence)
+	{
+		point = scale_matrix * point;
+	}
+
+	return point_sequence;
+}
+
+vector<vec4> geometry_generator::getUnorderedDodecahedron(float size) const
+{
 	vector<vec4> unordered_sequence;
 
 	//calcs derived from https://en.wikipedia.org/wiki/Regular_dodecahedron
@@ -272,15 +285,7 @@ vector<vec4> geometry_generator::getDodecahedron(float size) const
 		unordered_sequence.push_back(vec4(x, y, z, 1.0f));
 	}
 
-	vector<vec4> point_sequence = orderDodecahedron(unordered_sequence);
-
-	mat4 scale_matrix = glm::scale(mat4(1.0f), vec3(size, size, size));
-	for (vec4 &point : point_sequence)
-	{
-		point = scale_matrix * point;
-	}
-
-	return point_sequence;
+	return unordered_sequence;
 }
 
 vector<vec4> geometry_generator::getIcosahedron(float size) const

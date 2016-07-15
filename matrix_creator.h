@@ -42,6 +42,8 @@ public:
 
 	void seed(const string &seed_string);
 
+	vector<mat4> getMatricesFromPointSequence(const vector<vec4> &vertices) const;
+
 private:
 	boost::mt19937 rng;
 	boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > *uniform_generator = nullptr;
