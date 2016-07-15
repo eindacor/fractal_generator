@@ -92,6 +92,8 @@ private:
 	vec4 seed_color_back;
 	vector<float> sizes_front;
 	vector<float> sizes_back;
+	geometry_type geo_type_front = DEFAULT_GEOMETRY_TYPE;
+	geometry_type geo_type_back = DEFAULT_GEOMETRY_TYPE;
 	matrix_creator mc;
 	color_manager color_man;
 	geometry_generator gm;
@@ -136,7 +138,7 @@ private:
 
 	void bufferData(const vector<float> &vertex_data);
 
-	vector< pair<string, mat4> > generateMatrixVector(const int &count) const;
+	vector< pair<string, mat4> > generateMatrixVector(const int &count, geometry_type &geo_type);
 	vector<vec4> generateColorVector(const vec4 &seed, color_palette palette, const int &count, color_palette &random_selection) const;
 	vector<float> generateSizeVector(const int &count) const;
 	vector<float> getPalettePoints();

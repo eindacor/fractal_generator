@@ -11,6 +11,7 @@ void settings_manager::randomize(const matrix_creator &mc)
 	translate_weight = int(mc.getRandomFloatInRange(1, 10));
 	rotate_weight = int(mc.getRandomFloatInRange(1, 10));
 	scale_weight = int(mc.getRandomFloatInRange(1, 10));
+	matrix_geometry_coefficient = mc.getRandomFloat();
 
 	use_point_sequence = mc.getRandomFloat() < 0.5f;
 	two_dimensional = mc.getRandomFloat() < 0.2f;
@@ -86,6 +87,14 @@ void settings_manager::randomize(const matrix_creator &mc)
 		case OCTAHEDRON: point_sequence = gm.getOctahedron(random_width); break;
 		case DODECAHEDRON: point_sequence = gm.getDodecahedron(random_width); break;
 		case ICOSAHEDRON: point_sequence = gm.getIcosahedron(random_width); break;
+		case U_RECTANGLE: point_sequence = gm.getUnorderedRectangle(random_width, random_height); break;
+		case U_SQUARE: point_sequence = gm.getUnorderedSquare(random_width); break;
+		case U_CUBOID: point_sequence = gm.getUnorderedCuboid(random_width, random_height, random_depth); break;
+		case U_CUBE: point_sequence = gm.getUnorderedCube(random_width); break;
+		case U_TETRAHEDRON: point_sequence = gm.getUnorderedTetrahedron(random_width); break;
+		case U_OCTAHEDRON: point_sequence = gm.getUnorderedOctahedron(random_width); break;
+		case U_DODECAHEDRON: point_sequence = gm.getUnorderedDodecahedron(random_width); break;
+		case U_ICOSAHEDRON: point_sequence = gm.getUnorderedIcosahedron(random_width); break;
 		case LOADED_SEQUENCE: geo_type = DEFAULT_GEOMETRY_TYPE;
 		case DEFAULT_GEOMETRY_TYPE:
 		default: use_point_sequence = false;

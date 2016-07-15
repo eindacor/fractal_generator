@@ -42,7 +42,7 @@ public:
 
 	void seed(const string &seed_string);
 
-	vector<mat4> getMatricesFromPointSequence(const vector<vec4> &vertices) const;
+	vector<mat4> getMatricesFromPointSequence(const vector<vec4> &vertices, int count) const;
 
 private:
 	boost::mt19937 rng;

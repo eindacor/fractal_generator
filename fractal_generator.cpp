@@ -113,47 +113,97 @@ void fractal_generator::drawFractal() const
 	glBindVertexArray(0);
 }
 
-vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &count) const
+vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &count, geometry_type &geo_type)
 {
 	vector< pair<string, mat4> > matrix_vector;
 
-	int total_proportions = sm.translate_weight + sm.rotate_weight + (sm.scale_matrices ? sm.scale_weight : 0);
-
-	for (int i = 0; i < count; i++)
+	if (mc.getRandomFloat() < sm.matrix_geometry_coefficient)
 	{
-		int random_number = int(mc.getRandomUniform() * (float)total_proportions);
+		vector<vec4> point_sequence;
 
-		unsigned int matrix_type;
+		geometry_type matrix_geometry = geometry_type((int)mc.getRandomFloatInRange(0, (int)DEFAULT_GEOMETRY_TYPE));
 
-		if (random_number < sm.translate_weight)
-			matrix_type = 0;
-
-		else if (random_number < sm.translate_weight + sm.rotate_weight)
-			matrix_type = 1;
-
-		else matrix_type = 2;
-
-		string matrix_category;
-		mat4 matrix_to_add;
-
-		switch (matrix_type)
+		while (matrix_geometry == DEFAULT_GEOMETRY_TYPE || matrix_geometry == LOADED_SEQUENCE)
 		{
-		case 0:
-			matrix_to_add = sm.two_dimensional ? mc.getRandomTranslation2D() : mc.getRandomTranslation();
-			matrix_category = "translate";
-			break;
-		case 1:
-			matrix_to_add = sm.two_dimensional ? mc.getRandomRotation2D() : mc.getRandomRotation();
-			matrix_category = "rotate";
-			break;
-		case 2:
-			matrix_to_add = sm.two_dimensional ? mc.getRandomScale2D() : mc.getRandomScale();
-			matrix_category = "scale";
-			break;
+			matrix_geometry = geometry_type((int)mc.getRandomFloatInRange(0, (int)DEFAULT_GEOMETRY_TYPE));
+		}
+
+		float random_width = mc.getRandomFloatInRange(0.2f, 1.0f);
+		float random_height = mc.getRandomFloatInRange(0.2f, 1.0f);
+		float random_depth = mc.getRandomFloatInRange(0.2f, 1.0f);
+
+		switch (matrix_geometry)
+		{
+		case TRIANGLE: point_sequence = gm.getTriangle(random_width); break;
+		case RECTANGLE: matrix_geometry = geometry_type(matrix_geometry + 1);
+		case U_RECTANGLE: point_sequence = gm.getUnorderedRectangle(random_width, random_height); break;
+		case SQUARE: matrix_geometry = geometry_type(matrix_geometry + 1);
+		case U_SQUARE: point_sequence = gm.getUnorderedSquare(random_width); break;
+		case CUBOID: matrix_geometry = geometry_type(matrix_geometry + 1);
+		case U_CUBOID: point_sequence = gm.getUnorderedCuboid(random_width, random_height, random_depth); break;
+		case CUBE: matrix_geometry = geometry_type(matrix_geometry + 1);
+		case U_CUBE: point_sequence = gm.getUnorderedCube(random_width); break;
+		case TETRAHEDRON: matrix_geometry = geometry_type(matrix_geometry + 1);
+		case U_TETRAHEDRON: point_sequence = gm.getUnorderedTetrahedron(random_width); break;
+		case OCTAHEDRON: matrix_geometry = geometry_type(matrix_geometry + 1);
+		case U_OCTAHEDRON: point_sequence = gm.getUnorderedOctahedron(random_width); break;
+		case DODECAHEDRON: matrix_geometry = geometry_type(matrix_geometry + 1);
+		case U_DODECAHEDRON: point_sequence = gm.getUnorderedDodecahedron(random_width); break;
+		case ICOSAHEDRON: matrix_geometry = geometry_type(matrix_geometry + 1);
+		case U_ICOSAHEDRON: point_sequence = gm.getUnorderedIcosahedron(random_width); break;
 		default: break;
 		}
 
-		matrix_vector.push_back(pair<string, mat4>(matrix_category, matrix_to_add));
+		geo_type = matrix_geometry;
+
+		for (int i = 0; i < count; i++)
+		{
+			vec3 vertex(point_sequence.at(i % point_sequence.size()));
+			matrix_vector.push_back(std::pair<string, mat4>("translate (" + getStringFromGeometryType(matrix_geometry) + ")", glm::translate(mat4(1.0f), vertex)));
+		}
+	}
+
+	else
+	{
+		geo_type = DEFAULT_GEOMETRY_TYPE;
+		int total_proportions = sm.translate_weight + sm.rotate_weight + (sm.scale_matrices ? sm.scale_weight : 0);
+
+		for (int i = 0; i < count; i++)
+		{
+			int random_number = int(mc.getRandomUniform() * (float)total_proportions);
+
+			unsigned int matrix_type;
+
+			if (random_number < sm.translate_weight)
+				matrix_type = 0;
+
+			else if (random_number < sm.translate_weight + sm.rotate_weight)
+				matrix_type = 1;
+
+			else matrix_type = 2;
+
+			string matrix_category;
+			mat4 matrix_to_add;
+
+			switch (matrix_type)
+			{
+			case 0:
+				matrix_to_add = sm.two_dimensional ? mc.getRandomTranslation2D() : mc.getRandomTranslation();
+				matrix_category = "translate";
+				break;
+			case 1:
+				matrix_to_add = sm.two_dimensional ? mc.getRandomRotation2D() : mc.getRandomRotation();
+				matrix_category = "rotate";
+				break;
+			case 2:
+				matrix_to_add = sm.two_dimensional ? mc.getRandomScale2D() : mc.getRandomScale();
+				matrix_category = "scale";
+				break;
+			default: break;
+			}
+
+			matrix_vector.push_back(pair<string, mat4>(matrix_category, matrix_to_add));
+		}
 	}
 
 	return matrix_vector;
@@ -193,11 +243,6 @@ void fractal_generator::setMatrices()
 	mc.seed(generation_seed);
 	color_man.seed(generation_seed);
 
-	/*int num_matrices = int(mc.getRandomFloatInRange(3, 7));
-	translate_weight = int(mc.getRandomFloatInRange(4, 6));
-	rotate_weight = int(mc.getRandomFloatInRange(4, 6));
-	scale_weight = int(mc.getRandomFloatInRange(1, 3));*/
-
 	for (int i = 0; i < vertex_count; i++)
 	{
 		matrix_sequence.push_back(int(mc.getRandomFloatInRange(0.0f, float(sm.num_matrices))));
@@ -217,7 +262,7 @@ void fractal_generator::setMatrices()
 	sizes_back.clear();
 
 	//front data set
-	matrices_front = generateMatrixVector(sm.num_matrices);
+	matrices_front = generateMatrixVector(sm.num_matrices, geo_type_front);
 	seed_color_front = mc.getRandomVec4FromColorRanges(
 		0.0f, 1.0f,		// red range
 		0.0f, 1.0f,		// green range
@@ -232,7 +277,8 @@ void fractal_generator::setMatrices()
 	generation_seed = base_seed + "_" + std::to_string(sm.generation);
 	mc.seed(generation_seed);
 	color_man.seed(generation_seed);
-	matrices_back = generateMatrixVector(sm.num_matrices);
+	matrices_back = generateMatrixVector(sm.num_matrices, geo_type_back);
+	//std::random_shuffle(matrices_front.begin(), matrices_front.end());
 	seed_color_back = mc.getRandomVec4FromColorRanges(
 		0.0f, 1.0f,		// red range
 		0.0f, 1.0f,		// green range
@@ -268,7 +314,7 @@ void fractal_generator::swapMatrices()
 			sm.alpha_min, sm.alpha_max		// alpha range
 			);
 
-		matrices_front = generateMatrixVector(matrices_back.size());
+		matrices_front = generateMatrixVector(matrices_back.size(), geo_type_front);
 		colors_front = generateColorVector(seed_color_front, sm.palette_front, matrices_back.size(), sm.random_palette_front);
 		sizes_front = generateSizeVector(matrices_back.size());
 	}
@@ -287,7 +333,7 @@ void fractal_generator::swapMatrices()
 			sm.alpha_min, sm.alpha_max		// alpha range
 			);
 
-		matrices_back = generateMatrixVector(matrices_front.size());
+		matrices_back = generateMatrixVector(matrices_front.size(), geo_type_back);
 		colors_back = generateColorVector(seed_color_back, sm.palette_back, matrices_front.size(), sm.random_palette_back);
 		sizes_back = generateSizeVector(matrices_front.size());
 	}
@@ -1180,7 +1226,10 @@ void fractal_generator::printContext()
 	sm.scale_matrices ? cout << "scale matrices enabled" << endl : cout << "scale matrices disabled" << endl;
 	if (sm.inverted)
 		cout << "inverted colors" << endl;
-	cout << "geometry type: " << getStringFromGeometryType(sm.geo_type) << endl;
+	cout << "geometry draw type: " << getStringFromGeometryType(sm.geo_type) << endl;
+	cout << "front geometry matrix type: " << getStringFromGeometryType(geo_type_front) << endl;
+	cout << "back geometry matrix type: " << getStringFromGeometryType(geo_type_back) << endl;
+	cout << "matrix geometry coefficient: " << sm.matrix_geometry_coefficient << endl;
 	cout << "------------------------------------------------" << endl;
 }
 
@@ -1304,6 +1353,14 @@ void fractal_generator::cycleGeometryType()
 		case OCTAHEDRON: sm.point_sequence = gm.getOctahedron(random_width); break;
 		case DODECAHEDRON: sm.point_sequence = gm.getDodecahedron(random_width); break;
 		case ICOSAHEDRON: sm.point_sequence = gm.getIcosahedron(random_width); break;
+		case U_RECTANGLE: sm.point_sequence = gm.getUnorderedRectangle(random_width, random_height); break;
+		case U_SQUARE: sm.point_sequence = gm.getUnorderedSquare(random_width); break;
+		case U_CUBOID: sm.point_sequence = gm.getUnorderedCuboid(random_width, random_height, random_depth); break;
+		case U_CUBE: sm.point_sequence = gm.getUnorderedCube(random_width); break;
+		case U_TETRAHEDRON: sm.point_sequence = gm.getUnorderedTetrahedron(random_width); break;
+		case U_OCTAHEDRON: sm.point_sequence = gm.getUnorderedOctahedron(random_width); break;
+		case U_DODECAHEDRON: sm.point_sequence = gm.getUnorderedDodecahedron(random_width); break;
+		case U_ICOSAHEDRON: sm.point_sequence = gm.getUnorderedIcosahedron(random_width); break;
 		case LOADED_SEQUENCE: sm.point_sequence = custom_sequence;
 		case DEFAULT_GEOMETRY_TYPE: break;
 		default: break;

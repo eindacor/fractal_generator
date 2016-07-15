@@ -15,8 +15,14 @@ public:
 
 	int refresh_value = 5;
 	int num_points = 10000;
+
+#ifdef _DEBUG
+	int window_width = 400;
+	int window_height = 400;
+#else
 	int window_width = 800;
 	int window_height = 800;
+#endif
 	int background_front_index = 0;
 	int background_back_index = 0;
 	int generation = 0;
@@ -38,6 +44,7 @@ public:
 	float alpha_min = 0.0f;
 	float alpha_max = 1.0f;
 	float fractal_scale = 1.0f;
+	float matrix_geometry_coefficient = 0.25f;
 
 	bool auto_tracking = false;
 	bool use_point_sequence = false;

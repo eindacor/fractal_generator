@@ -174,13 +174,13 @@ string matrix_creator::generateAlphanumericString(int num_chars)
 	return random_string;
 }
 
-vector<mat4> matrix_creator::getMatricesFromPointSequence(const vector<vec4> &vertices) const
+vector<mat4> matrix_creator::getMatricesFromPointSequence(const vector<vec4> &vertices, int count) const
 {
 	vector<mat4> matrices;
 
-	for (const vec4 vertex : vertices)
+	for (int i = 0; i < count; i++)
 	{
-		matrices.push_back(glm::translate(mat4(1.0f), vec3(vertex)));
+		matrices.push_back(glm::translate(mat4(1.0f), vec3(vertices.at(i % vertices.size()))));
 	}
 
 	return matrices;

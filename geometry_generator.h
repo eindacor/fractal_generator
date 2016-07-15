@@ -5,7 +5,7 @@
 #define BASE_LENGTH 2.0f * 0.61803398875f
 #define HYPOTENUSE_LENGTH 2.0f
 
-enum geometry_type { TRIANGLE, RECTANGLE, SQUARE, CUBOID, CUBE, TETRAHEDRON, OCTAHEDRON, DODECAHEDRON, ICOSAHEDRON, LOADED_SEQUENCE, DEFAULT_GEOMETRY_TYPE };
+enum geometry_type { TRIANGLE, RECTANGLE, U_RECTANGLE, SQUARE, U_SQUARE, CUBOID, U_CUBOID, CUBE, U_CUBE, TETRAHEDRON, U_TETRAHEDRON, OCTAHEDRON, U_OCTAHEDRON, DODECAHEDRON, U_DODECAHEDRON, ICOSAHEDRON, U_ICOSAHEDRON, LOADED_SEQUENCE, DEFAULT_GEOMETRY_TYPE };
 
 string getStringFromGeometryType(geometry_type gt);
 
@@ -13,15 +13,22 @@ class geometry_generator
 {
 public:
 	vector<vec4> getSquare(float size) const { return getRectangle(size, size); }
+	vector<vec4> getUnorderedSquare(float size) const { return getUnorderedRectangle(size, size); }
 	vector<vec4> getRectangle(float width, float height) const;
+	vector<vec4> getUnorderedRectangle(float width, float height) const;
 	vector<vec4> getCuboid(float width, float height, float depth) const;
+	vector<vec4> getUnorderedCuboid(float width, float height, float depth) const;
 	vector<vec4> getCube(float size) const { return getCuboid(size, size, size); }
+	vector<vec4> getUnorderedCube(float size) const { return getUnorderedCuboid(size, size, size); }
 	vector<vec4> getTriangle(float size) const;
 	vector<vec4> getTetrahedron(float size) const;
+	vector<vec4> getUnorderedTetrahedron(float size) const;
 	vector<vec4> getOctahedron(float size) const;
+	vector<vec4> getUnorderedOctahedron(float size) const;
 	vector<vec4> getDodecahedron(float size) const;
 	vector<vec4> getUnorderedDodecahedron(float size) const;
 	vector<vec4> getIcosahedron(float size) const;
+	vector<vec4> getUnorderedIcosahedron(float size) const;
 
 	void setExportAsTriangles(bool b) { export_as_triangles = b; }
 
