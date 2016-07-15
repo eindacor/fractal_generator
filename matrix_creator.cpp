@@ -185,3 +185,16 @@ vector<mat4> matrix_creator::getMatricesFromPointSequence(const vector<vec4> &ve
 
 	return matrices;
 }
+
+unsigned int matrix_creator::getRandomIntInRange(const unsigned int &min, const unsigned int &max) const
+{
+	if (min == max)
+		return min;
+
+	if (max < min)
+		throw;
+
+	unsigned int range = max - min;
+	unsigned int span = unsigned int(getRandomFloat() * float(range));
+	return min + span;
+}

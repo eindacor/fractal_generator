@@ -40,9 +40,38 @@ public:
 		{ return vec4(getRandomFloatInRange(r_min, r_max), getRandomFloatInRange(g_min, g_max), getRandomFloatInRange(b_min, b_max), getRandomFloatInRange(a_min, a_max)); }
 	string generateAlphanumericString(int num_chars);
 
+	unsigned int getRandomIntInRange(const unsigned int &min, const unsigned int &max) const;
+
 	void seed(const string &seed_string);
 
 	vector<mat4> getMatricesFromPointSequence(const vector<vec4> &vertices, int count) const;
+
+	template <typename T>
+	bool catRoll(const std::map<T, unsigned int> &m, T &t)
+	{
+		unsigned int seedRange = 0;
+
+		std::map<T, unsigned int> ranges;
+
+		for (const auto &T_pair : m)
+		{
+			seedRange += T_pair.second;
+			ranges[T_pair.first] = seedRange;
+		}
+
+		unsigned int random_number = getRandomIntInRange(0, seedRange);
+
+		for (const auto &T_pair : ranges)
+		{
+			if (random_number < T_pair.second)
+			{
+				t = T_pair.first;
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 private:
 	boost::mt19937 rng;

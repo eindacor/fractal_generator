@@ -121,12 +121,11 @@ vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &
 	{
 		vector<vec4> point_sequence;
 
-		geometry_type matrix_geometry = geometry_type((int)mc.getRandomFloatInRange(0, (int)DEFAULT_GEOMETRY_TYPE));
-
-		while (matrix_geometry == DEFAULT_GEOMETRY_TYPE || matrix_geometry == LOADED_SEQUENCE)
-		{
-			matrix_geometry = geometry_type((int)mc.getRandomFloatInRange(0, (int)DEFAULT_GEOMETRY_TYPE));
-		}
+		//geometry_type matrix_geometry = geometry_type((int)mc.getRandomFloatInRange(0, (int)DEFAULT_GEOMETRY_TYPE));
+		geometry_type matrix_geometry;
+		// TODO create mc exception class
+		if (!mc.catRoll<geometry_type>(sm.matrix_geometry_weights, matrix_geometry))
+			throw;
 
 		float random_width = mc.getRandomFloatInRange(0.2f, 1.0f);
 		float random_height = mc.getRandomFloatInRange(0.2f, 1.0f);
@@ -135,21 +134,13 @@ vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &
 		switch (matrix_geometry)
 		{
 		case TRIANGLE: point_sequence = gm.getTriangle(random_width); break;
-		case RECTANGLE: matrix_geometry = geometry_type(matrix_geometry + 1);
 		case U_RECTANGLE: point_sequence = gm.getUnorderedRectangle(random_width, random_height); break;
-		case SQUARE: matrix_geometry = geometry_type(matrix_geometry + 1);
 		case U_SQUARE: point_sequence = gm.getUnorderedSquare(random_width); break;
-		case CUBOID: matrix_geometry = geometry_type(matrix_geometry + 1);
 		case U_CUBOID: point_sequence = gm.getUnorderedCuboid(random_width, random_height, random_depth); break;
-		case CUBE: matrix_geometry = geometry_type(matrix_geometry + 1);
 		case U_CUBE: point_sequence = gm.getUnorderedCube(random_width); break;
-		case TETRAHEDRON: matrix_geometry = geometry_type(matrix_geometry + 1);
 		case U_TETRAHEDRON: point_sequence = gm.getUnorderedTetrahedron(random_width); break;
-		case OCTAHEDRON: matrix_geometry = geometry_type(matrix_geometry + 1);
 		case U_OCTAHEDRON: point_sequence = gm.getUnorderedOctahedron(random_width); break;
-		case DODECAHEDRON: matrix_geometry = geometry_type(matrix_geometry + 1);
 		case U_DODECAHEDRON: point_sequence = gm.getUnorderedDodecahedron(random_width); break;
-		case ICOSAHEDRON: matrix_geometry = geometry_type(matrix_geometry + 1);
 		case U_ICOSAHEDRON: point_sequence = gm.getUnorderedIcosahedron(random_width); break;
 		default: break;
 		}
@@ -166,21 +157,19 @@ vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &
 	else
 	{
 		geo_type = DEFAULT_GEOMETRY_TYPE;
-		int total_proportions = sm.translate_weight + sm.rotate_weight + (sm.scale_matrices ? sm.scale_weight : 0);
+		int matrix_type;
 
 		for (int i = 0; i < count; i++)
 		{
-			int random_number = int(mc.getRandomUniform() * (float)total_proportions);
+			short matrix_type;
+			std::map<short, unsigned int> matrix_map;
+			matrix_map[0] = sm.translate_weight;
+			matrix_map[1] = sm.rotate_weight;
+			matrix_map[2] = sm.scale_matrices ? sm.scale_weight : 0;
 
-			unsigned int matrix_type;
-
-			if (random_number < sm.translate_weight)
-				matrix_type = 0;
-
-			else if (random_number < sm.translate_weight + sm.rotate_weight)
-				matrix_type = 1;
-
-			else matrix_type = 2;
+			// TODO create mc exception class
+			if (!mc.catRoll<short>(matrix_map, matrix_type))
+				throw;
 
 			string matrix_category;
 			mat4 matrix_to_add;
@@ -1230,6 +1219,14 @@ void fractal_generator::printContext()
 	cout << "front geometry matrix type: " << getStringFromGeometryType(geo_type_front) << endl;
 	cout << "back geometry matrix type: " << getStringFromGeometryType(geo_type_back) << endl;
 	cout << "matrix geometry coefficient: " << sm.matrix_geometry_coefficient << endl;
+	cout << "matrix geometry map: " << endl;
+	for (const auto &geo_pair : sm.matrix_geometry_weights)
+	{
+		cout << getStringFromGeometryType(geo_pair.first) << ": " << geo_pair.second << endl;
+	}
+
+	cout << "------------------------------------------------" << endl;
+	cout << sm.toString() << endl;
 	cout << "------------------------------------------------" << endl;
 }
 

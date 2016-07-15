@@ -77,5 +77,13 @@ public:
 	geometry_type geo_type = DEFAULT_GEOMETRY_TYPE;
 	vector<vec4> point_sequence;
 
+	std::map<geometry_type, unsigned int> matrix_geometry_weights;
+
+	string toString() const;
+	void settings_manager::setWithString(string settings);
+
 	geometry_generator gm;
+
+private:
+	string parseFloat(float f) const;
 };
