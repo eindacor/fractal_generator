@@ -30,7 +30,7 @@ public:
 	void setMatrices();
 
 	vec4 generateInterpolatedColor(int front_index, int back_index) const;
-	float generateInterpolatedSize(int index) const;
+	float generateInterpolatedSize(int front_index, int back_index) const;
 
 	void generateFractal();
 	void generateFractalFromPointSequence();
@@ -82,7 +82,8 @@ private:
 	settings_manager sm;
 	string base_seed;
 	string generation_seed;
-	vector<unsigned int> matrix_sequence;
+	vector<unsigned int> matrix_sequence_front;
+	vector<unsigned int> matrix_sequence_back;
 	vector< pair<string, mat4> > matrices_front;
 	vector< pair<string, mat4> > matrices_back;
 	vector<vec4> colors_front;
@@ -120,14 +121,16 @@ private:
 		vec4 &starting_point,
 		vec4 &starting_color,
 		float &starting_size,
-		int matrix_index,
+		int matrix_index_front,
+		int matrix_index_back,
 		vector<float> &points);
 
 	void addPointSequenceAndIterate(
 		mat4 &origin_matrix,
 		vec4 &starting_color,
 		float &starting_size,
-		int matrix_index,
+		int matrix_index_front,
+		int matrix_index_back,
 		vector<float> &points);
 
 	void addNewPoint(

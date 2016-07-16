@@ -7,6 +7,7 @@ fractal_generator::fractal_generator(
 {
 	vertex_count = num_points;
 	base_seed = mc.generateAlphanumericString(32);
+	color_man.seed(base_seed);
 
 	context = con;
 	mc.seed(base_seed);
@@ -31,6 +32,7 @@ fractal_generator::fractal_generator(
 
 	context = con;
 	mc.seed(base_seed);
+	color_man.seed(base_seed);
 	sm.randomize(mc);
 	sm.two_dimensional = two_dimensional;
 	setMatrices();
@@ -234,7 +236,8 @@ void fractal_generator::setMatrices()
 
 	for (int i = 0; i < vertex_count; i++)
 	{
-		matrix_sequence.push_back(int(mc.getRandomFloatInRange(0.0f, float(sm.num_matrices))));
+		matrix_sequence_front.push_back(int(mc.getRandomFloatInRange(0.0f, float(sm.num_matrices))));
+		matrix_sequence_back.push_back(int(mc.getRandomFloatInRange(0.0f, float(sm.num_matrices))));
 	}
 
 	int random_palette_index = int(mc.getRandomFloatInRange(0.0f, float(DEFAULT_COLOR_PALETTE)));
@@ -292,6 +295,9 @@ void fractal_generator::swapMatrices()
 	if (!sm.reverse)
 	{
 		matrices_back = matrices_front;
+		vector<unsigned int> matrix_sequence_temp(matrix_sequence_back);
+		matrix_sequence_back = matrix_sequence_front;
+		matrix_sequence_front = matrix_sequence_temp;
 		colors_back = colors_front;
 		sizes_back = sizes_front;
 		seed_color_back = seed_color_front;
@@ -311,6 +317,9 @@ void fractal_generator::swapMatrices()
 	else
 	{
 		matrices_front = matrices_back;
+		vector<unsigned int> matrix_sequence_temp(matrix_sequence_front);
+		matrix_sequence_front = matrix_sequence_back;
+		matrix_sequence_back = matrix_sequence_temp;
 		colors_front = colors_back;
 		sizes_front = sizes_back;
 		seed_color_front = seed_color_back;
@@ -381,10 +390,10 @@ vec4 fractal_generator::generateInterpolatedColor(int front_index, int back_inde
 	return interpolated;
 }
 
-float fractal_generator::generateInterpolatedSize(int index) const
+float fractal_generator::generateInterpolatedSize(int front_index, int back_index) const
 {
-	float matrix_size_front = sizes_front.at(index);
-	float matrix_size_back = sizes_back.at(index);
+	float matrix_size_front = sizes_front.at(front_index);
+	float matrix_size_back = sizes_back.at(back_index);
 
 	return (matrix_size_front * sm.interpolation_state) + (matrix_size_back * (1.0f - sm.interpolation_state));
 }
@@ -403,11 +412,12 @@ void fractal_generator::generateFractalFromPointSequence()
 
 	for (int i = 0; i < vertex_count / sm.point_sequence.size(); i++)
 	{
-		int matrix_index = sm.smooth_render ? matrix_sequence.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
-		vec4 transformation_color = generateInterpolatedColor(matrix_index, matrix_index);
-		float transformation_size = generateInterpolatedSize(matrix_index);
+		int matrix_index_front = sm.smooth_render ? matrix_sequence_front.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+		int matrix_index_back = sm.smooth_render ? matrix_sequence_back.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+		vec4 transformation_color = generateInterpolatedColor(matrix_index_front, matrix_index_back);
+		float transformation_size = generateInterpolatedSize(matrix_index_front, matrix_index_back);
 
-		addPointSequenceAndIterate(origin_matrix, point_color, starting_size, matrix_index, points);
+		addPointSequenceAndIterate(origin_matrix, point_color, starting_size, matrix_index_front, matrix_index_back, points);
 	}
 
 	addPalettePointsAndBufferData(points);
@@ -426,12 +436,13 @@ void fractal_generator::generateFractal()
 
 	for (int i = 0; i < vertex_count && num_matrices > 0; i++)
 	{
-		int matrix_index = sm.smooth_render ? matrix_sequence.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+		int matrix_index_front = sm.smooth_render ? matrix_sequence_front.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+		int matrix_index_back = sm.smooth_render ? matrix_sequence_back.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
 		
-		vec4 transformation_color = generateInterpolatedColor(matrix_index, matrix_index);
-		float transformation_size = generateInterpolatedSize(matrix_index);
+		vec4 transformation_color = generateInterpolatedColor(matrix_index_front, matrix_index_back);
+		float transformation_size = generateInterpolatedSize(matrix_index_front, matrix_index_back);
 
-		addNewPointAndIterate(starting_point, point_color, starting_size, matrix_index, points);
+		addNewPointAndIterate(starting_point, point_color, starting_size, matrix_index_front, matrix_index_back, points);
 	}
 
 	addPalettePointsAndBufferData(points);
@@ -453,17 +464,18 @@ void fractal_generator::generateFractalWithRefresh()
 
 		for (int n = 0; n < actual_refresh; n++)
 		{
-			int matrix_index = sm.smooth_render ? matrix_sequence.at((i + n) % matrix_sequence.size()) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+			int matrix_index_front = sm.smooth_render ? matrix_sequence_front.at((i + n) % matrix_sequence_front.size()) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+			int matrix_index_back = sm.smooth_render ? matrix_sequence_back.at((i + n) % matrix_sequence_back.size()) : int(mc.getRandomFloatInRange(0.0f, float(matrices_back.size())));
 
-			mat4 matrix_front = matrices_front.at(matrix_index).second;
-			mat4 matrix_back = matrices_back.at(matrix_index).second;
+			mat4 matrix_front = matrices_front.at(matrix_index_front).second;
+			mat4 matrix_back = matrices_back.at(matrix_index_back).second;
 			vec4 point_front = matrix_front * new_point;
 			vec4 point_back = matrix_back * new_point;
 
 			sm.interpolation_state = glm::clamp(sm.interpolation_state, 0.0f, 1.0f);
 
-			vec4 transformation_color = generateInterpolatedColor(matrix_index, matrix_index);
-			float transformation_size = generateInterpolatedSize(matrix_index);
+			vec4 transformation_color = generateInterpolatedColor(matrix_index_front, matrix_index_back);
+			float transformation_size = generateInterpolatedSize(matrix_index_front, matrix_index_back);
 			new_point = (point_front * sm.interpolation_state) + (point_back * (1.0f - sm.interpolation_state));
 
 			point_color += transformation_color;
@@ -496,13 +508,14 @@ void fractal_generator::generateFractalFromPointSequenceWithRefresh()
 
 		for (int n = 0; n < actual_refresh; n++)
 		{
-			int matrix_index = sm.smooth_render ? matrix_sequence.at((i + n) % matrix_sequence.size()) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+			int matrix_index_front = sm.smooth_render ? matrix_sequence_front.at((i + n) % matrix_sequence_front.size()) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+			int matrix_index_back = sm.smooth_render ? matrix_sequence_back.at((i + n) % matrix_sequence_back.size()) : int(mc.getRandomFloatInRange(0.0f, float(matrices_back.size())));
 
-			mat4 matrix_front = matrices_front.at(matrix_index).second;
-			mat4 matrix_back = matrices_back.at(matrix_index).second;
+			mat4 matrix_front = matrices_front.at(matrix_index_front).second;
+			mat4 matrix_back = matrices_back.at(matrix_index_back).second;
 			mat4 interpolated_matrix = (matrix_front * sm.interpolation_state) + (matrix_back * (1.0f - sm.interpolation_state));
-			vec4 transformation_color = generateInterpolatedColor(matrix_index, matrix_index);
-			float transformation_size = generateInterpolatedSize(matrix_index);
+			vec4 transformation_color = generateInterpolatedColor(matrix_index_front, matrix_index_back);
+			float transformation_size = generateInterpolatedSize(matrix_index_front, matrix_index_back);
 
 			final_matrix = interpolated_matrix * final_matrix;
 			final_color += transformation_color;
@@ -639,19 +652,20 @@ void fractal_generator::addNewPointAndIterate(
 	vec4 &starting_point,
 	vec4 &starting_color,
 	float &starting_size,
-	int matrix_index,
+	int matrix_index_front,
+	int matrix_index_back,
 	vector<float> &points)
 {
-	mat4 matrix_front = matrices_front.at(matrix_index).second;
-	mat4 matrix_back = matrices_back.at(matrix_index).second;
+	mat4 matrix_front = matrices_front.at(matrix_index_front).second;
+	mat4 matrix_back = matrices_back.at(matrix_index_back).second;
 	vec4 point_front = matrix_front * starting_point;
 	vec4 point_back = matrix_back * starting_point;
 
-	vec4 matrix_color_front = (starting_color + colors_front.at(matrix_index)) / 2.0f;
-	vec4 matrix_color_back = (starting_color + colors_back.at(matrix_index)) / 2.0f;
+	vec4 matrix_color_front = (starting_color + colors_front.at(matrix_index_front)) / 2.0f;
+	vec4 matrix_color_back = (starting_color + colors_back.at(matrix_index_back)) / 2.0f;
 
-	float point_size_front = (starting_size + sizes_front.at(matrix_index)) / 2.0f;
-	float point_size_back = (starting_size + sizes_back.at(matrix_index)) / 2.0f;
+	float point_size_front = (starting_size + sizes_front.at(matrix_index_front)) / 2.0f;
+	float point_size_back = (starting_size + sizes_back.at(matrix_index_back)) / 2.0f;
 
 	sm.interpolation_state = glm::clamp(sm.interpolation_state, 0.0f, 1.0f);
 
@@ -660,24 +674,6 @@ void fractal_generator::addNewPointAndIterate(
 	starting_size = (point_size_front * sm.interpolation_state) + (point_size_back * (1.0f - sm.interpolation_state));
 
 	vec4 point_to_add = starting_point;
-
-	//float max_length = 50.0f;
-	//float min_length = 0.3f;
-
-	////scale points to ensure all points fall within clipping plane
-	//if (glm::length(point_to_add) > max_length)
-	//{
-	//	float scale_factor = max_length / glm::length(point_to_add);
-	//	mat4 scale_modifier = glm::scale(mat4(1.0f), vec3(scale_factor, scale_factor, scale_factor));
-	//	point_to_add = scale_modifier * point_to_add;
-	//}
-
-	//if (glm::length(point_to_add) < min_length)
-	//{
-	//	float scale_factor = min_length / glm::length(point_to_add);
-	//	mat4 scale_modifier = glm::scale(mat4(1.0f), vec3(scale_factor, scale_factor, scale_factor));
-	//	point_to_add = scale_modifier * point_to_add;
-	//}
 
 	if (points.size() == 0)
 	{
@@ -719,19 +715,20 @@ void fractal_generator::addPointSequenceAndIterate(
 	mat4 &origin_matrix,
 	vec4 &starting_color,
 	float &starting_size,
-	int matrix_index,
+	int matrix_index_front,
+	int matrix_index_back,
 	vector<float> &points)
 {
-	mat4 matrix_front = matrices_front.at(matrix_index).second;
-	mat4 matrix_back = matrices_back.at(matrix_index).second;
+	mat4 matrix_front = matrices_front.at(matrix_index_front).second;
+	mat4 matrix_back = matrices_back.at(matrix_index_back).second;
 	mat4 interpolated_matrix = (matrix_front * sm.interpolation_state) + (matrix_back * (1.0f - sm.interpolation_state));
 	mat4 final_matrix = interpolated_matrix * origin_matrix;
 
-	vec4 matrix_color_front = (starting_color + colors_front.at(matrix_index)) / 2.0f;
-	vec4 matrix_color_back = (starting_color + colors_back.at(matrix_index)) / 2.0f;
+	vec4 matrix_color_front = (starting_color + colors_front.at(matrix_index_front)) / 2.0f;
+	vec4 matrix_color_back = (starting_color + colors_back.at(matrix_index_back)) / 2.0f;
 
-	float point_size_front = (starting_size + sizes_front.at(matrix_index)) / 2.0f;
-	float point_size_back = (starting_size + sizes_back.at(matrix_index)) / 2.0f;
+	float point_size_front = (starting_size + sizes_front.at(matrix_index_front)) / 2.0f;
+	float point_size_back = (starting_size + sizes_back.at(matrix_index_back)) / 2.0f;
 
 	starting_color = (matrix_color_front * sm.interpolation_state) + (matrix_color_back * (1.0f - sm.interpolation_state));
 	starting_size = (point_size_front * sm.interpolation_state) + (point_size_back * (1.0f - sm.interpolation_state));
@@ -786,24 +783,6 @@ void fractal_generator::addNewPoint(
 	vector<float> &points)
 {
 	vec4 point_to_add = point;
-
-	//float max_length = 50.0f;
-	//float min_length = 0.3f;
-
-	////scale points to ensure all points fall within clipping plane
-	//if (glm::length(point_to_add) > max_length)
-	//{
-	//	float scale_factor = max_length / glm::length(point_to_add);
-	//	mat4 scale_modifier = glm::scale(mat4(1.0f), vec3(scale_factor, scale_factor, scale_factor));
-	//	point_to_add = scale_modifier * point_to_add;
-	//}
-
-	//if (glm::length(point_to_add) < min_length)
-	//{
-	//	float scale_factor = min_length / glm::length(point_to_add);
-	//	mat4 scale_modifier = glm::scale(mat4(1.0f), vec3(scale_factor, scale_factor, scale_factor));
-	//	point_to_add = scale_modifier * point_to_add;
-	//}
 
 	if (points.size() == 0)
 	{
@@ -914,17 +893,22 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 	if (keys->checkPress(GLFW_KEY_2, false))
 	{
-		//CURRENTLY AVAILABLE
+		sm.no_background = !sm.no_background;
+		updateBackground();
 	}
 
 	if (keys->checkPress(GLFW_KEY_3, false))
 		cycleGeometryType();
 
 	if (keys->checkPress(GLFW_KEY_4, false))
-		adjustBackgroundBrightness(-0.1f);
+	{
+		//available
+	}
 
 	if (keys->checkPress(GLFW_KEY_5, false))
-		adjustBackgroundBrightness(0.05f);
+	{
+		//available
+	}
 
 	if (keys->checkPress(GLFW_KEY_Q, false)) 
 	{
@@ -1022,11 +1006,16 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		cout << "transition speed: " << sm.interpolation_increment / increment_max << endl;
 	}
 
+	//TODO make this cycle through enumerated lighting modes, implement lighting modes
 	if (keys->checkPress(GLFW_KEY_8, false))
 	{
-		sm.lighting_enabled = !sm.lighting_enabled;
-		glUniform1i(context->getShaderGLint("lighting_enabled"), sm.lighting_enabled ? 1 : 0);
-		updateBackground();
+		cycleEnum<lighting_mode>(lighting_mode(0), LIGHTING_MODE_SIZE, sm.lm);
+		if (sm.lm == LIGHTING_MODE_SIZE)
+			sm.lm = lighting_mode(0);
+
+		cout << "lighting mode: " << getStringFromLightingMode(sm.lm) << endl;
+
+		glUniform1i(context->getShaderGLint("lighting_mode"), int(sm.lm));
 	}
 
 	if (sm.refresh_value != -1 && keys->checkPress(GLFW_KEY_6, false))
@@ -1076,7 +1065,7 @@ void fractal_generator::tickAnimation() {
 
 void fractal_generator::updateBackground()
 {
-	if (sm.lighting_enabled)
+	if (sm.no_background)
 		sm.inverted ? context->setBackgroundColor(vec4(1.0f, 1.0f, 1.0f, 1.0f)) : context->setBackgroundColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	else
@@ -1140,7 +1129,8 @@ void fractal_generator::regenerateFractal()
 	}
 
 	glUniform1i(context->getShaderGLint("invert_colors"), sm.inverted ? 1 : 0);
-	glUniform1i(context->getShaderGLint("lighting_enabled"), sm.lighting_enabled ? 1 : 0);
+	glUniform1i(context->getShaderGLint("lighting_mode"), sm.lm);
+	glUniform3fv(context->getShaderGLint("centerpoint"), 1, &focal_point[0]);
 }
 
 void fractal_generator::applyBackground(const int &num_samples)
@@ -1216,6 +1206,7 @@ void fractal_generator::printContext()
 	if (sm.inverted)
 		cout << "inverted colors" << endl;
 	cout << "geometry draw type: " << getStringFromGeometryType(sm.geo_type) << endl;
+	cout << "lighting mode: " << getStringFromLightingMode(sm.lm) << endl;
 	cout << "front geometry matrix type: " << getStringFromGeometryType(geo_type_front) << endl;
 	cout << "back geometry matrix type: " << getStringFromGeometryType(geo_type_back) << endl;
 	cout << "matrix geometry coefficient: " << sm.matrix_geometry_coefficient << endl;

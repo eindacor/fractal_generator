@@ -29,6 +29,8 @@
 #include <Windows.h>
 #include <memory>
 
+enum lighting_mode { UNIFORM_LIGHTING, CAMERA, ORIGIN, CENTERPOINT, LIGHTING_MODE_SIZE };
+
 using jep::ogl_context;
 using jep::ogl_camera;
 using jep::key_handler;
@@ -48,3 +50,26 @@ typedef std::pair<bool, float> random_switch;
 
 class matrix_creator;
 class fractal_generator;
+
+template<class T>
+void cycleEnum(T first, T last, T &current)
+{
+	if (current == last)
+	{
+		current = first;
+	}
+
+	else current = T(int(current) + 1);
+}
+
+static string getStringFromLightingMode(lighting_mode lm)
+{
+	switch (lm)
+	{
+	case UNIFORM_LIGHTING: return "uniform";
+	case ORIGIN: return "origin"; 
+	case CENTERPOINT: return "centerpoint";
+	case CAMERA: return "camera";
+	default: return "unknown";
+	}
+}

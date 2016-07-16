@@ -15,10 +15,11 @@ uniform mat4 MV;\n\
 uniform mat4 model_matrix;\n\
 uniform mat4 view_matrix;\n\
 uniform vec3 camera_position;\n\
+uniform vec3 centerpoint;\n\
 uniform mat4 projection_matrix;\n\
 uniform mat4 fractal_scale = mat4(1.0f);\n\
 uniform int enable_growth_animation;\n\
-uniform int lighting_enabled;\n\
+uniform int lighting_mode;\n\
 uniform int frame_count;\n\
 out vec4 fragment_color;\n\
 uniform float point_size_scale = 1.0f;\n\
@@ -40,13 +41,28 @@ void main()\n\
 		gl_PointSize = point_size * point_size_scale;\n\
 		gl_Position = MVP * fractal_scale * position;\n\
 		float alpha_value = (frame_count > gl_VertexID) || (enable_growth_animation == 0) ? color.a : 0.0f;\n\
-		fragment_color = vec4(color.rgb, alpha_value);\n\
-		if (lighting_enabled > 0)\n\
+		if (lighting_mode > 0)\n\
 		{\n\
-			float distance_from_camera = length(position - vec4(camera_position, 1.0));\n\
-			float distance_modifier = clamp(1.0f - (distance_from_camera / 30.0f), 0.0f, 1.0f);\n\
-			fragment_color = fragment_color * distance_modifier;\n\
+			float light_distance = 20.0f;\n\
+			float distance_modifier;\n\
+			if (lighting_mode == 1)\n\
+			{\n\
+				float distance_from_camera = length(position - vec4(camera_position, 1.0));\n\
+				distance_modifier = clamp(1.0f - (distance_from_camera / light_distance), 0.0f, 1.0f);\n\
+			}\n\
+			else if (lighting_mode == 2)\n\
+			{\n\
+				float distance_from_origin = length(position);\n\
+				distance_modifier = clamp(1.0f - (distance_from_origin / light_distance), 0.0f, 1.0f);\n\
+			}\n\
+			else if (lighting_mode == 3)\n\
+			{\n\
+				float distance_from_centerpoint = length(position - vec4(centerpoint, 1.0));\n\
+				distance_modifier = clamp(1.0f - (distance_from_centerpoint / light_distance), 0.0f, 1.0f);\n\
+			}\n\
+			alpha_value *= distance_modifier;\n\
 		}\n\
+		fragment_color = vec4(color.rgb, alpha_value);\n\
 		if (invert_colors > 0)\n\
 		{\n\
 			fragment_color = vec4(vec3(1.0) - fragment_color.rgb, alpha_value); \n\
@@ -137,7 +153,8 @@ int main()
 	bdUUhVCQm5hLMzy85HPY30Ipzjv3S9uN
 	fiUppj1hoBZyIZ2Vzq0NlGkdNUUKvcOM
 	DeOBqMmyPGjnqXzxyCXyOD0mMt8QMkFn	<-animated
-	Aaiq5FNAH3UABa5ePYNvMZ9DPSX9W9eC	<-animated
+	TwolaeAd6aG4scUaEZcKpbctGn6t1HMz	<-animated
+	X2u1ZkbGw00mdWSK1ZRktRluL9y0H9CH	<-animated (disable lines)
 	*/
 
 	glfwWindowHint(GLFW_SAMPLES, 4);
@@ -229,13 +246,6 @@ int main()
 			if (keys->checkPress(GLFW_KEY_H, false))
 				reverse = !reverse;
 
-			if (keys->checkPress(GLFW_KEY_R, false))
-			{
-				frame_counter = 0;
-				generator->setGrowth(true);
-				paused = false;
-			}
-
 			if (keys->checkPress(GLFW_KEY_T, false))
 				paused = !paused;
 
@@ -250,6 +260,19 @@ int main()
 			if (keys->checkPress(GLFW_KEY_SPACE, false))
 			{
 				settings.base_seed = mc.generateAlphanumericString(32);
+				shared_ptr<fractal_generator> new_generator(new fractal_generator(settings.base_seed, context, settings.num_points, settings.two_dimensional));
+				generator = new_generator;
+				generator->printContext();
+				frame_counter = 0;
+				counter_increment = 1;
+				smooth_lines = true;
+				paused = false;
+				reverse = false;
+				growth_paused = false;
+			}
+
+			if (keys->checkPress(GLFW_KEY_R, false))
+			{
 				shared_ptr<fractal_generator> new_generator(new fractal_generator(settings.base_seed, context, settings.num_points, settings.two_dimensional));
 				generator = new_generator;
 				generator->printContext();

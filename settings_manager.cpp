@@ -2,12 +2,12 @@
 
 void settings_manager::randomize(const matrix_creator &mc)
 {
-	background_front_index = 0;
-	background_back_index = 0;
 	generation = 0;
 
 	refresh_value = int(mc.getRandomFloatInRange(refresh_min, refresh_max));
 	num_matrices = int(mc.getRandomFloatInRange(3, 12));
+	background_front_index = int(mc.getRandomFloatInRange(0, num_matrices));
+	background_back_index = int(mc.getRandomFloatInRange(0, num_matrices));
 	translate_weight = int(mc.getRandomFloatInRange(1, 10));
 	rotate_weight = int(mc.getRandomFloatInRange(1, 10));
 	scale_weight = int(mc.getRandomFloatInRange(1, 10));
@@ -37,10 +37,10 @@ void settings_manager::randomize(const matrix_creator &mc)
 	smooth_render = mc.getRandomFloat() < 0.8f;
 	randomize_lightness = mc.getRandomFloat() < 0.8f;
 	randomize_alpha = mc.getRandomFloat() < 0.8f;
-	lighting_enabled = mc.getRandomFloat() < 0.5f;
 	inverted = mc.getRandomFloat() < 0.5f;
 	scale_matrices = mc.getRandomFloat() < 0.5f;
 	show_growth = mc.getRandomFloat() < 0.25f;	
+	no_background = mc.getRandomFloat() < 0.2f;
 
 	GLfloat width_range[2];
 	glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, width_range);
@@ -79,6 +79,7 @@ void settings_manager::randomize(const matrix_creator &mc)
 	}
 
 	geo_type = geometry_type((int)mc.getRandomFloatInRange(0, (int)DEFAULT_GEOMETRY_TYPE));
+	lm = lighting_mode((int)mc.getRandomFloatInRange(0, (int)LIGHTING_MODE_SIZE));
 
 	if (use_point_sequence)
 	{
@@ -118,6 +119,9 @@ string settings_manager::toString() const
 
 	encoded_string += std::to_string(refresh_value) + "_";
 	encoded_string += std::to_string(num_matrices) + "_";
+	encoded_string += std::to_string(background_front_index) + "_";
+	encoded_string += std::to_string(background_back_index) + "_";
+	encoded_string += std::to_string(num_matrices) + "_";
 	encoded_string += std::to_string(translate_weight) + "_";
 	encoded_string += std::to_string(rotate_weight) + "_";
 	encoded_string += std::to_string(scale_weight) + "_";
@@ -142,7 +146,6 @@ string settings_manager::toString() const
 	encoded_string += std::to_string(smooth_render) + "_";
 	encoded_string += std::to_string(randomize_lightness) + "_";
 	encoded_string += std::to_string(randomize_alpha) + "_";
-	encoded_string += std::to_string(lighting_enabled) + "_";
 	encoded_string += std::to_string(inverted) + "_";
 	encoded_string += std::to_string(scale_matrices) + "_";
 	encoded_string += std::to_string(show_growth) + "_";
@@ -152,7 +155,9 @@ string settings_manager::toString() const
 	encoded_string += std::to_string(line_mode) + "_";
 	encoded_string += std::to_string(triangle_mode) + "_";
 	encoded_string += std::to_string(geo_type) + "_";
-	encoded_string += std::to_string(use_point_sequence);
+	encoded_string += std::to_string(lm) + "_";
+	encoded_string += std::to_string(use_point_sequence) + "_";
+	encoded_string += std::to_string(no_background);
 
 	return encoded_string;
 }

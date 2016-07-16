@@ -481,7 +481,8 @@ vector<vec4> color_manager::generatePaletteFromSeed(const vec4 &seed, color_pale
 		color_vector = color_vector;
 		break;
 	}
-	std::random_shuffle(color_vector.begin(), color_vector.end());
+
+	mc.shuffleVector<vec4>(color_vector);
 	return color_vector;
 }
 void color_manager::printColorSet(const vector<vec4> &set) const

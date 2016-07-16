@@ -60,11 +60,11 @@ public:
 	bool randomize_alpha = true;
 	bool reverse = false;
 	bool print_context_on_swap = false;
-	bool lighting_enabled = false;
 	bool inverted = false;
 	bool scale_matrices = true;
 	bool solid_geometry = true;
 	bool show_growth = false;
+	bool no_background = false;
 
 	void randomize(const matrix_creator &mc);
 
@@ -76,6 +76,7 @@ public:
 	GLenum triangle_mode = 0;
 	geometry_type geo_type = DEFAULT_GEOMETRY_TYPE;
 	vector<vec4> point_sequence;
+	lighting_mode lm;
 
 	std::map<geometry_type, unsigned int> matrix_geometry_weights;
 

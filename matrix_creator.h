@@ -47,6 +47,22 @@ public:
 	vector<mat4> getMatricesFromPointSequence(const vector<vec4> &vertices, int count) const;
 
 	template <typename T>
+	void shuffleVector(vector<T> &vec) const
+	{
+		int original_size = vec.size();
+		vector<T> shuffled;
+
+		while (shuffled.size() < original_size)
+		{
+			unsigned int random_index = getRandomIntInRange(0, vec.size());
+			shuffled.push_back(vec.at(random_index));
+			vec.erase(vec.begin() + random_index);
+		}
+
+		vec = shuffled;
+	}
+
+	template <typename T>
 	bool catRoll(const std::map<T, unsigned int> &m, T &t)
 	{
 		unsigned int seedRange = 0;
