@@ -457,7 +457,7 @@ void fractal_generator::generateFractalWithRefresh()
 
 			vec4 transformation_color = influenceElement<vec4>(colors_back.at(matrix_index_back), colors_front.at(matrix_index_front), sm.interpolation_state);
 			float transformation_size = influenceElement<float>(sizes_back.at(matrix_index_back), sizes_front.at(matrix_index_front), sm.interpolation_state);
-			new_point = (point_front * sm.interpolation_state) + (point_back * (1.0f - sm.interpolation_state));
+			new_point = influenceElement<vec4>(point_back, point_front, sm.interpolation_state);
 
 			point_color += transformation_color;
     			new_size += transformation_size;
