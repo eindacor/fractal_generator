@@ -33,6 +33,7 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	// create a framebuffer
 	GLuint fbo_id;
 	glGenFramebuffersEXT(1, &fbo_id);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id);
 
 	// create a multisample color buffer
 	GLuint color_buffer;
@@ -41,7 +42,7 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	signed int samples = 4;
 	glRenderbufferStorageMultisample(GL_RENDERBUFFER_EXT, samples, GL_RGBA8, width, height);
 
-	// make a depth multisample depth buffer
+	// create a multisample depth buffer
 	GLuint depth_buffer;
 	glGenRenderbuffersEXT(1, &depth_buffer);
 	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth_buffer);
