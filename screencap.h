@@ -13,3 +13,4 @@ bool saveImage(
 	const shared_ptr<ogl_context> &context);
 
 string paddedValue(unsigned int value, unsigned short total_digits);
+GLint glExtCheckFramebufferStatus(char *errorMessage);
