@@ -73,3 +73,9 @@ static string getStringFromLightingMode(lighting_mode lm)
 	default: return "unknown";
 	}
 }
+
+template<class T>
+T influenceElement(const T &target, const T &influence, float degree)
+{
+	return (target * (1.0f - degree)) + (influence * degree);
+}

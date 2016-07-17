@@ -26,6 +26,7 @@ void settings_manager::randomize(const matrix_creator &mc)
 	line_width = mc.getRandomFloat();
 	alpha_min = mc.getRandomFloatInRange(0.0f, 0.5f);
 	alpha_max = mc.getRandomFloatInRange(0.5f, 1.0f);
+	bias_coefficient = mc.getRandomFloatInRange(0.1f, 0.3f);
 
 	use_point_sequence = mc.getRandomFloat() < 0.5f;
 	two_dimensional = mc.getRandomFloat() < 0.2f;
@@ -135,6 +136,7 @@ string settings_manager::toString() const
 	encoded_string += parseFloat(line_width) + "_";
 	encoded_string += parseFloat(alpha_min) + "_";
 	encoded_string += parseFloat(alpha_max) + "_";
+	encoded_string += parseFloat(bias_coefficient) + "_";
 
 	encoded_string += std::to_string(use_point_sequence) + "_";
 	encoded_string += std::to_string(two_dimensional) + "_";

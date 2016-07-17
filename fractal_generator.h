@@ -29,9 +29,6 @@ public:
 
 	void setMatrices();
 
-	vec4 generateInterpolatedColor(int front_index, int back_index) const;
-	float generateInterpolatedSize(int front_index, int back_index) const;
-
 	void generateFractal();
 	void generateFractalFromPointSequence();
 	void generateFractalWithRefresh();
