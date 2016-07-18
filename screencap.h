@@ -8,8 +8,13 @@ using namespace System::Drawing;
 using namespace System::Drawing::Imaging;
 
 bool saveImage(
-	float image_scale, 
-	const fractal_generator &fg, 
+	float image_scale,
+	const fractal_generator &fg,
+	const shared_ptr<ogl_context> &context);
+
+bool saveImageLegacy(
+	float image_scale,
+	const fractal_generator &fg,
 	const shared_ptr<ogl_context> &context);
 
 string paddedValue(unsigned int value, unsigned short total_digits);
