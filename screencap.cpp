@@ -67,16 +67,7 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 
 	glClearDepth(1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//-------------------------
 	glViewport(0, 0, width, height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0.0, (GLdouble)width, 0.0, (GLdouble)height, -1.0, 1.0);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	//-------------------------
-	glDisable(GL_TEXTURE_2D);
-	glEnable(GL_DEPTH_TEST);
 
 	// render
 	glUniform1f(context->getShaderGLint("point_size_scale"), image_scale);
@@ -162,6 +153,8 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	// delete resources
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDeleteFramebuffers(1, &multisample_fbo);
+	glDeleteFramebuffers(1, &downsample_fbo);
+	glDeleteRenderbuffers(1, &depth_rb);
 
 	context->setBackgroundColor(background_color);
 
