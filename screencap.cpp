@@ -15,7 +15,7 @@ string paddedValue(unsigned int value, unsigned short total_digits)
 	return padded_number;
 }
 
-bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<ogl_context> &context)
+bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<ogl_context> &context, image_extension ie)
 {
 	cout << "rendering image..." << endl;
 	vec4 background_color = context->getBackgroundColor();
@@ -118,12 +118,23 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 	string filename;
+	string file_extension;
+	
+	switch (ie)
+	{
+	case JPG: file_extension = ".jpg"; break;
+	case TIFF: file_extension = ".tiff"; break;
+	case BMP: file_extension = ".bmp"; break;
+	case PNG: file_extension = ".png"; break;
+	default: return false;
+	}
+
 	FILE *file_check;
 
 	int image_count = 0;
 	while (image_count < 256)
 	{
-		filename = fg.getSeed() + "_g" + paddedValue(fg.getGeneration(), 3) + "_" + paddedValue(image_count, 3) + ".jpg";
+		filename = fg.getSeed() + "_g" + paddedValue(fg.getGeneration(), 3) + "_" + paddedValue(image_count, 3) + file_extension;
 		file_check = fopen(filename.c_str(), "rb");
 		if (file_check == NULL) break;
 		else fclose(file_check);
@@ -162,7 +173,14 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 
 	glViewport(0, 0, context->getWindowWidth(), context->getWindowHeight());
 
-	output_bitmap.Save(gcnew String(&filename[0]), ImageFormat::Jpeg);
+	switch (ie)
+	{
+	case JPG: output_bitmap.Save(gcnew String(&filename[0]), ImageFormat::Jpeg); break;
+	case TIFF: output_bitmap.Save(gcnew String(&filename[0]), ImageFormat::Tiff); break;
+	case BMP: output_bitmap.Save(gcnew String(&filename[0]), ImageFormat::Bmp); break;
+	case PNG: output_bitmap.Save(gcnew String(&filename[0]), ImageFormat::Png); break;
+	default: return false;
+	}
 
 	cout << "file saved: " << filename << endl;
 

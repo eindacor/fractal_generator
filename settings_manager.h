@@ -46,6 +46,7 @@ public:
 	float fractal_scale = 1.0f;
 	float matrix_geometry_coefficient = 0.25f;
 	float bias_coefficient = 0.5f;
+	float illumination_distance = 20.0f;
 
 	bool auto_tracking = false;
 	bool use_point_sequence = false;

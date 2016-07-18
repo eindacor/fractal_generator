@@ -972,17 +972,31 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 	if (keys->checkPress(GLFW_KEY_RIGHT_BRACKET, true) || keys->checkPress(GLFW_KEY_LEFT_BRACKET, true)) 
 	{
-		float increment_min = .01f;
-		float increment_max = .5f;
-		float step_amount = .002f;
+		if (keys->checkPress(GLFW_KEY_LEFT_SHIFT, true) || keys->checkPress(GLFW_KEY_RIGHT_SHIFT, true))
+		{
+			if (keys->checkPress(GLFW_KEY_RIGHT_BRACKET, true))
+				sm.illumination_distance = glm::clamp(sm.illumination_distance + 0.5f, 1.0f, 100.0f);
 
-		if (keys->checkPress(GLFW_KEY_RIGHT_BRACKET, true))
-			sm.interpolation_increment += step_amount;
+			else sm.illumination_distance = glm::clamp(sm.illumination_distance - 0.5f, 1.0f, 100.0f);
 
-		else sm.interpolation_increment -= step_amount;
+			glUniform1f(context->getShaderGLint("illumination_distance"), sm.illumination_distance);
+		}
 
-		sm.interpolation_increment = glm::clamp(sm.interpolation_increment, increment_min, increment_max);
-		cout << "transition speed: " << sm.interpolation_increment / increment_max << endl;
+		else
+		{
+
+			float increment_min = .01f;
+			float increment_max = .5f;
+			float step_amount = .002f;
+
+			if (keys->checkPress(GLFW_KEY_RIGHT_BRACKET, true))
+				sm.interpolation_increment += step_amount;
+
+			else sm.interpolation_increment -= step_amount;
+
+			sm.interpolation_increment = glm::clamp(sm.interpolation_increment, increment_min, increment_max);
+			cout << "transition speed: " << sm.interpolation_increment / increment_max << endl;
+		}
 	}
 
 	//TODO make this cycle through enumerated lighting modes, implement lighting modes
@@ -1110,6 +1124,7 @@ void fractal_generator::regenerateFractal()
 	glUniform1i(context->getShaderGLint("invert_colors"), sm.inverted ? 1 : 0);
 	glUniform1i(context->getShaderGLint("lighting_mode"), sm.lm);
 	glUniform3fv(context->getShaderGLint("centerpoint"), 1, &focal_point[0]);
+	glUniform1f(context->getShaderGLint("illumination_distance"), sm.illumination_distance);
 }
 
 void fractal_generator::applyBackground(const int &num_samples)
@@ -1196,9 +1211,9 @@ void fractal_generator::printContext()
 		cout << getStringFromGeometryType(geo_pair.first) << ": " << geo_pair.second << endl;
 	}
 
-	cout << "------------------------------------------------" << endl;
+	cout << "-----------------------------------------------" << endl;
 	cout << sm.toString() << endl;
-	cout << "------------------------------------------------" << endl;
+	cout << "-----------------------------------------------" << endl;
 }
 
 vector<float> fractal_generator::getPalettePoints()

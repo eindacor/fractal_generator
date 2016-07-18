@@ -23,6 +23,7 @@ uniform int lighting_mode;\n\
 uniform int frame_count;\n\
 out vec4 fragment_color;\n\
 uniform float point_size_scale = 1.0f;\n\
+uniform float illumination_distance;\n\
 uniform int invert_colors;\n\
 uniform int palette_vertex_id;\n\
 void main()\n\
@@ -43,23 +44,20 @@ void main()\n\
 		float alpha_value = (frame_count > gl_VertexID) || (enable_growth_animation == 0) ? color.a : 0.0f;\n\
 		if (lighting_mode > 0)\n\
 		{\n\
-			float light_distance = 20.0f;\n\
-			float distance_modifier;\n\
+			float distance_from_light;\n\
 			if (lighting_mode == 1)\n\
 			{\n\
-				float distance_from_camera = length(position - vec4(camera_position, 1.0));\n\
-				distance_modifier = clamp(1.0f - (distance_from_camera / light_distance), 0.0f, 1.0f);\n\
+				distance_from_light = length(position - vec4(camera_position, 1.0));\n\
 			}\n\
 			else if (lighting_mode == 2)\n\
 			{\n\
-				float distance_from_origin = length(position);\n\
-				distance_modifier = clamp(1.0f - (distance_from_origin / light_distance), 0.0f, 1.0f);\n\
+				distance_from_light = length(position);\n\
 			}\n\
 			else if (lighting_mode == 3)\n\
 			{\n\
-				float distance_from_centerpoint = length(position - vec4(centerpoint, 1.0));\n\
-				distance_modifier = clamp(1.0f - (distance_from_centerpoint / light_distance), 0.0f, 1.0f);\n\
+				distance_from_light = length(position - vec4(centerpoint, 1.0));\n\
 			}\n\
+			float distance_modifier = clamp(1.0f - (distance_from_light / illumination_distance), 0.0f, 1.0f);\n\
 			alpha_value *= distance_modifier;\n\
 		}\n\
 		fragment_color = vec4(color.rgb, alpha_value);\n\
@@ -252,7 +250,10 @@ int main()
 			context->swapBuffers();
 
 			if (keys->checkPress(GLFW_KEY_X, false)) {
-				saveImage(4.0f, *generator, context);
+				saveImage(4.0f, *generator, context, JPG);
+				//saveImage(4.0f, *generator, context, PNG);
+				saveImage(4.0f, *generator, context, BMP);
+				//saveImage(4.0f, *generator, context, TIFF);
 			}
 
 			if (keys->checkPress(GLFW_KEY_SLASH, false))
@@ -260,7 +261,21 @@ int main()
 
 			if (keys->checkPress(GLFW_KEY_SPACE, false))
 			{
-				settings.base_seed = mc.generateAlphanumericString(32);
+				settings.base_seed = "";
+
+				if (keys->checkPress(GLFW_KEY_LEFT_SHIFT, true) || keys->checkPress(GLFW_KEY_LEFT_SHIFT, true))
+				{
+					string seed;
+					cout << "enter seed: ";
+					std::getline(std::cin, seed);
+					cout << endl;
+					seed.erase(std::remove(seed.begin(), seed.end(), '\n'), seed.end());
+					settings.base_seed = seed;
+				}
+
+				if (settings.base_seed.size() == 0)
+					settings.base_seed = mc.generateAlphanumericString(32);
+
 				shared_ptr<fractal_generator> new_generator(new fractal_generator(settings.base_seed, context, settings.num_points, settings.two_dimensional));
 				generator = new_generator;
 				generator->printContext();

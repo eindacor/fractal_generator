@@ -30,6 +30,7 @@
 #include <memory>
 
 enum lighting_mode { UNIFORM_LIGHTING, CAMERA, ORIGIN, CENTERPOINT, LIGHTING_MODE_SIZE };
+enum image_extension {JPG, TIFF, PNG, BMP};
 
 using jep::ogl_context;
 using jep::ogl_camera;

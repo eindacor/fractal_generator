@@ -137,6 +137,7 @@ string settings_manager::toString() const
 	encoded_string += parseFloat(alpha_min) + "_";
 	encoded_string += parseFloat(alpha_max) + "_";
 	encoded_string += parseFloat(bias_coefficient) + "_";
+	encoded_string += parseFloat(illumination_distance) + "_";
 
 	encoded_string += std::to_string(use_point_sequence) + "_";
 	encoded_string += std::to_string(two_dimensional) + "_";

@@ -10,7 +10,8 @@ using namespace System::Drawing::Imaging;
 bool saveImage(
 	float image_scale,
 	const fractal_generator &fg,
-	const shared_ptr<ogl_context> &context);
+	const shared_ptr<ogl_context> &context, 
+	image_extension ie);
 
 bool saveImageLegacy(
 	float image_scale,
