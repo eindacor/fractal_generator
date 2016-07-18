@@ -155,6 +155,8 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	glDeleteFramebuffers(1, &multisample_fbo);
 	glDeleteFramebuffers(1, &downsample_fbo);
 	glDeleteRenderbuffers(1, &depth_rb);
+	glDeleteTextures(1, &multisample_tex);
+	glDeleteTextures(1, &downsample_tex);
 
 	context->setBackgroundColor(background_color);
 
