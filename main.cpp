@@ -253,7 +253,6 @@ int main()
 
 			if (keys->checkPress(GLFW_KEY_X, false)) {
 				saveImage(4.0f, *generator, context);
-				saveImageLegacy(4.0f, *generator, context);
 			}
 
 			if (keys->checkPress(GLFW_KEY_SLASH, false))
