@@ -4,13 +4,13 @@ void settings_manager::randomize(const matrix_creator &mc)
 {
 	generation = 0;
 
-	refresh_value = int(mc.getRandomFloatInRange(refresh_min, refresh_max));
-	num_matrices = int(mc.getRandomFloatInRange(3, 12));
-	background_front_index = int(mc.getRandomFloatInRange(0, num_matrices));
-	background_back_index = int(mc.getRandomFloatInRange(0, num_matrices));
-	translate_weight = int(mc.getRandomFloatInRange(1, 10));
-	rotate_weight = int(mc.getRandomFloatInRange(1, 10));
-	scale_weight = int(mc.getRandomFloatInRange(1, 10));
+	refresh_value = mc.getRandomIntInRange(refresh_min, refresh_max);
+	num_matrices = mc.getRandomIntInRange(3, 12);
+	background_front_index = mc.getRandomIntInRange(0, num_matrices);
+	background_back_index = mc.getRandomIntInRange(0, num_matrices);
+	translate_weight = mc.getRandomIntInRange(1, 10);
+	rotate_weight = mc.getRandomIntInRange(1, 10);
+	scale_weight = mc.getRandomIntInRange(1, 10);
 
 	matrix_geometry_weights[TRIANGLE] = mc.getRandomIntInRange(0, 10);
 	matrix_geometry_weights[U_RECTANGLE] = mc.getRandomIntInRange(0, 10);
@@ -22,26 +22,72 @@ void settings_manager::randomize(const matrix_creator &mc)
 	matrix_geometry_weights[U_DODECAHEDRON] = mc.getRandomIntInRange(0, 10);
 	matrix_geometry_weights[U_ICOSAHEDRON] = mc.getRandomIntInRange(0, 10);
 
+	// MATRIX CREATOR CALL RESERVATIONS	- INTEGER
+	// calls to mc below are made to preserve the consistency of seeded generation throughout development
+	// when another INTEGER is added to the settings, relocate one of the calls below to the section above
+	mc.getRandomIntInRange(0, 10);
+	mc.getRandomIntInRange(0, 10);
+	mc.getRandomIntInRange(0, 10);
+	mc.getRandomIntInRange(0, 10);
+	mc.getRandomIntInRange(0, 10);
+	mc.getRandomIntInRange(0, 10);
+	mc.getRandomIntInRange(0, 10);
+	mc.getRandomIntInRange(0, 10);
+	mc.getRandomIntInRange(0, 10);
+	mc.getRandomIntInRange(0, 10);
+	// END OF CALL RESERVATIONS
+
 	matrix_geometry_coefficient = mc.getRandomFloat();
 	line_width = mc.getRandomFloat();
 	alpha_min = mc.getRandomFloatInRange(0.0f, 0.5f);
 	alpha_max = mc.getRandomFloatInRange(0.5f, 1.0f);
 	bias_coefficient = mc.getRandomFloatInRange(0.1f, 0.3f);
 
-	use_point_sequence = mc.getRandomFloat() < 0.5f;
-	two_dimensional = mc.getRandomFloat() < 0.2f;
-	refresh_enabled = mc.getRandomFloat() < 0.5f;
-	size_enabled = mc.getRandomFloat() < 0.5f;
-	show_points = mc.getRandomFloat() < 0.5f;
-	enable_triangles = mc.getRandomFloat() < 0.4f;
-	enable_lines = mc.getRandomFloat() < 0.4f;
-	smooth_render = mc.getRandomFloat() < 0.8f;
-	randomize_lightness = mc.getRandomFloat() < 0.8f;
-	randomize_alpha = mc.getRandomFloat() < 0.8f;
-	inverted = mc.getRandomFloat() < 0.5f;
-	scale_matrices = mc.getRandomFloat() < 0.5f;
-	show_growth = mc.getRandomFloat() < 0.25f;	
-	no_background = mc.getRandomFloat() < 0.2f;
+	// MATRIX CREATOR CALL RESERVATIONS	- FLOAT
+	// calls to mc below are made to preserve the consistency of seeded generation throughout development
+	// when another FLOAT is added to the settings, relocate one of the calls below to the section above
+	mc.getRandomFloat();
+	mc.getRandomFloat();
+	mc.getRandomFloat();
+	mc.getRandomFloat();
+	mc.getRandomFloat();
+	mc.getRandomFloat();
+	mc.getRandomFloat();
+	mc.getRandomFloat();
+	mc.getRandomFloat();
+	mc.getRandomFloat();
+	// END OF CALL RESERVATIONS
+
+	use_point_sequence = mc.getBool(0.5f);
+	two_dimensional = mc.getBool(0.2f);
+	refresh_enabled = mc.getBool(0.5f);
+	size_enabled = mc.getBool(0.5f);
+	show_points = mc.getBool(0.5f);
+	enable_triangles = mc.getBool(0.4f);
+	enable_lines = mc.getBool(0.4f);
+	smooth_render = !refresh_enabled || mc.getBool(0.8f);
+	randomize_lightness = mc.getBool(0.8f);
+	randomize_alpha = mc.getBool(0.8f);
+	inverted = mc.getBool(0.5f);
+	scale_matrices = mc.getBool(0.5f);
+	show_growth = mc.getBool(0.25f);
+	no_background = mc.getBool(0.2f);
+	//light_effects_transparency = mc.getRandomFloat() < 0.5f;
+
+	// MATRIX CREATOR CALL RESERVATIONS	- BOOL
+	// calls to mc below are made to preserve the consistency of seeded generation throughout development
+	// when another BOOL is added to the settings, relocate one of the calls below to the section above
+	mc.getBool(0.5f);
+	mc.getBool(0.5f);
+	mc.getBool(0.5f);
+	mc.getBool(0.5f);
+	mc.getBool(0.5f);
+	mc.getBool(0.5f);
+	mc.getBool(0.5f);
+	mc.getBool(0.5f);
+	mc.getBool(0.5f);
+	mc.getBool(0.5f);
+	// END OF CALL RESERVATIONS
 
 	GLfloat width_range[2];
 	glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, width_range);
@@ -160,7 +206,8 @@ string settings_manager::toString() const
 	encoded_string += std::to_string(geo_type) + "_";
 	encoded_string += std::to_string(lm) + "_";
 	encoded_string += std::to_string(use_point_sequence) + "_";
-	encoded_string += std::to_string(no_background);
+	encoded_string += std::to_string(no_background) + "_";
+	encoded_string += std::to_string(light_effects_transparency);
 
 	return encoded_string;
 }

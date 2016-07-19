@@ -13,15 +13,9 @@ class fractal_generator
 {
 public:
 	fractal_generator(
-		const shared_ptr<jep::ogl_context> &con,
-		int num_points,
-		bool two_dimensional);
-
-	fractal_generator(
 		const string &randomization_seed,
 		const shared_ptr<jep::ogl_context> &con,
-		int num_points,
-		bool two_dimensional);
+		int num_points);
 
 	~fractal_generator() { glDeleteVertexArrays(1, &pg_VAO); glDeleteBuffers(1, &pg_VBO); }
 
@@ -74,6 +68,7 @@ public:
 
 	settings_manager getSettings() const { return sm; }
 	void setGrowth(bool b) { sm.show_growth = b; }
+	void setTwoDimensional(bool b) { sm.two_dimensional = b; }
 
 private:
 	settings_manager sm;

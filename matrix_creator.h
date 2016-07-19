@@ -41,6 +41,7 @@ public:
 	string generateAlphanumericString(int num_chars);
 
 	unsigned int getRandomIntInRange(const unsigned int &min, const unsigned int &max) const;
+	bool getBool(const float &odds) const { return getRandomFloat() < odds; }
 
 	void seed(const string &seed_string);
 

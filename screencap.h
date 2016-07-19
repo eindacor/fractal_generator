@@ -11,12 +11,8 @@ bool saveImage(
 	float image_scale,
 	const fractal_generator &fg,
 	const shared_ptr<ogl_context> &context, 
-	image_extension ie);
-
-bool saveImageLegacy(
-	float image_scale,
-	const fractal_generator &fg,
-	const shared_ptr<ogl_context> &context);
+	image_extension ie, 
+	int multisample_count);
 
 string paddedValue(unsigned int value, unsigned short total_digits);
 GLint glExtCheckFramebufferStatus(char *errorMessage);
