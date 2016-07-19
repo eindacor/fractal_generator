@@ -1,31 +1,9 @@
 #include "fractal_generator.h"
 
 fractal_generator::fractal_generator(
-	const shared_ptr<ogl_context> &con,
-	int num_points, 
-	bool two_dimensional)
-{
-	vertex_count = num_points;
-	base_seed = mc.generateAlphanumericString(32);
-	color_man.seed(base_seed);
-
-	context = con;
-	mc.seed(base_seed);
-	sm.randomize(mc);
-	sm.two_dimensional = two_dimensional;
-	setMatrices();
-	initialized = false;
-
-	glEnable(GL_PROGRAM_POINT_SIZE);
-	glEnable(GL_DEPTH_CLAMP);
-	glDepthRange(0.0, 1.0);
-}
-
-fractal_generator::fractal_generator(
 	const string &randomization_seed,
 	const shared_ptr<ogl_context> &con,
-	int num_points, 
-	bool two_dimensional)
+	int num_points)
 {
 	vertex_count = num_points;
 	base_seed = randomization_seed;
@@ -34,7 +12,6 @@ fractal_generator::fractal_generator(
 	mc.seed(base_seed);
 	color_man.seed(base_seed);
 	sm.randomize(mc);
-	sm.two_dimensional = two_dimensional;
 	setMatrices();
 	initialized = false;
 
@@ -97,7 +74,7 @@ void fractal_generator::drawFractal() const
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 
-	if (sm.enable_triangles && sm.triangle_mode != 0)
+	if (!sm.two_dimensional && sm.enable_triangles && sm.triangle_mode != 0)
 		glDrawArrays(sm.triangle_mode, 0, vertex_count);
 
 	if (sm.enable_lines && sm.line_mode != 0)
@@ -881,10 +858,16 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 	if (keys->checkPress(GLFW_KEY_4, false))
 	{
+		sm.light_effects_transparency = !sm.light_effects_transparency;
+		glUniform1i(context->getShaderGLint("light_effects_transparency"), sm.light_effects_transparency);
+	}
+
+	if (keys->checkPress(GLFW_KEY_5, true))
+	{
 		//available
 	}
 
-	if (keys->checkPress(GLFW_KEY_5, false))
+	if (keys->checkPress(GLFW_KEY_SLASH, false))
 	{
 		//available
 	}
@@ -972,7 +955,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 	if (keys->checkPress(GLFW_KEY_RIGHT_BRACKET, true) || keys->checkPress(GLFW_KEY_LEFT_BRACKET, true)) 
 	{
-		if (keys->checkPress(GLFW_KEY_LEFT_SHIFT, true) || keys->checkPress(GLFW_KEY_RIGHT_SHIFT, true))
+		if (keys->checkShiftHold())
 		{
 			if (keys->checkPress(GLFW_KEY_RIGHT_BRACKET, true))
 				sm.illumination_distance = glm::clamp(sm.illumination_distance + 0.5f, 1.0f, 100.0f);
@@ -1058,8 +1041,11 @@ void fractal_generator::tickAnimation() {
 
 void fractal_generator::updateBackground()
 {
+	vec4 actual_background;
 	if (sm.no_background)
-		sm.inverted ? context->setBackgroundColor(vec4(1.0f, 1.0f, 1.0f, 1.0f)) : context->setBackgroundColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	{
+		actual_background = sm.inverted ? vec4(1.0f, 1.0f, 1.0f, 1.0f) : vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	}
 
 	else
 	{
@@ -1069,9 +1055,11 @@ void fractal_generator::updateBackground()
 		if (sm.inverted)
 			new_background = vec4(1.0f) - new_background;
 
-		background_color = new_background;
-		context->setBackgroundColor(background_color);
+		actual_background = new_background;
 	}
+
+	context->setBackgroundColor(actual_background);
+	glUniform4fv(context->getShaderGLint("background_color"), 1, &actual_background[0]);
 }
 
 void fractal_generator::invertColors()

@@ -16,9 +16,11 @@ uniform mat4 model_matrix;\n\
 uniform mat4 view_matrix;\n\
 uniform vec3 camera_position;\n\
 uniform vec3 centerpoint;\n\
+uniform vec4 background_color;\n\
 uniform mat4 projection_matrix;\n\
 uniform mat4 fractal_scale = mat4(1.0f);\n\
 uniform int enable_growth_animation;\n\
+uniform int light_effects_transparency;\n\
 uniform int lighting_mode;\n\
 uniform int frame_count;\n\
 out vec4 fragment_color;\n\
@@ -26,8 +28,15 @@ uniform float point_size_scale = 1.0f;\n\
 uniform float illumination_distance;\n\
 uniform int invert_colors;\n\
 uniform int palette_vertex_id;\n\
+uniform float light_cutoff = float(0.005f);\n\
 void main()\n\
 {\n\
+	if (frame_count < gl_VertexID && enable_growth_animation > 0)\n\
+	{\n\
+		fragment_color = vec4(color.rgb, 0.0f);\n\
+		gl_Position = MVP * fractal_scale * position;\n\
+		return;\n\
+	}\n\
 	if (gl_VertexID >= palette_vertex_id)\n\
 	{\n\
 		gl_Position = position;\n\
@@ -41,29 +50,41 @@ void main()\n\
 	{\n\
 		gl_PointSize = point_size * point_size_scale;\n\
 		gl_Position = MVP * fractal_scale * position;\n\
-		float alpha_value = (frame_count > gl_VertexID) || (enable_growth_animation == 0) ? color.a : 0.0f;\n\
-		if (lighting_mode > 0)\n\
-		{\n\
-			float distance_from_light;\n\
-			if (lighting_mode == 1)\n\
-			{\n\
-				distance_from_light = length(position - vec4(camera_position, 1.0));\n\
-			}\n\
-			else if (lighting_mode == 2)\n\
-			{\n\
-				distance_from_light = length(position);\n\
-			}\n\
-			else if (lighting_mode == 3)\n\
-			{\n\
-				distance_from_light = length(position - vec4(centerpoint, 1.0));\n\
-			}\n\
-			float distance_modifier = clamp(1.0f - (distance_from_light / illumination_distance), 0.0f, 1.0f);\n\
-			alpha_value *= distance_modifier;\n\
-		}\n\
+		float alpha_value = color.a;\n\
 		fragment_color = vec4(color.rgb, alpha_value);\n\
 		if (invert_colors > 0)\n\
 		{\n\
 			fragment_color = vec4(vec3(1.0) - fragment_color.rgb, alpha_value); \n\
+		}\n\
+		if (lighting_mode > 0)\n\
+		{\n\
+			vec3 light_position;\n\
+			float distance_from_light;\n\
+			if (lighting_mode == 1)\n\
+			{\n\
+				light_position = camera_position;\n\
+			}\n\
+			else if (lighting_mode == 2)\n\
+			{\n\
+				light_position = vec3(0.0f, 0.0f, 0.0f);\n\
+			}\n\
+			else if (lighting_mode == 3)\n\
+			{\n\
+				light_position = centerpoint;\n\
+			}\n\
+			// lighting calcs from https://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/ \n\
+			float r = illumination_distance;\n\
+			vec3 L = light_position - vec3(position);\n\
+			float distance = length(L);\n\
+			float d = max(distance - r, 0);\n\
+			L /= distance;\n\
+			float denom = d/r + 1.0f;\n\
+			float attenuation = 1.0f / (denom * denom);\n\
+			attenuation = (attenuation - light_cutoff) / (1.0f - light_cutoff);\n\
+			attenuation = max(attenuation, 0);\n\
+			fragment_color = (fragment_color * attenuation) + (background_color * (1.0f - attenuation));\n\
+			if (light_effects_transparency == 0)\n\
+ 				fragment_color.a = alpha_value;\n\
 		}\n\
 	}\n\
 }\n\
@@ -103,8 +124,6 @@ void getSettings(settings_manager &settings)
 	cout << endl;
 	seed.erase(std::remove(seed.begin(), seed.end(), '\n'), seed.end());
 	settings.base_seed = seed;
-	
-	settings.two_dimensional = getYesOrNo("2D mode?", settings.two_dimensional);
 
 	string point_count;
 	cout << "point count: ";
@@ -139,7 +158,7 @@ int main()
 	float eye_level = 0.0f;
 	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, settings.window_width, settings.window_height, true));
 
-	shared_ptr<fractal_generator> generator(new fractal_generator(settings.base_seed, context, settings.num_points, settings.two_dimensional));
+	shared_ptr<fractal_generator> generator(new fractal_generator(settings.base_seed, context, settings.num_points));
 	shared_ptr<key_handler> keys(new key_handler(context));
 
 	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 2.0f), 45.0f));
@@ -164,10 +183,8 @@ int main()
 	clock_t start = clock();
 	unsigned int frame_counter = 0;
 	unsigned int counter_increment = 1;
-	bool smooth_lines = true;
 	bool paused = false;
 	bool reverse = false;
-	bool growth_paused = false;
 
 	generator->printContext();
 
@@ -186,10 +203,10 @@ int main()
 
 			if (!paused && generator->getSettings().show_growth)
 			{
-				if (!growth_paused && reverse && frame_counter > counter_increment)
+				if (generator->getSettings().show_growth && reverse && frame_counter > counter_increment)
 					frame_counter -= counter_increment;
 
-				else if (!growth_paused && !reverse)
+				else if (generator->getSettings().show_growth && !reverse)
 					frame_counter += counter_increment;
 			}
 
@@ -250,20 +267,17 @@ int main()
 			context->swapBuffers();
 
 			if (keys->checkPress(GLFW_KEY_X, false)) {
-				saveImage(4.0f, *generator, context, JPG);
+				//saveImage(4.0f, *generator, context, JPG);
 				//saveImage(4.0f, *generator, context, PNG);
-				saveImage(4.0f, *generator, context, BMP);
+				saveImage(4.0f, *generator, context, BMP, 6);
 				//saveImage(4.0f, *generator, context, TIFF);
 			}
-
-			if (keys->checkPress(GLFW_KEY_SLASH, false))
-				growth_paused = !growth_paused;
 
 			if (keys->checkPress(GLFW_KEY_SPACE, false))
 			{
 				settings.base_seed = "";
 
-				if (keys->checkPress(GLFW_KEY_LEFT_SHIFT, true) || keys->checkPress(GLFW_KEY_LEFT_SHIFT, true))
+				if (keys->checkShiftHold())
 				{
 					string seed;
 					cout << "enter seed: ";
@@ -276,28 +290,24 @@ int main()
 				if (settings.base_seed.size() == 0)
 					settings.base_seed = mc.generateAlphanumericString(32);
 
-				shared_ptr<fractal_generator> new_generator(new fractal_generator(settings.base_seed, context, settings.num_points, settings.two_dimensional));
+				shared_ptr<fractal_generator> new_generator(new fractal_generator(settings.base_seed, context, settings.num_points));
 				generator = new_generator;
 				generator->printContext();
 				frame_counter = 0;
 				counter_increment = 1;
-				smooth_lines = true;
 				paused = false;
 				reverse = false;
-				growth_paused = false;
 			}
 
 			if (keys->checkPress(GLFW_KEY_R, false))
 			{
-				shared_ptr<fractal_generator> new_generator(new fractal_generator(settings.base_seed, context, settings.num_points, settings.two_dimensional));
+				shared_ptr<fractal_generator> new_generator(new fractal_generator(settings.base_seed, context, settings.num_points));
 				generator = new_generator;
 				generator->printContext();
 				frame_counter = 0;
 				counter_increment = 1;
-				smooth_lines = true;
 				paused = false;
 				reverse = false;
-				growth_paused = false;
 			}
 
 			glfwSetTime(0.0f);
