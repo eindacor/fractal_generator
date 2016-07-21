@@ -281,7 +281,7 @@ int main()
 			if (keys->checkPress(GLFW_KEY_X, false)) {
 				//saveImage(4.0f, *generator, context, JPG);
 				//saveImage(4.0f, *generator, context, PNG);
-				saveImage(4.0f, *generator, context, BMP, 6);
+				saveImage(4.0f, *generator, context, BMP, 4);
 				//saveImage(4.0f, *generator, context, TIFF);
 			}
 
