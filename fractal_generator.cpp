@@ -627,7 +627,7 @@ void fractal_generator::addNewPointAndIterate(
 
 	starting_point = influenceElement<vec4>(point_back, point_front, sm.interpolation_state);
 	starting_color = influenceElement<vec4>(matrix_color_back, matrix_color_front, sm.interpolation_state);
-	starting_size = influenceElement<float>(point_size_back, point_size_front, sm.interpolation_increment);
+	starting_size = influenceElement<float>(point_size_back, point_size_front, sm.interpolation_state);
 
 	vec4 point_to_add = starting_point;
 
@@ -687,7 +687,7 @@ void fractal_generator::addPointSequenceAndIterate(
 	float point_size_back = influenceElement<float>(starting_size, sizes_back.at(matrix_index_back), sm.bias_coefficient);
 
 	starting_color = influenceElement<vec4>(matrix_color_back, matrix_color_front, sm.interpolation_state);
-	starting_size = influenceElement<float>(point_size_back, point_size_front, sm.interpolation_increment);
+	starting_size = influenceElement<float>(point_size_back, point_size_front, sm.interpolation_state);
 
 	for (const vec4 &point : sm.point_sequence)
 	{
@@ -863,11 +863,6 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 	}
 
 	if (keys->checkPress(GLFW_KEY_5, true))
-	{
-		//available
-	}
-
-	if (keys->checkPress(GLFW_KEY_SLASH, false))
 	{
 		//available
 	}

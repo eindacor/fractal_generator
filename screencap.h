@@ -1,6 +1,7 @@
 #pragma once
 
 #include "header.h"
+#include "fractal_generator.h"
 
 #using <system.drawing.dll>
 using namespace System;

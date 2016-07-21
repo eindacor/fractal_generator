@@ -1,7 +1,7 @@
 #pragma once
 
 #include "header.h"
-#include "matrix_creator.h"
+#include "random_generator.h"
 #include "color_manager.h"
 #include "geometry_generator.h"
 
@@ -69,7 +69,7 @@ public:
 	bool no_background = false;
 	bool light_effects_transparency = false;
 
-	void randomize(const matrix_creator &mc);
+	void randomize(const random_generator &mc);
 
 	color_palette palette_front = RANDOM_PALETTE;
 	color_palette palette_back = RANDOM_PALETTE;

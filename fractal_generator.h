@@ -4,7 +4,7 @@
 #define FRACTAL_GENERATOR_H
 
 #include "header.h"
-#include "matrix_creator.h"
+#include "random_generator.h"
 #include "color_manager.h"
 #include "settings_manager.h"
 #include "geometry_generator.h"
@@ -87,7 +87,7 @@ private:
 	vector<float> sizes_back;
 	geometry_type geo_type_front = DEFAULT_GEOMETRY_TYPE;
 	geometry_type geo_type_back = DEFAULT_GEOMETRY_TYPE;
-	matrix_creator mc;
+	random_generator mc;
 	color_manager color_man;
 	geometry_generator gm;
 	vec3 focal_point;

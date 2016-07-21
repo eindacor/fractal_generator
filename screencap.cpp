@@ -1,5 +1,4 @@
 #include "screencap.h"
-#include "fractal_generator.h"
 
 string paddedValue(unsigned int value, unsigned short total_digits)
 {
@@ -116,12 +115,15 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 	// delete resources
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDeleteFramebuffers(1, &multisample_fbo);
 	glDeleteFramebuffers(1, &downsample_fbo);
 	glDeleteRenderbuffers(1, &depth_rb);
 	glDeleteTextures(1, &multisample_tex);
 	glDeleteTextures(1, &downsample_tex);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	string filename;
 	string file_extension;

@@ -1,5 +1,4 @@
 #include "color_manager.h"
-#include "matrix_creator.h"
 
 string color_manager::toRGBAString(const vec4 &color) const
 {
