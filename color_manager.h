@@ -1,7 +1,7 @@
 #pragma once
 
 #include "header.h"
-#include "matrix_creator.h"
+#include "random_generator.h"
 
 //RANDOM_PALETTE must be first, DEFAULT_COLOR_PALETTE must be last
 enum color_palette { RANDOM_PALETTE, ANALOGOUS_PALETTE, PRIMARY_PALETTE, SECONDARY_PALETTE, TERTIARY_PALETTE, RANDOM_COLORS, MONOCHROMATIC_PALETTE, COMPLEMENTARY_PALETTE, SPLIT_COMPLEMENTARY_PALETTE, TRIAD_PALETTE, TETRAD_PALETTE, SQUARE_PALETTE, DEFAULT_COLOR_PALETTE
@@ -87,5 +87,5 @@ public:
 	void seed(const string seed) { mc.seed(seed); }
 
 private:
-	matrix_creator mc;
+	random_generator mc;
 };

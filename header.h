@@ -49,7 +49,7 @@ using glm::vec4;
 
 typedef std::pair<bool, float> random_switch;
 
-class matrix_creator;
+class random_generator;
 class fractal_generator;
 
 template<class T>

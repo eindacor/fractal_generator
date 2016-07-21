@@ -1,6 +1,6 @@
 #include "settings_manager.h"
 
-void settings_manager::randomize(const matrix_creator &mc)
+void settings_manager::randomize(const random_generator &mc)
 {
 	generation = 0;
 

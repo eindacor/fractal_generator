@@ -1,5 +1,5 @@
 #include "header.h"
-#include "matrix_creator.h"
+#include "random_generator.h"
 #include "fractal_generator.h"
 #include "screencap.h"
 #include "geometry_generator.h"
@@ -150,7 +150,7 @@ int main()
 {
 	settings_manager settings;
 	getSettings(settings);
-	matrix_creator mc;
+	random_generator mc;
 
 	if (settings.base_seed.size() == 0)
 		settings.base_seed = mc.generateAlphanumericString(32);
@@ -185,6 +185,7 @@ int main()
 	unsigned int counter_increment = 1;
 	bool paused = false;
 	bool reverse = false;
+	bool pause_on_swap = false;
 
 	generator->printContext();
 
@@ -200,6 +201,17 @@ int main()
 
 			glUniform1i(context->getShaderGLint("enable_growth_animation"), generator->getSettings().show_growth ? 1 : 0);
 			glUniform1i(context->getShaderGLint("frame_count"), frame_counter);
+
+			if (keys->checkPress(GLFW_KEY_SLASH, false))
+			{
+				pause_on_swap = !pause_on_swap;
+			}
+
+			if (pause_on_swap && (generator->getInterpolationState() < 0.0001f || generator->getInterpolationState() > 0.9999f))
+			{
+				paused = true;
+				pause_on_swap = false;
+			}
 
 			if (!paused && generator->getSettings().show_growth)
 			{
