@@ -204,7 +204,7 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	return true;
 }
 
-bool saveImageQuadrants(float image_scale, const fractal_generator &fg, const shared_ptr<ogl_context> &context, image_extension ie, int multisample_count, int x_count, int y_count, int quadrant_size)
+bool batchRender(float image_scale, const fractal_generator &fg, const shared_ptr<ogl_context> &context, image_extension ie, int multisample_count, int x_count, int y_count, int quadrant_size)
 {
 	cout << "rendering image..." << endl;
 	vec4 background_color = context->getBackgroundColor();
@@ -259,8 +259,17 @@ bool saveImageQuadrants(float image_scale, const fractal_generator &fg, const sh
 		}
 
 		float scale = max(x_count, y_count);
-		float x_translation = ((float(quadrant_index % x_count) * (2.0f / scale)) - (1.0f - (1.0f / scale))) * -1.0f;
-		float y_translation = ((float(quadrant_index / x_count) * (2.0f / scale)) - (1.0f - (1.0f / scale))) * -1.0f;
+		// scaled_chunk_size is essentially the size of one quadrant scaled to the current viewspace
+		// the rendered viewspace is a square that's 2.0 long and 2.0 high (-1.0 to 1.0 in each axis)
+		// if that viewspace is to be broken up into 16 tiles, the scaled_chunk_size is the width and height of one of those tiles
+		// 16 tiles would mean the 2-unit viewspace becomes a 4x4 grid
+		// if scale == 4, then scaled_chunk_size is 0.5
+		// 4 tiles across x 0.5 = the original 2.0 of the viewspace
+		float scaled_chunk_size = 2.0f / scale;
+		float x_translation_start = (float(x_count) * scaled_chunk_size) / 2.0f;
+		float y_translation_start = (float(y_count) * scaled_chunk_size) / 2.0f;
+		float x_translation = ((float(quadrant_index % x_count) * scaled_chunk_size) - (x_translation_start - (scaled_chunk_size / 2.0f))) * -1.0f;
+		float y_translation = ((float(quadrant_index / x_count) * scaled_chunk_size) - (y_translation_start - (scaled_chunk_size / 2.0f))) * -1.0f;
 		mat4 quadrant_translation = glm::translate(mat4(1.0f), vec3(x_translation, y_translation, 0.0f));
 		mat4 quadrant_scale = glm::scale(mat4(1.0f), vec3(scale, scale, 1.0f));
 		mat4 quadrant_matrix = quadrant_scale * quadrant_translation;

@@ -74,7 +74,7 @@ void fractal_generator::drawFractal() const
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 
-	if (!sm.two_dimensional && sm.enable_triangles && sm.triangle_mode != 0)
+	if (sm.enable_triangles && sm.triangle_mode != 0)
 		glDrawArrays(sm.triangle_mode, 0, vertex_count);
 
 	if (sm.enable_lines && sm.line_mode != 0)

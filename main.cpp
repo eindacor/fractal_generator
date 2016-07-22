@@ -309,7 +309,7 @@ int main()
 					int quadrant_size = (quadrant_size_input == "" || quadrant_size_input == "\n") ? 1024 : std::stoi(quadrant_size_input);
 					quadrant_size = glm::clamp(quadrant_size, 128, 2048);
 
-					saveImageQuadrants(4.0f, *generator, context, BMP, 4, x_quadrants, y_quadrants, quadrant_size);
+					batchRender(4.0f, *generator, context, BMP, 4, x_quadrants, y_quadrants, quadrant_size);
 				}
 
 				else

@@ -15,7 +15,7 @@ bool saveImage(
 	image_extension ie, 
 	int multisample_count);
 
-bool saveImageQuadrants(
+bool batchRender(
 	float image_scale, 
 	const fractal_generator &fg, 
 	const shared_ptr<ogl_context> &context, 
