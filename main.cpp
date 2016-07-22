@@ -29,6 +29,8 @@ uniform float illumination_distance;\n\
 uniform int invert_colors;\n\
 uniform int palette_vertex_id;\n\
 uniform float light_cutoff = float(0.005f);\n\
+uniform mat4 quadrant_matrix;\n\
+uniform int render_quadrant;\n\
 void main()\n\
 {\n\
 	if (frame_count < gl_VertexID && enable_growth_animation > 0)\n\
@@ -86,6 +88,10 @@ void main()\n\
 			if (light_effects_transparency == 0)\n\
  				fragment_color.a = alpha_value;\n\
 		}\n\
+	}\n\
+	if (render_quadrant > 0)\n\
+	{\n\
+		gl_Position = quadrant_matrix * gl_Position;\n\
 	}\n\
 }\n\
 ";
@@ -278,11 +284,42 @@ int main()
 
 			context->swapBuffers();
 
-			if (keys->checkPress(GLFW_KEY_X, false)) {
-				//saveImage(4.0f, *generator, context, JPG);
-				//saveImage(4.0f, *generator, context, PNG);
-				saveImage(4.0f, *generator, context, BMP, 4);
-				//saveImage(4.0f, *generator, context, TIFF);
+			if (keys->checkPress(GLFW_KEY_X, false)) 
+			{
+				if (keys->checkShiftHold())
+				{
+					string x_quadrants_input;
+					cout << "x quadrants: ";
+					std::getline(std::cin, x_quadrants_input);
+					cout << endl;
+					int x_quadrants = (x_quadrants_input == "" || x_quadrants_input == "\n") ? 1 : std::stoi(x_quadrants_input);
+					x_quadrants = glm::clamp(x_quadrants, 1, 100);
+
+					string y_quadrants_input;
+					cout << "y quadrants: ";
+					std::getline(std::cin, y_quadrants_input);
+					cout << endl;
+					int y_quadrants = (y_quadrants_input == "" || y_quadrants_input == "\n") ? 1 : std::stoi(y_quadrants_input);
+					y_quadrants = glm::clamp(y_quadrants, 1, 100);
+
+					string quadrant_size_input;
+					cout << "quadrant size: ";
+					std::getline(std::cin, quadrant_size_input);
+					cout << endl;
+					int quadrant_size = (quadrant_size_input == "" || quadrant_size_input == "\n") ? 1024 : std::stoi(quadrant_size_input);
+					quadrant_size = glm::clamp(quadrant_size, 128, 2048);
+
+					saveImageQuadrants(4.0f, *generator, context, BMP, 4, x_quadrants, y_quadrants, quadrant_size);
+				}
+
+				else
+				{
+					//saveImage(4.0f, *generator, context, JPG);
+					//saveImage(4.0f, *generator, context, PNG);
+					saveImage(4.0f, *generator, context, BMP, 4);
+					//saveImage(4.0f, *generator, context, TIFF);
+				}
+				
 			}
 
 			if (keys->checkPress(GLFW_KEY_SPACE, false))
