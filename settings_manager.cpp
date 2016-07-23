@@ -1,5 +1,6 @@
 #include "settings_manager.h"
 
+// TODO now that settings have access to fg, remove dependency on mc
 void settings_manager::randomize(const random_generator &mc)
 {
 	generation = 0;
@@ -125,8 +126,12 @@ void settings_manager::randomize(const random_generator &mc)
 	default: break;
 	}
 
-	geo_type = geometry_type((int)mc.getRandomFloatInRange(0, (int)DEFAULT_GEOMETRY_TYPE));
 	lm = lighting_mode((int)mc.getRandomFloatInRange(0, (int)LIGHTING_MODE_SIZE));
+
+	geo_type = geometry_type((int)mc.getRandomFloatInRange(0, (int)DEFAULT_GEOMETRY_TYPE));
+	// TODO refactor load sequence system
+	if (geo_type == LOADED_SEQUENCE)
+		geo_type = DEFAULT_GEOMETRY_TYPE;
 
 	if (use_point_sequence)
 	{

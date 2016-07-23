@@ -53,9 +53,12 @@ public:
 	void tickAnimation();
 	void swapMatrices();
 	void cycleColorPalette();
-	void loadPointSequence(const vector<vec4> &sequence);
+	void loadPointSequence(string name, const vector<vec4> &sequence);
 	void printContext();
 	void cycleGeometryType();
+	void cycleBackgroundColorIndex();
+	void setBackgroundColorIndex(int index);
+	int getBackgroundColorIndex() const { return sm.background_front_index; }
 
 	vec3 getFocalPoint() const { return focal_point; }
 	float getAverageDelta() const { return average_delta; }
@@ -69,6 +72,10 @@ public:
 	settings_manager getSettings() const { return sm; }
 	void setGrowth(bool b) { sm.show_growth = b; }
 	void setTwoDimensional(bool b) { sm.two_dimensional = b; }
+	void setCurrentCustomSequence(int sequence_index) { current_sequence = sequence_index; }
+	string getStringFromGeometryType(geometry_type gt) const;
+
+	vector < pair<string, vector<vec4> > > getLoadedSequences() const { return loaded_sequences; }
 
 private:
 	settings_manager sm;
@@ -95,7 +102,9 @@ private:
 	
 	// current gen parameters	
 	vec4 origin = vec4(0.0f, 0.0f, 0.0f, 1.0f);	
-	vector<vec4> custom_sequence;
+	// vector instead of a map to make cycling easy
+	vector < pair<string, vector<vec4> > > loaded_sequences;
+	int current_sequence = 0;
 	mat4 fractal_scale_matrix;
 
 	bool initialized = false;

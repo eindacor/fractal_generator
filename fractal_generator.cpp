@@ -99,16 +99,19 @@ vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &
 	if (mc.getRandomFloat() < sm.matrix_geometry_coefficient)
 	{
 		vector<vec4> point_sequence;
-
-		//geometry_type matrix_geometry = geometry_type((int)mc.getRandomFloatInRange(0, (int)DEFAULT_GEOMETRY_TYPE));
 		geometry_type matrix_geometry;
 		// TODO create mc exception class
+		if (loaded_sequences.size() > 0)
+			sm.matrix_geometry_weights[LOADED_SEQUENCE] = mc.getRandomIntInRange(0, loaded_sequences.size() * 10);
+
 		if (!mc.catRoll<geometry_type>(sm.matrix_geometry_weights, matrix_geometry))
 			throw;
 
 		float random_width = mc.getRandomFloatInRange(0.2f, 1.0f);
 		float random_height = mc.getRandomFloatInRange(0.2f, 1.0f);
 		float random_depth = mc.getRandomFloatInRange(0.2f, 1.0f);
+
+		int random_loaded_sequence_index;
 
 		switch (matrix_geometry)
 		{
@@ -121,6 +124,12 @@ vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &
 		case U_OCTAHEDRON: point_sequence = gm.getUnorderedOctahedron(random_width); break;
 		case U_DODECAHEDRON: point_sequence = gm.getUnorderedDodecahedron(random_width); break;
 		case U_ICOSAHEDRON: point_sequence = gm.getUnorderedIcosahedron(random_width); break;
+		case LOADED_SEQUENCE: 
+		{
+			random_loaded_sequence_index = mc.getRandomIntInRange(0, loaded_sequences.size());
+			point_sequence = loaded_sequences.at(random_loaded_sequence_index).second;
+		}
+		break;
 		default: break;
 		}
 
@@ -822,7 +831,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		}
 	}
 
-	if (keys->checkPress(GLFW_KEY_K, false) && sm.enable_triangles && !sm.two_dimensional)
+	if (keys->checkPress(GLFW_KEY_K, false) && sm.enable_triangles)
 	{
 		switch (sm.triangle_mode)
 		{
@@ -841,11 +850,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		sm.show_points = !sm.show_points;
 
 	if (keys->checkPress(GLFW_KEY_1, false))
-	{
-		sm.background_front_index + 1 == colors_front.size() ? sm.background_front_index = 0 : sm.background_front_index++;
-		sm.background_back_index = sm.background_front_index;
-		updateBackground();
-	}	
+		cycleBackgroundColorIndex();
 
 	if (keys->checkPress(GLFW_KEY_2, false))
 	{
@@ -1125,15 +1130,12 @@ void fractal_generator::adjustBackgroundBrightness(float adjustment)
 	context->setBackgroundColor(background_color);
 }
 
-void fractal_generator::loadPointSequence(const vector<vec4> &sequence)
+void fractal_generator::loadPointSequence(string name, const vector<vec4> &sequence)
 {
 	if (sequence.size() == 0)
 		return;
 
-	custom_sequence = sequence;
-	sm.point_sequence = custom_sequence;
-	sm.geo_type = LOADED_SEQUENCE;
-	sm.use_point_sequence = true;
+	loaded_sequences.push_back(pair<string, vector<vec4> >(name, sequence));
 }
 
 void fractal_generator::printContext()
@@ -1295,10 +1297,19 @@ void fractal_generator::cycleGeometryType()
 	if (sm.geo_type == DEFAULT_GEOMETRY_TYPE)
 		sm.geo_type = (geometry_type)0;
 
-	else sm.geo_type = geometry_type(int(sm.geo_type) + 1);
+	else if (sm.geo_type == LOADED_SEQUENCE)
+	{
+		// if there are no loaded sequences or the current sequence is the last loaded
+		if (loaded_sequences.size() == 0 || current_sequence == loaded_sequences.size() - 1)
+		{
+			current_sequence = 0;
+			sm.geo_type = (geometry_type)0;
+		}
 
-	if (sm.geo_type == LOADED_SEQUENCE && custom_sequence.size() == 0)
-		sm.geo_type = DEFAULT_GEOMETRY_TYPE;
+		else current_sequence++;
+	}
+
+	else sm.geo_type = geometry_type(int(sm.geo_type) + 1);
 
 	sm.use_point_sequence = DEFAULT_GEOMETRY_TYPE != sm.geo_type;
 
@@ -1327,11 +1338,55 @@ void fractal_generator::cycleGeometryType()
 		case U_OCTAHEDRON: sm.point_sequence = gm.getUnorderedOctahedron(random_width); break;
 		case U_DODECAHEDRON: sm.point_sequence = gm.getUnorderedDodecahedron(random_width); break;
 		case U_ICOSAHEDRON: sm.point_sequence = gm.getUnorderedIcosahedron(random_width); break;
-		case LOADED_SEQUENCE: sm.point_sequence = custom_sequence;
+		case LOADED_SEQUENCE: sm.point_sequence = loaded_sequences.at(current_sequence).second; break;
 		case DEFAULT_GEOMETRY_TYPE: break;
 		default: break;
 		}
 	}
 
 	cout << "geometry type: " << getStringFromGeometryType(sm.geo_type) << endl;
+}
+
+void fractal_generator::cycleBackgroundColorIndex()
+{
+	sm.background_front_index + 1 == colors_front.size() ? sm.background_front_index = 0 : sm.background_front_index++;
+	sm.background_back_index = sm.background_front_index;
+	updateBackground();
+}
+
+void fractal_generator::setBackgroundColorIndex(int index)
+{
+	if (index < colors_front.size())
+	{
+		sm.background_front_index = index;
+		sm.background_back_index = index;
+		updateBackground();
+	}
+}
+
+string fractal_generator::getStringFromGeometryType(geometry_type gt) const
+{
+	switch (gt)
+	{
+	case TRIANGLE: return "triangle";
+	case RECTANGLE: return "rectangle";
+	case SQUARE: return "square";
+	case CUBOID: return "cuboid";
+	case CUBE: return "cube";
+	case TETRAHEDRON: return "tetrahedron";
+	case OCTAHEDRON: return "octahedron";
+	case DODECAHEDRON: return "dodecahedron";
+	case ICOSAHEDRON: return "icosahedron";
+	case U_RECTANGLE: return "unordered rectangle";
+	case U_SQUARE: return "unordered square";
+	case U_CUBOID: return "unordered cuboid";
+	case U_CUBE: return "unordered cube";
+	case U_TETRAHEDRON: return "unordered tetrahedron";
+	case U_OCTAHEDRON: return "unordered octahedron";
+	case U_DODECAHEDRON: return "unordered dodecahedron";
+	case U_ICOSAHEDRON: return "unordered icosahedron";
+	case LOADED_SEQUENCE: return loaded_sequences.at(current_sequence).first;
+	case DEFAULT_GEOMETRY_TYPE: return "points";
+	default: return "unknown type";
+	}
 }

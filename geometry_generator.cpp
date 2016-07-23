@@ -21,7 +21,7 @@ string getStringFromGeometryType(geometry_type gt)
 	case U_OCTAHEDRON: return "unordered octahedron";
 	case U_DODECAHEDRON: return "unordered dodecahedron";
 	case U_ICOSAHEDRON: return "unordered icosahedron";
-	case LOADED_SEQUENCE: return "custom_sequence";
+	case LOADED_SEQUENCE: return "custom sequence";
 	case DEFAULT_GEOMETRY_TYPE: return "points";
 	default: return "unknown type";
 	}

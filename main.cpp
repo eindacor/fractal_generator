@@ -169,6 +169,13 @@ int main()
 
 	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 2.0f), 45.0f));
 
+	jep::obj_contents torus("torus.obj");
+	jep::obj_contents helix("helix.obj");
+	jep::obj_contents sphere("sphere.obj");
+	generator->loadPointSequence("torus", torus.getAllVerticesOfAllMeshes());
+	generator->loadPointSequence("helix", helix.getAllVerticesOfAllMeshes());
+	generator->loadPointSequence("sphere", sphere.getAllVerticesOfAllMeshes());
+
 	/*
 	SEEDS
 	f6ujfV4rTtvN991MBr5gOCiaQ6TrAPaJ
@@ -309,7 +316,9 @@ int main()
 					int quadrant_size = (quadrant_size_input == "" || quadrant_size_input == "\n") ? 1024 : std::stoi(quadrant_size_input);
 					quadrant_size = glm::clamp(quadrant_size, 128, 2048);
 
-					batchRender(4.0f, *generator, context, BMP, 4, x_quadrants, y_quadrants, quadrant_size);
+					bool mix_background = getYesOrNo("varied background?", false);
+
+					batchRender(4.0f, *generator, context, BMP, 4, x_quadrants, y_quadrants, quadrant_size, mix_background);
 				}
 
 				else
@@ -342,6 +351,9 @@ int main()
 				shared_ptr<fractal_generator> new_generator(new fractal_generator(settings.base_seed, context, settings.num_points));
 				generator = new_generator;
 				generator->printContext();
+				generator->loadPointSequence("torus", torus.getAllVerticesOfAllMeshes());
+				generator->loadPointSequence("helix", helix.getAllVerticesOfAllMeshes());
+				generator->loadPointSequence("sphere", sphere.getAllVerticesOfAllMeshes());
 				frame_counter = 0;
 				counter_increment = 1;
 				paused = false;
@@ -353,6 +365,9 @@ int main()
 				shared_ptr<fractal_generator> new_generator(new fractal_generator(settings.base_seed, context, settings.num_points));
 				generator = new_generator;
 				generator->printContext();
+				generator->loadPointSequence("torus", torus.getAllVerticesOfAllMeshes());
+				generator->loadPointSequence("helix", helix.getAllVerticesOfAllMeshes());
+				generator->loadPointSequence("sphere", sphere.getAllVerticesOfAllMeshes());
 				frame_counter = 0;
 				counter_increment = 1;
 				paused = false;

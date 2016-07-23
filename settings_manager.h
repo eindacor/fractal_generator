@@ -28,15 +28,10 @@ public:
 	int generation = 0;
 	int refresh_min = 3;
 	int refresh_max = 15;
-	int translate_weight = 1; //randomize
-	int rotate_weight = 1; //randomize
-	int scale_weight = 1; //randomize
-	int num_matrices = 5; //randomize
-
-	/*int num_matrices = int(mc.getRandomFloatInRange(2, 10));
-	translate_weight = int(mc.getRandomFloatInRange(1, 10));
-	rotate_weight = int(mc.getRandomFloatInRange(1, 10));
-	scale_weight = int(mc.getRandomFloatInRange(1, 10));*/
+	int translate_weight = 1;
+	int rotate_weight = 1;
+	int scale_weight = 1;
+	int num_matrices = 5;
 
 	float line_width = 1.0f;
 	float interpolation_state = 0.0f;

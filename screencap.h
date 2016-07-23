@@ -17,13 +17,14 @@ bool saveImage(
 
 bool batchRender(
 	float image_scale, 
-	const fractal_generator &fg, 
+	fractal_generator &fg, 
 	const shared_ptr<ogl_context> &context, 
 	image_extension ie, 
 	int multisample_count, 
 	int x_count, 
 	int y_count,
-	int quadrant_size);
+	int quadrant_size,
+	bool mix_background);
 
 string paddedValue(unsigned int value, unsigned short total_digits);
 GLint glExtCheckFramebufferStatus(char *errorMessage);

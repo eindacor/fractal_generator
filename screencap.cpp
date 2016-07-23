@@ -204,10 +204,10 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	return true;
 }
 
-bool batchRender(float image_scale, const fractal_generator &fg, const shared_ptr<ogl_context> &context, image_extension ie, int multisample_count, int x_count, int y_count, int quadrant_size)
+bool batchRender(float image_scale, fractal_generator &fg, const shared_ptr<ogl_context> &context, image_extension ie, int multisample_count, int x_count, int y_count, int quadrant_size, bool mix_background)
 {
 	cout << "rendering image..." << endl;
-	vec4 background_color = context->getBackgroundColor();
+	int initial_background_index = fg.getBackgroundColorIndex();
 
 	GLsizei width(quadrant_size);
 	GLsizei height(quadrant_size);
@@ -227,6 +227,9 @@ bool batchRender(float image_scale, const fractal_generator &fg, const shared_pt
 	glUniform1i(context->getShaderGLint("render_quadrant"), 1);
 	for (int quadrant_index = 0; quadrant_index < x_count * y_count; quadrant_index++)
 	{
+		if (mix_background)
+			fg.cycleBackgroundColorIndex();
+
 		// initialize multisample texture
 		GLuint multisample_tex;
 		glGenTextures(1, &multisample_tex);
@@ -389,10 +392,6 @@ bool batchRender(float image_scale, const fractal_generator &fg, const shared_pt
 
 		delete[] pixels;
 
-		context->setBackgroundColor(background_color);
-
-		glViewport(0, 0, context->getWindowWidth(), context->getWindowHeight());
-
 		switch (ie)
 		{
 		case JPG: output_bitmap.Save(gcnew String(&filename[0]), ImageFormat::Jpeg); break;
@@ -404,6 +403,12 @@ bool batchRender(float image_scale, const fractal_generator &fg, const shared_pt
 
 		cout << "file saved: " << filename << endl;
 	}
+
+	if (mix_background)
+		fg.setBackgroundColorIndex(initial_background_index);
+
+	glViewport(0, 0, context->getWindowWidth(), context->getWindowHeight());
+
 	glUniform1i(context->getShaderGLint("render_quadrant"), 0);
 
 	return true;
