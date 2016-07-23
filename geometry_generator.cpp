@@ -27,53 +27,35 @@ string getStringFromGeometryType(geometry_type gt)
 	}
 }
 
-vector<vec4> geometry_generator::getRectangleIVMap(float width, float height, attribute_index_method aim, vector<int> &indices) const
+vector<vec4> geometry_generator::getTriangleVertices(float size) const
 {
-	switch (aim)
+	float half_height = size / 2.0f;
+
+	vector<vec4> point_sequence;
+
+	point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, 0.0f, 1.0f));
+	point_sequence.push_back(vec4(0.0f, half_height, 0.0f, 1.0f));
+	point_sequence.push_back(vec4(half_height, -1.0f * half_height, 0.0f, 1.0f));
+
+	return point_sequence;
+}
+
+vector<int> geometry_generator::getTrianglePointIndices() const
+{
+	vector<int> indices;
+	for (int i = 0; i < 3; i++)
 	{
-	case POINT_INDICES: return getRectanglePointIndices(width, height, indices);
-	case LINE_INDICES: return getRectangleLineIndices(width, height, indices);
-	case TRIANGLE_INDICES: return getRectangleTriangleIndices(width, height, indices);
+		indices.push_back(i);
 	}
+	return indices;
 }
 
-vector<vec4> geometry_generator::getRectanglePointIndices(float width, float height, vector<int> &indices) const
+vector<int> geometry_generator::getTriangleLineIndices() const
 {
-	float half_width = width / 2.0f;
-	float half_height = height / 2.0f;
-
-	indices.clear();
-	vector<vec4> point_sequence;
-
-	point_sequence.push_back(vec4(-1.0f * half_width, -1.0f * half_height, 0.0f, 1.0f));
-	point_sequence.push_back(vec4(-1.0f * half_width, half_height, 0.0f, 1.0f));
-	point_sequence.push_back(vec4(half_width, half_height, 0.0f, 1.0f));
-	point_sequence.push_back(vec4(half_width, -1.0f * half_height, 0.0f, 1.0f));
-
-	indices = vector<int>{ 0, 1, 2, 3 };
-
-	return point_sequence;
+	return vector<int>{ 0, 1, 1, 2, 2, 0 };
 }
 
-vector<vec4> geometry_generator::getRectangleLineIndices(float width, float height, vector<int> &indices) const
-{
-	float half_width = width / 2.0f;
-	float half_height = height / 2.0f;
-
-	indices.clear();
-	vector<vec4> point_sequence;
-
-	point_sequence.push_back(vec4(-1.0f * half_width, -1.0f * half_height, 0.0f, 1.0f));
-	point_sequence.push_back(vec4(-1.0f * half_width, half_height, 0.0f, 1.0f));
-	point_sequence.push_back(vec4(half_width, half_height, 0.0f, 1.0f));
-	point_sequence.push_back(vec4(half_width, -1.0f * half_height, 0.0f, 1.0f));
-
-	indices = vector<int>{ 0, 1, 1, 2, 2, 3, 3, 0 };
-
-	return point_sequence;
-}
-
-vector<vec4> geometry_generator::getRectangleTriangleIndices(float width, float height, vector<int> &indices) const
+vector<vec4> geometry_generator::getRectangleVertices(float width, float height) const
 {
 	float half_width = width / 2.0f;
 	float half_height = height / 2.0f;
@@ -85,74 +67,27 @@ vector<vec4> geometry_generator::getRectangleTriangleIndices(float width, float 
 	point_sequence.push_back(vec4(half_width, half_height, 0.0f, 1.0f));
 	point_sequence.push_back(vec4(half_width, -1.0f * half_height, 0.0f, 1.0f));
 
-	indices = vector<int>{ 0, 1, 2, 2, 3, 0 };
-
 	return point_sequence;
 }
 
-vector<vec4> geometry_generator::getCuboid(float width, float height, float depth) const
+vector<int> geometry_generator::getRectanglePointIndices() const
 {
-	float half_width = width / 2.0f;
-	float half_height = height / 2.0f;
-	float half_depth = depth / 2.0f;
-
-	vector<vec4> point_sequence;
-
-	vector<vec4> front = getRectangleTriangleIndices(width, height);
-	for (vec4 &point : front)
+	vector<int> indices;
+	for (int i = 0; i < 4; i++)
 	{
-		mat4 move = glm::translate(mat4(1.0f), vec3(0.0f, 0.0f, half_depth));
-		point = move * point;
+		indices.push_back(i);
 	}
+	return indices;
+}
 
-	vector<vec4> back = getRectangleTriangleIndices(width, height);
-	for (vec4 &point : back)
-	{
-		mat4 move = glm::translate(mat4(1.0f), vec3(0.0f, 0.0f, -1.0f * half_depth));
-		mat4 rotate = glm::rotate(mat4(1.0f), PI, vec3(0.0f, 1.0f, 0.0f));
-		point = move * rotate * point;
-	}
+vector<int> geometry_generator::getRectangleLineIndices() const
+{
+	return vector<int>{ 0, 1, 1, 2, 2, 3, 3, 0 };
+}
 
-	vector<vec4> left = getRectangleTriangleIndices(depth, height);
-	for (vec4 &point : left)
-	{
-		mat4 move = glm::translate(mat4(1.0f), vec3(half_width, 0.0f, 0.0f));
-		mat4 rotate = glm::rotate(mat4(1.0f), PI / 2.0f, vec3(0.0f, 1.0f, 0.0f));
-		point = move * rotate * point;
-	}
-
-	vector<vec4> right = getRectangleTriangleIndices(depth, height);
-	for (vec4 &point : right)
-	{
-		mat4 move = glm::translate(mat4(1.0f), vec3(-1.0f * half_width, 0.0f, 0.0f));
-		mat4 rotate = glm::rotate(mat4(1.0f), PI / -2.0f, vec3(0.0f, 1.0f, 0.0f));
-		point = move * rotate * point;
-	}
-
-	vector<vec4> top = getRectangleTriangleIndices(width, depth);
-	for (vec4 &point : top)
-	{
-		mat4 move = glm::translate(mat4(1.0f), vec3(0.0f, half_height, 0.0f));
-		mat4 rotate = glm::rotate(mat4(1.0f), PI / 2.0f, vec3(1.0f, 0.0f, 0.0f));
-		point = move * rotate * point;
-	}
-
-	vector<vec4> bottom = getRectangleTriangleIndices(width, depth);
-	for (vec4 &point : bottom)
-	{
-		mat4 move = glm::translate(mat4(1.0f), vec3(0.0f, -1.0f * half_height, 0.0f));
-		mat4 rotate = glm::rotate(mat4(1.0f), PI / -2.0f, vec3(1.0f, 0.0f, 0.0f));
-		point = move * rotate * point;
-	}
-
-	point_sequence.insert(point_sequence.end(), front.begin(), front.end());
-	point_sequence.insert(point_sequence.end(), back.begin(), back.end());
-	point_sequence.insert(point_sequence.end(), left.begin(), left.end());
-	point_sequence.insert(point_sequence.end(), right.begin(), right.end());
-	point_sequence.insert(point_sequence.end(), top.begin(), top.end());
-	point_sequence.insert(point_sequence.end(), bottom.begin(), bottom.end());
-
-	return point_sequence;
+vector<int> geometry_generator::getRectangleTriangleIndices() const
+{
+	return vector<int>{ 0, 1, 2, 2, 3, 0 };
 }
 
 vector<vec4> geometry_generator::getCuboidVertices(float width, float height, float depth) const
@@ -175,41 +110,37 @@ vector<vec4> geometry_generator::getCuboidVertices(float width, float height, fl
 	return point_sequence;
 }
 
-vector<vec4> geometry_generator::getTriangle(float size) const
+vector<int> geometry_generator::getCuboidPointIndices() const
 {
-	float half_height = size / 2.0f;
-	
-	vector<vec4> point_sequence;
-	
-	point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, 0.0f, 1.0f));
-	point_sequence.push_back(vec4(0.0f, half_height, 0.0f, 1.0f));
-	point_sequence.push_back(vec4(half_height, -1.0f * half_height, 0.0f, 1.0f));
-
-	return point_sequence;
+	vector<int> indices;
+	for (int i = 0; i < 8; i++)
+	{
+		indices.push_back(i);
+	}
+	return indices;
 }
 
-vector<vec4> geometry_generator::getTetrahedron(float size) const
+vector<int> geometry_generator::getCuboidLineIndices() const
 {
-	float half_height = size / 2.0f;
-	vector<vec4> point_sequence;
+	return vector<int>{ 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 1, 0, 4, 7, 6, 6, 5, 4, 7, 2, 6, 7, 3 };
+}
 
-	point_sequence.push_back(vec4(-1.0f * half_height, half_height, half_height, 1.0f));	//A
-	point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, -1.0f * half_height, 1.0f));	//B
-	point_sequence.push_back(vec4(half_height, -1.0f * half_height, half_height, 1.0f));	//C
-
-	point_sequence.push_back(vec4(half_height, -1.0f * half_height, half_height, 1.0f));	//C
-	point_sequence.push_back(vec4(-1.0f * half_height, half_height, half_height, 1.0f));	//A
-	point_sequence.push_back(vec4(half_height, half_height, -1.0f * half_height, 1.0f));	//D
-
-	point_sequence.push_back(vec4(half_height, half_height, -1.0f * half_height, 1.0f));	//D
-	point_sequence.push_back(vec4(-1.0f * half_height, half_height, half_height, 1.0f));	//A
-	point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, -1.0f * half_height, 1.0f));	//B
-
-	point_sequence.push_back(vec4(half_height, half_height, -1.0f * half_height, 1.0f));	//D
-	point_sequence.push_back(vec4(half_height, -1.0f * half_height, half_height, 1.0f));	//C
-	point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, -1.0f * half_height, 1.0f));	//B
-
-	return point_sequence;
+vector<int> geometry_generator::getCuboidTriangleIndices() const
+{
+	return vector<int>{ 
+		0, 1, 2,  
+		0, 2, 3,
+		4, 5, 1, 
+		4, 1, 0,
+		7, 6, 5,
+		7, 5, 4,
+		3, 2, 6,
+		3, 6, 7,
+		1, 5, 6,
+		1, 6, 2,
+		4, 0, 3,
+		4, 3, 7
+	};
 }
 
 vector<vec4> geometry_generator::getTetrahedronVertices(float size) const
@@ -225,45 +156,80 @@ vector<vec4> geometry_generator::getTetrahedronVertices(float size) const
 	return point_sequence;
 }
 
-vector<vec4> geometry_generator::getOctahedron(float size) const
+vector<int> geometry_generator::getRectanglePointIndices() const
+{
+	vector<int> indices;
+	for (int i = 0; i < 4; i++)
+	{
+		indices.push_back(i);
+	}
+	return indices;
+}
+
+vector<int> geometry_generator::getRectangleLineIndices() const
+{
+	return vector<int>{ 0, 1, 1, 2, 2, 3, 3, 0 };
+}
+
+vector<int> geometry_generator::getRectangleTriangleIndices() const
+{
+	return vector<int>{ 0, 1, 2, 2, 3, 0 };
+}
+
+vector<vec4> geometry_generator::getTetrahedronVertices(float size) const
 {
 	float half_height = size / 2.0f;
 	vector<vec4> point_sequence;
 
-	//AEB
-	point_sequence.push_back(vec4(0.0f, half_height, 0.0f, 1.0f));	//A
-	point_sequence.push_back(vec4(-1.0f * half_height, 0.0f, 0.0f, 1.0f));	//E
-	point_sequence.push_back(vec4(0.0f, 0.0f, half_height, 1.0f));	//B
-	//ABC
-	point_sequence.push_back(vec4(0.0f, half_height, 0.0f, 1.0f));	//A
-	point_sequence.push_back(vec4(0.0f, 0.0f, half_height, 1.0f));	//B
-	point_sequence.push_back(vec4(half_height, 0.0f, 0.0f, 1.0f));	//C
-	//ACD
-	point_sequence.push_back(vec4(0.0f, half_height, 0.0f, 1.0f));	//A
-	point_sequence.push_back(vec4(half_height, 0.0f, 0.0f, 1.0f));	//C
-	point_sequence.push_back(vec4(0.0f, 0.0f, -1.0f * half_height, 1.0f));	//D
-	//ADE
-	point_sequence.push_back(vec4(0.0f, half_height, 0.0f, 1.0f));	//A
-	point_sequence.push_back(vec4(0.0f, 0.0f, -1.0f * half_height, 1.0f));	//D
-	point_sequence.push_back(vec4(-1.0f * half_height, 0.0f, 0.0f, 1.0f));	//E
-	//FCB
-	point_sequence.push_back(vec4(0.0f, -1.0f * half_height, 0.0f, 1.0f));	//F
-	point_sequence.push_back(vec4(half_height, 0.0f, 0.0f, 1.0f));	//C
-	point_sequence.push_back(vec4(0.0f, 0.0f, half_height, 1.0f));	//B
-	//FDC
-	point_sequence.push_back(vec4(0.0f, -1.0f * half_height, 0.0f, 1.0f));	//F
-	point_sequence.push_back(vec4(0.0f, 0.0f, -1.0f * half_height, 1.0f));	//D
-	point_sequence.push_back(vec4(half_height, 0.0f, 0.0f, 1.0f));	//C
-	//FED
-	point_sequence.push_back(vec4(0.0f, -1.0f * half_height, 0.0f, 1.0f));	//F
-	point_sequence.push_back(vec4(-1.0f * half_height, 0.0f, 0.0f, 1.0f));	//E
-	point_sequence.push_back(vec4(0.0f, 0.0f, -1.0f * half_height, 1.0f));	//D
-	//FBE
-	point_sequence.push_back(vec4(0.0f, -1.0f * half_height, 0.0f, 1.0f));	//F
-	point_sequence.push_back(vec4(0.0f, 0.0f, half_height, 1.0f));	//B
-	point_sequence.push_back(vec4(-1.0f * half_height, 0.0f, 0.0f, 1.0f));	//E
+	point_sequence.push_back(vec4(-1.0f * half_height, half_height, half_height, 1.0f));	//A
+	point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, -1.0f * half_height, 1.0f));	//B
+	point_sequence.push_back(vec4(half_height, -1.0f * half_height, half_height, 1.0f));	//C
+
+	point_sequence.push_back(vec4(half_height, -1.0f * half_height, half_height, 1.0f));	//C
+	point_sequence.push_back(vec4(-1.0f * half_height, half_height, half_height, 1.0f));	//A
+	point_sequence.push_back(vec4(half_height, half_height, -1.0f * half_height, 1.0f));	//D
+
+	point_sequence.push_back(vec4(half_height, half_height, -1.0f * half_height, 1.0f));	//D
+	point_sequence.push_back(vec4(-1.0f * half_height, half_height, half_height, 1.0f));	//A
+	point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, -1.0f * half_height, 1.0f));	//B
+
+	point_sequence.push_back(vec4(half_height, half_height, -1.0f * half_height, 1.0f));	//D
+	point_sequence.push_back(vec4(half_height, -1.0f * half_height, half_height, 1.0f));	//C
+	point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, -1.0f * half_height, 1.0f));	//B
 
 	return point_sequence;
+}
+
+vector<int> geometry_generator::getTetrahedronPointIndices() const
+{
+	vector<int> indices;
+	for (int i = 0; i < 4; i++)
+	{
+		indices.push_back(i);
+	}
+	return indices;
+}
+
+vector<int> geometry_generator::getTetrahedronLineIndices() const
+{
+	return vector<int>{
+		0, 1,
+		1, 2,
+		2, 0,
+		2, 3,
+		0, 3,
+		3, 1
+	};
+}
+
+vector<int> geometry_generator::getTetrahedronTriangleIndices() const
+{
+	return vector<int>{
+		0, 1, 2,
+		2, 0, 3,
+		3, 0, 1,
+		3, 2, 1
+	};
 }
 
 vector<vec4> geometry_generator::getOctahedronVertices(float size) const
@@ -279,6 +245,38 @@ vector<vec4> geometry_generator::getOctahedronVertices(float size) const
 	point_sequence.push_back(vec4(0.0f, -1.0f * half_height, 0.0f, 1.0f));	//F
 
 	return point_sequence;
+}
+
+vector<int> geometry_generator::getOctahedronPointIndices() const
+{
+	vector<int> indices;
+	for (int i = 0; i < 6; i++)
+	{
+		indices.push_back(i);
+	}
+	return indices;
+}
+
+vector<int> geometry_generator::getOctahedronLineIndices() const
+{
+	return vector<int>{
+		0, 4,
+			0, 1,
+	}
+}
+
+vector<int> geometry_generator::getOctahedronTriangleIndices() const
+{
+	return vector<int>{
+		0, 4, 1,
+		0, 1, 2,
+		0, 2, 3,
+		0, 3, 4,
+		5, 2, 1,
+		5, 3, 2,
+		5, 4, 3,
+		5, 1, 4
+	};
 }
 
 vector<vec4> geometry_generator::getDodecahedron(float size) const
