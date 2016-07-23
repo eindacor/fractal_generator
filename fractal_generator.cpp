@@ -116,14 +116,14 @@ vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &
 		switch (matrix_geometry)
 		{
 		case TRIANGLE: point_sequence = gm.getTriangle(random_width); break;
-		case U_RECTANGLE: point_sequence = gm.getUnorderedRectangle(random_width, random_height); break;
-		case U_SQUARE: point_sequence = gm.getUnorderedSquare(random_width); break;
-		case U_CUBOID: point_sequence = gm.getUnorderedCuboid(random_width, random_height, random_depth); break;
-		case U_CUBE: point_sequence = gm.getUnorderedCube(random_width); break;
-		case U_TETRAHEDRON: point_sequence = gm.getUnorderedTetrahedron(random_width); break;
-		case U_OCTAHEDRON: point_sequence = gm.getUnorderedOctahedron(random_width); break;
-		case U_DODECAHEDRON: point_sequence = gm.getUnorderedDodecahedron(random_width); break;
-		case U_ICOSAHEDRON: point_sequence = gm.getUnorderedIcosahedron(random_width); break;
+		case U_RECTANGLE: point_sequence = gm.getRectangleVertices(random_width, random_height); break;
+		case U_SQUARE: point_sequence = gm.getSquareVertices(random_width); break;
+		case U_CUBOID: point_sequence = gm.getCuboidVertices(random_width, random_height, random_depth); break;
+		case U_CUBE: point_sequence = gm.getCubeVertices(random_width); break;
+		case U_TETRAHEDRON: point_sequence = gm.getTetrahedronVertices(random_width); break;
+		case U_OCTAHEDRON: point_sequence = gm.getOctahedronVertices(random_width); break;
+		case U_DODECAHEDRON: point_sequence = gm.getDodecahedronVertices(random_width); break;
+		case U_ICOSAHEDRON: point_sequence = gm.getIcosahedronVertices(random_width); break;
 		case LOADED_SEQUENCE: 
 		{
 			random_loaded_sequence_index = mc.getRandomIntInRange(0, loaded_sequences.size());
@@ -1322,7 +1322,7 @@ void fractal_generator::cycleGeometryType()
 		switch (sm.geo_type)
 		{
 		case TRIANGLE: sm.point_sequence = gm.getTriangle(random_width); break;
-		case RECTANGLE: sm.point_sequence = gm.getRectangle(random_width, random_height); break;
+		case RECTANGLE: sm.point_sequence = gm.getRectangleTriangleIndices(random_width, random_height); break;
 		case SQUARE: sm.point_sequence = gm.getSquare(random_width); break;
 		case CUBOID: sm.point_sequence = gm.getCuboid(random_width, random_height, random_depth); break;
 		case CUBE: sm.point_sequence = gm.getCube(random_width); break;
@@ -1330,14 +1330,14 @@ void fractal_generator::cycleGeometryType()
 		case OCTAHEDRON: sm.point_sequence = gm.getOctahedron(random_width); break;
 		case DODECAHEDRON: sm.point_sequence = gm.getDodecahedron(random_width); break;
 		case ICOSAHEDRON: sm.point_sequence = gm.getIcosahedron(random_width); break;
-		case U_RECTANGLE: sm.point_sequence = gm.getUnorderedRectangle(random_width, random_height); break;
-		case U_SQUARE: sm.point_sequence = gm.getUnorderedSquare(random_width); break;
-		case U_CUBOID: sm.point_sequence = gm.getUnorderedCuboid(random_width, random_height, random_depth); break;
-		case U_CUBE: sm.point_sequence = gm.getUnorderedCube(random_width); break;
-		case U_TETRAHEDRON: sm.point_sequence = gm.getUnorderedTetrahedron(random_width); break;
-		case U_OCTAHEDRON: sm.point_sequence = gm.getUnorderedOctahedron(random_width); break;
-		case U_DODECAHEDRON: sm.point_sequence = gm.getUnorderedDodecahedron(random_width); break;
-		case U_ICOSAHEDRON: sm.point_sequence = gm.getUnorderedIcosahedron(random_width); break;
+		case U_RECTANGLE: sm.point_sequence = gm.getRectangleVertices(random_width, random_height); break;
+		case U_SQUARE: sm.point_sequence = gm.getSquareVertices(random_width); break;
+		case U_CUBOID: sm.point_sequence = gm.getCuboidVertices(random_width, random_height, random_depth); break;
+		case U_CUBE: sm.point_sequence = gm.getCubeVertices(random_width); break;
+		case U_TETRAHEDRON: sm.point_sequence = gm.getTetrahedronVertices(random_width); break;
+		case U_OCTAHEDRON: sm.point_sequence = gm.getOctahedronVertices(random_width); break;
+		case U_DODECAHEDRON: sm.point_sequence = gm.getDodecahedronVertices(random_width); break;
+		case U_ICOSAHEDRON: sm.point_sequence = gm.getIcosahedronVertices(random_width); break;
 		case LOADED_SEQUENCE: sm.point_sequence = loaded_sequences.at(current_sequence).second; break;
 		case DEFAULT_GEOMETRY_TYPE: break;
 		default: break;

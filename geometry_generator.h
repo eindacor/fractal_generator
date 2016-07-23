@@ -6,33 +6,42 @@
 #define HYPOTENUSE_LENGTH 2.0f
 
 enum geometry_type { TRIANGLE, RECTANGLE, U_RECTANGLE, SQUARE, U_SQUARE, CUBOID, U_CUBOID, CUBE, U_CUBE, TETRAHEDRON, U_TETRAHEDRON, OCTAHEDRON, U_OCTAHEDRON, DODECAHEDRON, U_DODECAHEDRON, ICOSAHEDRON, U_ICOSAHEDRON, LOADED_SEQUENCE, DEFAULT_GEOMETRY_TYPE };
+enum attribute_index_method { POINT_INDICES, LINE_INDICES, TRIANGLE_INDICES, ATTRIBUTE_INDEX_METHOD_SIZE };
 
 string getStringFromGeometryType(geometry_type gt);
 
 class geometry_generator
 {
 public:
-	vector<vec4> getSquare(float size) const { return getRectangle(size, size); }
-	vector<vec4> getUnorderedSquare(float size) const { return getUnorderedRectangle(size, size); }
-	vector<vec4> getRectangle(float width, float height) const;
-	vector<vec4> getUnorderedRectangle(float width, float height) const;
+	vector<vec4> getRectangleIVMap(float width, float height, attribute_index_method aim, vector<int> &indices) const;
+
+	vector<vec4> getSquare(float size) const { return getRectangleTriangleIndices(size, size); }
+	map<unsigned short, vec4> getSquareIVMap(float size, attribute_index_method aim) const { return getRectangleIVMap(size, size, aim); }
+	vector<vec4> getSquareVertices(float size) const { return getRectangleVertices(size, size); }
+	
+	vector<vec4> getRectangleVertices(float width, float height) const;
 	vector<vec4> getCuboid(float width, float height, float depth) const;
-	vector<vec4> getUnorderedCuboid(float width, float height, float depth) const;
+	vector<vec4> getCuboidVertices(float width, float height, float depth) const;
 	vector<vec4> getCube(float size) const { return getCuboid(size, size, size); }
-	vector<vec4> getUnorderedCube(float size) const { return getUnorderedCuboid(size, size, size); }
+	vector<vec4> getCubeVertices(float size) const { return getCuboidVertices(size, size, size); }
 	vector<vec4> getTriangle(float size) const;
 	vector<vec4> getTetrahedron(float size) const;
-	vector<vec4> getUnorderedTetrahedron(float size) const;
+	vector<vec4> getTetrahedronVertices(float size) const;
 	vector<vec4> getOctahedron(float size) const;
-	vector<vec4> getUnorderedOctahedron(float size) const;
+	vector<vec4> getOctahedronVertices(float size) const;
 	vector<vec4> getDodecahedron(float size) const;
-	vector<vec4> getUnorderedDodecahedron(float size) const;
+	vector<vec4> getDodecahedronVertices(float size) const;
 	vector<vec4> getIcosahedron(float size) const;
-	vector<vec4> getUnorderedIcosahedron(float size) const;
+	vector<vec4> getIcosahedronVertices(float size) const;
 
 	void setExportAsTriangles(bool b) { export_as_triangles = b; }
 
 private:
+	vector<vec4> getRectanglePointIndices(float width, float height, vector<int> &indices) const;
+	vector<vec4> getRectangleLineIndices(float width, float height, vector<int> &indices) const;
+	vector<vec4> getRectangleTriangleIndices(float width, float height, vector<int> &indices) const;
+
+
 	vector<vec4> orderIcosahedron(const vector<vec4> &vertices) const;
 	void addAllTrianglesToIcosahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_pentagons, vector<vec4> &sequence) const;
 	void addGeometryToSequence(const vector<int> &geometry_indices, const vector<vec4> &vertices, vector<vec4> &sequence) const;

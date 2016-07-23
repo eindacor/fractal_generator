@@ -27,25 +27,53 @@ string getStringFromGeometryType(geometry_type gt)
 	}
 }
 
-vector<vec4> geometry_generator::getRectangle(float width, float height) const
+vector<vec4> geometry_generator::getRectangleIVMap(float width, float height, attribute_index_method aim, vector<int> &indices) const
+{
+	switch (aim)
+	{
+	case POINT_INDICES: return getRectanglePointIndices(width, height, indices);
+	case LINE_INDICES: return getRectangleLineIndices(width, height, indices);
+	case TRIANGLE_INDICES: return getRectangleTriangleIndices(width, height, indices);
+	}
+}
+
+vector<vec4> geometry_generator::getRectanglePointIndices(float width, float height, vector<int> &indices) const
 {
 	float half_width = width / 2.0f;
 	float half_height = height / 2.0f;
 
+	indices.clear();
 	vector<vec4> point_sequence;
 
 	point_sequence.push_back(vec4(-1.0f * half_width, -1.0f * half_height, 0.0f, 1.0f));
 	point_sequence.push_back(vec4(-1.0f * half_width, half_height, 0.0f, 1.0f));
 	point_sequence.push_back(vec4(half_width, half_height, 0.0f, 1.0f));
-
-	point_sequence.push_back(vec4(half_width, half_height, 0.0f, 1.0f));
 	point_sequence.push_back(vec4(half_width, -1.0f * half_height, 0.0f, 1.0f));
-	point_sequence.push_back(vec4(-1.0f * half_width, -1.0f * half_height, 0.0f, 1.0f));
+
+	indices = vector<int>{ 0, 1, 2, 3 };
 
 	return point_sequence;
 }
 
-vector<vec4> geometry_generator::getUnorderedRectangle(float width, float height) const
+vector<vec4> geometry_generator::getRectangleLineIndices(float width, float height, vector<int> &indices) const
+{
+	float half_width = width / 2.0f;
+	float half_height = height / 2.0f;
+
+	indices.clear();
+	vector<vec4> point_sequence;
+
+	point_sequence.push_back(vec4(-1.0f * half_width, -1.0f * half_height, 0.0f, 1.0f));
+	point_sequence.push_back(vec4(-1.0f * half_width, half_height, 0.0f, 1.0f));
+	point_sequence.push_back(vec4(half_width, half_height, 0.0f, 1.0f));
+	point_sequence.push_back(vec4(half_width, -1.0f * half_height, 0.0f, 1.0f));
+
+	indices = vector<int>{ 0, 1, 1, 2, 2, 3, 3, 0 };
+
+	return point_sequence;
+}
+
+vector<vec4> geometry_generator::getRectangleTriangleIndices(float width, float height, vector<int> &indices) const
 {
 	float half_width = width / 2.0f;
 	float half_height = height / 2.0f;
@@ -56,7 +84,9 @@ vector<vec4> geometry_generator::getUnorderedRectangle(float width, float height
 	point_sequence.push_back(vec4(-1.0f * half_width, half_height, 0.0f, 1.0f));
 	point_sequence.push_back(vec4(half_width, half_height, 0.0f, 1.0f));
 	point_sequence.push_back(vec4(half_width, -1.0f * half_height, 0.0f, 1.0f));
-	
+
+	indices = vector<int>{ 0, 1, 2, 2, 3, 0 };
+
 	return point_sequence;
 }
 
@@ -68,14 +98,14 @@ vector<vec4> geometry_generator::getCuboid(float width, float height, float dept
 
 	vector<vec4> point_sequence;
 
-	vector<vec4> front = getRectangle(width, height);
+	vector<vec4> front = getRectangleTriangleIndices(width, height);
 	for (vec4 &point : front)
 	{
 		mat4 move = glm::translate(mat4(1.0f), vec3(0.0f, 0.0f, half_depth));
 		point = move * point;
 	}
 
-	vector<vec4> back = getRectangle(width, height);
+	vector<vec4> back = getRectangleTriangleIndices(width, height);
 	for (vec4 &point : back)
 	{
 		mat4 move = glm::translate(mat4(1.0f), vec3(0.0f, 0.0f, -1.0f * half_depth));
@@ -83,7 +113,7 @@ vector<vec4> geometry_generator::getCuboid(float width, float height, float dept
 		point = move * rotate * point;
 	}
 
-	vector<vec4> left = getRectangle(depth, height);
+	vector<vec4> left = getRectangleTriangleIndices(depth, height);
 	for (vec4 &point : left)
 	{
 		mat4 move = glm::translate(mat4(1.0f), vec3(half_width, 0.0f, 0.0f));
@@ -91,7 +121,7 @@ vector<vec4> geometry_generator::getCuboid(float width, float height, float dept
 		point = move * rotate * point;
 	}
 
-	vector<vec4> right = getRectangle(depth, height);
+	vector<vec4> right = getRectangleTriangleIndices(depth, height);
 	for (vec4 &point : right)
 	{
 		mat4 move = glm::translate(mat4(1.0f), vec3(-1.0f * half_width, 0.0f, 0.0f));
@@ -99,7 +129,7 @@ vector<vec4> geometry_generator::getCuboid(float width, float height, float dept
 		point = move * rotate * point;
 	}
 
-	vector<vec4> top = getRectangle(width, depth);
+	vector<vec4> top = getRectangleTriangleIndices(width, depth);
 	for (vec4 &point : top)
 	{
 		mat4 move = glm::translate(mat4(1.0f), vec3(0.0f, half_height, 0.0f));
@@ -107,7 +137,7 @@ vector<vec4> geometry_generator::getCuboid(float width, float height, float dept
 		point = move * rotate * point;
 	}
 
-	vector<vec4> bottom = getRectangle(width, depth);
+	vector<vec4> bottom = getRectangleTriangleIndices(width, depth);
 	for (vec4 &point : bottom)
 	{
 		mat4 move = glm::translate(mat4(1.0f), vec3(0.0f, -1.0f * half_height, 0.0f));
@@ -125,7 +155,7 @@ vector<vec4> geometry_generator::getCuboid(float width, float height, float dept
 	return point_sequence;
 }
 
-vector<vec4> geometry_generator::getUnorderedCuboid(float width, float height, float depth) const
+vector<vec4> geometry_generator::getCuboidVertices(float width, float height, float depth) const
 {
 	float half_width = width / 2.0f;
 	float half_height = height / 2.0f;
@@ -182,7 +212,7 @@ vector<vec4> geometry_generator::getTetrahedron(float size) const
 	return point_sequence;
 }
 
-vector<vec4> geometry_generator::getUnorderedTetrahedron(float size) const
+vector<vec4> geometry_generator::getTetrahedronVertices(float size) const
 {
 	float half_height = size / 2.0f;
 	vector<vec4> point_sequence;
@@ -236,7 +266,7 @@ vector<vec4> geometry_generator::getOctahedron(float size) const
 	return point_sequence;
 }
 
-vector<vec4> geometry_generator::getUnorderedOctahedron(float size) const
+vector<vec4> geometry_generator::getOctahedronVertices(float size) const
 {
 	float half_height = size / 2.0f;
 	vector<vec4> point_sequence;
@@ -253,7 +283,7 @@ vector<vec4> geometry_generator::getUnorderedOctahedron(float size) const
 
 vector<vec4> geometry_generator::getDodecahedron(float size) const
 {
-	vector<vec4> point_sequence = orderDodecahedron(getUnorderedDodecahedron(size));
+	vector<vec4> point_sequence = orderDodecahedron(getDodecahedronVertices(size));
 
 	mat4 scale_matrix = glm::scale(mat4(1.0f), vec3(size, size, size));
 	for (vec4 &point : point_sequence)
@@ -264,7 +294,7 @@ vector<vec4> geometry_generator::getDodecahedron(float size) const
 	return point_sequence;
 }
 
-vector<vec4> geometry_generator::getUnorderedDodecahedron(float size) const
+vector<vec4> geometry_generator::getDodecahedronVertices(float size) const
 {
 	vector<vec4> unordered_sequence;
 
@@ -310,7 +340,7 @@ vector<vec4> geometry_generator::getUnorderedDodecahedron(float size) const
 
 vector<vec4> geometry_generator::getIcosahedron(float size) const
 {
-	vector<vec4> point_sequence = orderIcosahedron(getUnorderedIcosahedron(size));
+	vector<vec4> point_sequence = orderIcosahedron(getIcosahedronVertices(size));
 
 	mat4 scale_matrix = glm::scale(mat4(1.0f), vec3(size, size, size));
 	for (vec4 &point : point_sequence)
@@ -321,7 +351,7 @@ vector<vec4> geometry_generator::getIcosahedron(float size) const
 	return point_sequence;
 }
 
-vector<vec4> geometry_generator::getUnorderedIcosahedron(float size) const
+vector<vec4> geometry_generator::getIcosahedronVertices(float size) const
 {
 	vector<vec4> unordered_sequence;
 
