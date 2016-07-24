@@ -9,6 +9,14 @@
 #include "settings_manager.h"
 #include "geometry_generator.h"
 
+typedef std::pair<GLenum, attribute_index_method> render_style;
+
+#define SEGMENTED_LINES render_style(GL_LINES, POINTS)
+#define CONTINUOUS_LINES render_style(GL_LINE_STRIP, POINTS)
+#define WIREFRAME_SOLIDS render_style(GL_LINES, LINES)
+#define SEGMENTED_SOLIDS render_style(GL_LINES, TRIANGLES)
+#define WIREFRAME_CONNECTED render_style(GL_LINE_STRIP, TRIANGLES)
+
 class fractal_generator
 {
 public:
