@@ -261,8 +261,18 @@ vector<int> geometry_generator::getOctahedronLineIndices() const
 {
 	return vector<int>{
 		0, 4,
-			0, 1,
-	}
+		0, 1,
+		4, 1,
+		0, 2,
+		1, 2,
+		0, 3,
+		2, 3,
+		3, 4,
+		5, 2,
+		5, 1,
+		5, 3,
+		5, 4
+	};
 }
 
 vector<int> geometry_generator::getOctahedronTriangleIndices() const
@@ -279,17 +289,134 @@ vector<int> geometry_generator::getOctahedronTriangleIndices() const
 	};
 }
 
-vector<vec4> geometry_generator::getDodecahedron(float size) const
+vector<vec4> geometry_generator::getIcosahedronVertices(float size) const
 {
-	vector<vec4> point_sequence = orderDodecahedron(getDodecahedronVertices(size));
+	vector<vec4> unordered_sequence;
 
-	mat4 scale_matrix = glm::scale(mat4(1.0f), vec3(size, size, size));
-	for (vec4 &point : point_sequence)
+	//calcs derived from http://math.wikia.com/wiki/Icosahedron
+	for (int i = 0; i < 4; i++)
 	{
-		point = scale_matrix * point;
+		float x = 0;
+		float y = i % 4 < 2 ? 1.0f : -1.0f;
+		float z = i % 2 == 0 ? THETA : -1.0f * THETA;
+
+		unordered_sequence.push_back(vec4(x, y, z, 1.0f));
 	}
 
-	return point_sequence;
+	for (int i = 0; i < 4; i++)
+	{
+		float x = i % 4 < 2 ? 1.0f : -1.0f;
+		float y = i % 2 == 0 ? THETA : -1.0f * THETA;
+		float z = 0;
+
+		unordered_sequence.push_back(vec4(x, y, z, 1.0f));
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		float x = i % 2 == 0 ? THETA : -1.0f * THETA;
+		float y = 0;
+		float z = i % 4 < 2 ? 1.0f : -1.0f;
+
+		unordered_sequence.push_back(vec4(x, y, z, 1.0f));
+	}
+
+	return unordered_sequence;
+}
+
+vector<int> geometry_generator::getIcosahedronPointIndices() const
+{
+	vector<int> indices;
+	for (int i = 0; i < 12; i++)
+	{
+		indices.push_back(i);
+	}
+	return indices;
+}
+
+vector<int> geometry_generator::getIcosahedronLineIndices() const
+{
+	vector<int> index_sequence;
+	vector<vec4> vertices = getIcosahedronVertices(1.0f);
+	vector< vector<int> > identified_lines;
+
+	for (int i = 0; i < vertices.size(); i++)
+	{
+		addAllLineGeometryToIcosahedronSequence(i, vertices, identified_lines, index_sequence);
+	}
+
+	return index_sequence;
+}
+
+vector<int> geometry_generator::getIcosahedronTriangleIndices() const
+{
+	vector<int> index_sequence;
+	vector<vec4> vertices = getIcosahedronVertices(1.0f);
+	vector< vector<int> > identified_pentagons;
+
+	for (int i = 0; i < vertices.size(); i++)
+	{
+		addAllTriangleGeometryToIcosahedronSequence(i, vertices, identified_pentagons, index_sequence);
+	}
+
+	return index_sequence;
+}
+
+void geometry_generator::addAllTriangleGeometryToIcosahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_triangles, vector<int> &sequence) const
+{
+	int neighbor_count = 0;
+
+	for (int i = 0; i < vertices.size() && neighbor_count < 5; i++)
+	{
+		if (i == point_index)
+			continue;
+
+		float dist = abs(glm::distance(vertices.at(point_index), vertices.at(i)));
+
+		//identifies neighbor point
+		if (abs(dist - 2.0f) < .0001f)
+		{
+			neighbor_count++;
+			int third_point = findThirdIcosahedronTrianglePoint(point_index, i, vertices);
+			vector<int> triangle = { point_index, i, third_point };
+			if (geometryAlreadyIdentified(triangle, identified_triangles))
+				continue;
+
+			else
+			{
+				identified_triangles.push_back(triangle);
+				addGeometryToSequence(triangle, sequence);
+			}
+		}
+	}
+}
+
+void geometry_generator::addAllLineGeometryToIcosahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_lines, vector<int> &sequence) const
+{
+	int neighbor_count = 0;
+
+	for (int i = 0; i < vertices.size() && neighbor_count < 5; i++)
+	{
+		if (i == point_index)
+			continue;
+
+		float dist = abs(glm::distance(vertices.at(point_index), vertices.at(i)));
+
+		//identifies neighbor point
+		if (abs(dist - 2.0f) < .0001f)
+		{
+			neighbor_count++;
+			vector<int> line = { point_index, i };
+			if (geometryAlreadyIdentified(line, identified_lines))
+				continue;
+
+			else
+			{
+				identified_lines.push_back(line);
+				addGeometryToSequence(line, sequence);
+			}
+		}
+	}
 }
 
 vector<vec4> geometry_generator::getDodecahedronVertices(float size) const
@@ -336,93 +463,42 @@ vector<vec4> geometry_generator::getDodecahedronVertices(float size) const
 	return unordered_sequence;
 }
 
-vector<vec4> geometry_generator::getIcosahedron(float size) const
+vector<int> geometry_generator::getDodecahedronPointIndices() const
 {
-	vector<vec4> point_sequence = orderIcosahedron(getIcosahedronVertices(size));
-
-	mat4 scale_matrix = glm::scale(mat4(1.0f), vec3(size, size, size));
-	for (vec4 &point : point_sequence)
+	vector<int> indices;
+	for (int i = 0; i < 20; i++)
 	{
-		point = scale_matrix * point;
+		indices.push_back(i);
 	}
-
-	return point_sequence;
+	return indices;
 }
 
-vector<vec4> geometry_generator::getIcosahedronVertices(float size) const
+vector<int> geometry_generator::getDodecahedronLineIndices() const
 {
-	vector<vec4> unordered_sequence;
-
-	//calcs derived from http://math.wikia.com/wiki/Icosahedron
-	for (int i = 0; i < 4; i++)
-	{
-		float x = 0;
-		float y = i % 4 < 2 ? 1.0f : -1.0f;
-		float z = i % 2 == 0 ? THETA : -1.0f * THETA;
-
-		unordered_sequence.push_back(vec4(x, y, z, 1.0f));
-	}
-
-	for (int i = 0; i < 4; i++)
-	{
-		float x = i % 4 < 2 ? 1.0f : -1.0f;
-		float y = i % 2 == 0 ? THETA : -1.0f * THETA;
-		float z = 0;
-
-		unordered_sequence.push_back(vec4(x, y, z, 1.0f));
-	}
-
-	for (int i = 0; i < 4; i++)
-	{
-		float x = i % 2 == 0 ? THETA : -1.0f * THETA;
-		float y = 0;
-		float z = i % 4 < 2 ? 1.0f : -1.0f;
-
-		unordered_sequence.push_back(vec4(x, y, z, 1.0f));
-	}
-
-	return unordered_sequence;
-}
-
-vector<vec4> geometry_generator::orderIcosahedron(const vector<vec4> &vertices) const
-{
-	vector<vec4> ordered_points;
-	vector< vector<int> > identified_triangles;
+	vector<int> index_sequence;
+	vector<vec4> vertices = getDodecahedronVertices(1.0f);
+	vector< vector<int> > identified_lines;
 
 	for (int i = 0; i < vertices.size(); i++)
 	{
-		addAllTrianglesToIcosahedronSequence(i, vertices, identified_triangles, ordered_points);
+		addAllLineGeometryToDodecahedronSequence(i, vertices, identified_lines, index_sequence);
 	}
-	return ordered_points;
+
+	return index_sequence;
 }
 
-void geometry_generator::addAllTrianglesToIcosahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_triangles, vector<vec4> &sequence) const
+vector<int> geometry_generator::getDodecahedronTriangleIndices() const
 {
-	int neighbor_count = 0;
+	vector<int> index_sequence;
+	vector<vec4> vertices = getDodecahedronVertices(1.0f);
+	vector< vector<int> > identified_pentagons;
 
-	for (int i = 0; i < vertices.size() && neighbor_count < 5; i++)
+	for (int i = 0; i < vertices.size(); i++)
 	{
-		if (i == point_index)
-			continue;
-
-		float dist = abs(glm::distance(vertices.at(point_index), vertices.at(i)));
-
-		//identifies neighbor point
-		if (abs(dist - 2.0f) < .0001f)
-		{
-			neighbor_count++;
-			int third_point = findThirdIcosahedronTrianglePoint(point_index, i, vertices);
-			vector<int> triangle = { point_index, i, third_point };
-			if (geometryAlreadyIdentified(triangle, identified_triangles))
-				continue;
-
-			else
-			{
-				identified_triangles.push_back(triangle);
-				addGeometryToSequence(triangle, vertices, sequence);
-			}
-		}
+		addAllTriangleGeometryToDodecahedronSequence(i, vertices, identified_pentagons, index_sequence);
 	}
+
+	return index_sequence;
 }
 
 bool geometry_generator::geometryAlreadyIdentified(const vector<int> &geometry, const vector< vector<int> > &identified_geometry) const
@@ -450,28 +526,40 @@ bool geometry_generator::geometryAlreadyIdentified(const vector<int> &geometry, 
 	return false;
 }
 
-void geometry_generator::addGeometryToSequence(const vector<int> &geometry_indices, const vector<vec4> &vertices, vector<vec4> &sequence) const
+void geometry_generator::addGeometryToSequence(const vector<int> &geometry_indices, vector<int> &sequence) const
 {
 	for (const int &index : geometry_indices)
 	{
-		sequence.push_back(vertices.at(index));
+		sequence.push_back(index);
 	}
 }
 
-vector<vec4> geometry_generator::orderDodecahedron(const vector<vec4> &vertices) const
+void geometry_generator::addAllLineGeometryToDodecahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_lines, vector<int> &sequence) const
 {
-	vector<vec4> ordered_points;
-	vector< vector<int> > identified_pentagons;
+	int neighbor_count = 0;
 
-	for (int i = 0; i < vertices.size(); i++)
+	for (int i = 0; i < vertices.size() && neighbor_count < 3; i++)
 	{
-		addAllPentagonsToDodecahedronSequence(i, vertices, identified_pentagons, ordered_points);
-	}
+		if (i == point_index)
+			continue;
 
-	return ordered_points;
+		float dist = abs(glm::distance(vertices.at(point_index), vertices.at(i)));
+
+		//identifies neighboring points
+		if (abs(dist - BASE_LENGTH) < .0001f)
+		{
+			neighbor_count++;
+
+			vector<int> line = { point_index, i };
+			if (geometryAlreadyIdentified(line, identified_lines))
+				continue;
+
+			addGeometryToSequence(line, sequence);
+		}
+	}
 }
 
-void geometry_generator::addAllPentagonsToDodecahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_pentagons, vector<vec4> &sequence) const
+void geometry_generator::addAllTriangleGeometryToDodecahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_pentagons, vector<int> &sequence) const
 {
 	int hypotenuse_count = 0;
 
@@ -497,17 +585,12 @@ void geometry_generator::addAllPentagonsToDodecahedronSequence(int point_index, 
 			vector<int> pentagon = { point_index, side_a, i, hyp_b, side_b };
 			identified_pentagons.push_back(pentagon);
 
-			if (export_as_triangles)
-			{
-				vector<int> triangle_a = { point_index, side_a, i };
-				addGeometryToSequence(triangle_a, vertices, sequence);
-				vector<int> triangle_b = { point_index, i, hyp_b };
-				addGeometryToSequence(triangle_b, vertices, sequence);
-				vector<int> triangle_c = { point_index, hyp_b, side_b };
-				addGeometryToSequence(triangle_c, vertices, sequence);
-			}
-
-			else addGeometryToSequence(pentagon, vertices, sequence);
+			vector<int> triangle_a = { point_index, side_a, i };
+			addGeometryToSequence(triangle_a, sequence);
+			vector<int> triangle_b = { point_index, i, hyp_b };
+			addGeometryToSequence(triangle_b, sequence);
+			vector<int> triangle_c = { point_index, hyp_b, side_b };
+			addGeometryToSequence(triangle_c, sequence);
 		}
 	}
 }

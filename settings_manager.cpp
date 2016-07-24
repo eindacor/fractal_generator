@@ -141,15 +141,15 @@ void settings_manager::randomize(const random_generator &mc)
 
 		switch (geo_type)
 		{
-		case TRIANGLE: point_sequence = gm.getTriangle(random_width); break;
-		case RECTANGLE: point_sequence = gm.getRectangle(random_width, random_height); break;
-		case SQUARE: point_sequence = gm.getSquare(random_width); break;
-		case CUBOID: point_sequence = gm.getCuboid(random_width, random_height, random_depth); break;
-		case CUBE: point_sequence = gm.getCube(random_width); break;
-		case TETRAHEDRON: point_sequence = gm.getTetrahedron(random_width); break;
-		case OCTAHEDRON: point_sequence = gm.getOctahedron(random_width); break;
-		case DODECAHEDRON: point_sequence = gm.getDodecahedron(random_width); break;
-		case ICOSAHEDRON: point_sequence = gm.getIcosahedron(random_width); break;
+		case TRIANGLE: point_sequence = gm.getTriangleVertices(random_width); break;
+		case RECTANGLE: point_sequence = gm.getRectangleVertices(random_width, random_height); break;
+		case SQUARE: point_sequence = gm.getSquareVertices(random_width); break;
+		case CUBOID: point_sequence = gm.getCuboidVertices(random_width, random_height, random_depth); break;
+		case CUBE: point_sequence = gm.getCubeVertices(random_width); break;
+		case TETRAHEDRON: point_sequence = gm.getTetrahedronVertices(random_width); break;
+		case OCTAHEDRON: point_sequence = gm.getOctahedronVertices(random_width); break;
+		case DODECAHEDRON: point_sequence = gm.getDodecahedronVertices(random_width); break;
+		case ICOSAHEDRON: point_sequence = gm.getIcosahedronVertices(random_width); break;
 		case U_RECTANGLE: point_sequence = gm.getRectangleVertices(random_width, random_height); break;
 		case U_SQUARE: point_sequence = gm.getSquareVertices(random_width); break;
 		case U_CUBOID: point_sequence = gm.getCuboidVertices(random_width, random_height, random_depth); break;

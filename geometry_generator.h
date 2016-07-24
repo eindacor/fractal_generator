@@ -20,10 +20,7 @@ public:
 	vector<vec4> getCubeVertices(float size) const { return getCuboidVertices(size, size, size); }
 	vector<vec4> getTetrahedronVertices(float size) const;
 	vector<vec4> getOctahedronVertices(float size) const;
-
-	vector<vec4> getDodecahedron(float size) const;
 	vector<vec4> getDodecahedronVertices(float size) const;
-	vector<vec4> getIcosahedron(float size) const;
 	vector<vec4> getIcosahedronVertices(float size) const;
 
 	void setExportAsTriangles(bool b) { export_as_triangles = b; }
@@ -48,13 +45,26 @@ private:
 	vector<int> getOctahedronLineIndices() const;
 	vector<int> getOctahedronTriangleIndices() const;
 
-	vector<vec4> orderIcosahedron(const vector<vec4> &vertices) const;
-	void addAllTrianglesToIcosahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_pentagons, vector<vec4> &sequence) const;
-	void addGeometryToSequence(const vector<int> &geometry_indices, const vector<vec4> &vertices, vector<vec4> &sequence) const;
-	vector<vec4> orderDodecahedron(const vector<vec4> &vertices) const;
-	void addAllPentagonsToDodecahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_pentagons, vector<vec4> &sequence) const;
-	bool geometryAlreadyIdentified(const vector<int> &geometry, const vector< vector<int> > &identified_geometry) const;
+	vector<int> getIcosahedronPointIndices() const;
+	vector<int> getIcosahedronLineIndices() const;
+	vector<int> getIcosahedronTriangleIndices() const;
+
+	vector<int> getDodecahedronPointIndices() const;
+	vector<int> getDodecahedronLineIndices() const;
+	vector<int> getDodecahedronTriangleIndices() const;
+
+	void addAllTriangleGeometryToIcosahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_pentagons, vector<int> &sequence) const;
+	void addAllLineGeometryToIcosahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_lines, vector<int> &sequence) const;
+	void addGeometryToSequence(const vector<int> &geometry_indices, vector<int> &sequence) const;
+
+	void addAllTriangleGeometryToDodecahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_pentagons, vector<int> &sequence) const;
+	void addAllLineGeometryToDodecahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_lines, vector<int> &sequence) const;
+	
+	// used for dodecahedron methods
 	bool pentagonAlreadyIdentified(int index_a, int index_b, vector< vector<int> > &identified_pentagons) const;
+
+	bool geometryAlreadyIdentified(const vector<int> &geometry, const vector< vector<int> > &identified_geometry) const;
+	
 	int findThirdIcosahedronTrianglePoint(int first, int second, const vector<vec4> &vertices) const;
 	int findSideFromTargetAndHypotenuse(int target, int hypotenuse, const vector<vec4> &vertices) const;
 	int findOtherHypotenuseFromTargetAndHypotenuse(int target, int hypotenuse, const vector<vec4> &vertices) const;

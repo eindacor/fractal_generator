@@ -20,7 +20,7 @@ fractal_generator::fractal_generator(
 	glDepthRange(0.0, 1.0);
 }
 
-void fractal_generator::bufferData(const vector<float> &vertex_data)
+void fractal_generator::bufferData(const vector<float> &vertex_data, const vector<int> &index_data)
 {
 	vertex_count = (vertex_data.size() / vertex_size) - palette_vertex_count;
 	sm.enable_triangles = vertex_count >= 3;
@@ -115,7 +115,7 @@ vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &
 
 		switch (matrix_geometry)
 		{
-		case TRIANGLE: point_sequence = gm.getTriangle(random_width); break;
+		case TRIANGLE: point_sequence = gm.getTriangleVertices(random_width); break;
 		case U_RECTANGLE: point_sequence = gm.getRectangleVertices(random_width, random_height); break;
 		case U_SQUARE: point_sequence = gm.getSquareVertices(random_width); break;
 		case U_CUBOID: point_sequence = gm.getCuboidVertices(random_width, random_height, random_depth); break;
@@ -368,6 +368,7 @@ void fractal_generator::printMatrices() const
 void fractal_generator::generateFractalFromPointSequence()
 {
 	vector<float> points;
+	vector<int> indices;
 	points.reserve(vertex_count * vertex_size);
 
 	int num_matrices = matrices_front.size();
@@ -387,12 +388,13 @@ void fractal_generator::generateFractalFromPointSequence()
 		addPointSequenceAndIterate(origin_matrix, point_color, starting_size, matrix_index_front, matrix_index_back, points);
 	}
 
-	addPalettePointsAndBufferData(points);
+	addPalettePointsAndBufferData(points, indices);
 }
 
 void fractal_generator::generateFractal()
 {
 	vector<float> points;
+	vector<int> indices;
 	points.reserve(vertex_count * vertex_size);
 
 	int num_matrices = matrices_front.size();
@@ -412,12 +414,13 @@ void fractal_generator::generateFractal()
 		addNewPointAndIterate(starting_point, point_color, starting_size, matrix_index_front, matrix_index_back, points);
 	}
 
-	addPalettePointsAndBufferData(points);
+	addPalettePointsAndBufferData(points, indices);
 }
 
 void fractal_generator::generateFractalWithRefresh()
 {
 	vector<float> points;
+	vector<int> indices;
 	points.reserve(vertex_count * vertex_size);
 
 	int num_matrices = matrices_front.size();
@@ -455,12 +458,13 @@ void fractal_generator::generateFractalWithRefresh()
 		addNewPoint(new_point, point_color, new_size, points);
 	}
 
-	addPalettePointsAndBufferData(points);
+	addPalettePointsAndBufferData(points, indices);
 }
 
 void fractal_generator::generateFractalFromPointSequenceWithRefresh()
 {
 	vector<float> points;
+	vector<int> indices;
 	points.reserve(vertex_count * vertex_size);
 
 	int num_matrices = matrices_front.size();
@@ -498,7 +502,7 @@ void fractal_generator::generateFractalFromPointSequenceWithRefresh()
 		}
 	}
 
-	addPalettePointsAndBufferData(points);
+	addPalettePointsAndBufferData(points, indices);
 }
 
 
@@ -1283,13 +1287,13 @@ void fractal_generator::addDataToPalettePoints(const vec2 &point, const vec4 &co
 	points.push_back(0.0f);		//point size
 }
 
-void fractal_generator::addPalettePointsAndBufferData(const vector<float> &vertex_data)
+void fractal_generator::addPalettePointsAndBufferData(const vector<float> &vertex_data, const vector<int> &index_data)
 {
 	glUniform1i(context->getShaderGLint("palette_vertex_id"), vertex_count);
 	vector<float> all_data = vertex_data;
 	vector<float> palette_points = getPalettePoints();
 	all_data.insert(all_data.end(), palette_points.begin(), palette_points.end());
-	bufferData(all_data);
+	bufferData(all_data, index_data);
 }
 
 void fractal_generator::cycleGeometryType()
@@ -1321,15 +1325,15 @@ void fractal_generator::cycleGeometryType()
 
 		switch (sm.geo_type)
 		{
-		case TRIANGLE: sm.point_sequence = gm.getTriangle(random_width); break;
-		case RECTANGLE: sm.point_sequence = gm.getRectangleTriangleIndices(random_width, random_height); break;
-		case SQUARE: sm.point_sequence = gm.getSquare(random_width); break;
-		case CUBOID: sm.point_sequence = gm.getCuboid(random_width, random_height, random_depth); break;
-		case CUBE: sm.point_sequence = gm.getCube(random_width); break;
-		case TETRAHEDRON: sm.point_sequence = gm.getTetrahedron(random_width); break;
-		case OCTAHEDRON: sm.point_sequence = gm.getOctahedron(random_width); break;
-		case DODECAHEDRON: sm.point_sequence = gm.getDodecahedron(random_width); break;
-		case ICOSAHEDRON: sm.point_sequence = gm.getIcosahedron(random_width); break;
+		case TRIANGLE: sm.point_sequence = gm.getTriangleVertices(random_width); break;
+		case RECTANGLE: sm.point_sequence = gm.getRectangleVertices(random_width, random_height); break;
+		case SQUARE: sm.point_sequence = gm.getSquareVertices(random_width); break;
+		case CUBOID: sm.point_sequence = gm.getCuboidVertices(random_width, random_height, random_depth); break;
+		case CUBE: sm.point_sequence = gm.getCubeVertices(random_width); break;
+		case TETRAHEDRON: sm.point_sequence = gm.getTetrahedronVertices(random_width); break;
+		case OCTAHEDRON: sm.point_sequence = gm.getOctahedronVertices(random_width); break;
+		case DODECAHEDRON: sm.point_sequence = gm.getDodecahedronVertices(random_width); break;
+		case ICOSAHEDRON: sm.point_sequence = gm.getIcosahedronVertices(random_width); break;
 		case U_RECTANGLE: sm.point_sequence = gm.getRectangleVertices(random_width, random_height); break;
 		case U_SQUARE: sm.point_sequence = gm.getSquareVertices(random_width); break;
 		case U_CUBOID: sm.point_sequence = gm.getCuboidVertices(random_width, random_height, random_depth); break;

@@ -140,14 +140,14 @@ private:
 		const float &size,
 		vector<float> &points);
 
-	void bufferData(const vector<float> &vertex_data);
+	void bufferData(const vector<float> &vertex_data, const vector<int> &index_data);
 
 	vector< pair<string, mat4> > generateMatrixVector(const int &count, geometry_type &geo_type);
 	vector<vec4> generateColorVector(const vec4 &seed, color_palette palette, const int &count, color_palette &random_selection) const;
 	vector<float> generateSizeVector(const int &count) const;
 	vector<float> getPalettePoints();
 	void addDataToPalettePoints(const vec2 &point, const vec4 &color, vector<float> &points) const;
-	void addPalettePointsAndBufferData(const vector<float> &vertex_data);
+	void addPalettePointsAndBufferData(const vector<float> &vertex_data, const vector<int> &index_data);
 };
 
 #endif
