@@ -385,7 +385,7 @@ void fractal_generator::generateFractalFromPointSequence()
 		vec4 transformation_color = influenceElement<vec4>(colors_back.at(matrix_index_back), colors_front.at(matrix_index_front), sm.interpolation_state);
 		float transformation_size = influenceElement<float>(sizes_back.at(matrix_index_back), sizes_front.at(matrix_index_front), sm.interpolation_state);
 
-		addPointSequenceAndIterate(origin_matrix, point_color, starting_size, matrix_index_front, matrix_index_back, points);
+		addPointSequenceAndIterate(origin_matrix, point_color, starting_size, matrix_index_front, matrix_index_back, points, indices);
 	}
 
 	addPalettePointsAndBufferData(points, indices);
@@ -686,7 +686,8 @@ void fractal_generator::addPointSequenceAndIterate(
 	float &starting_size,
 	int matrix_index_front,
 	int matrix_index_back,
-	vector<float> &points)
+	vector<float> &points,
+	vector<int> &indices)
 {
 	mat4 matrix_front = matrices_front.at(matrix_index_front).second;
 	mat4 matrix_back = matrices_back.at(matrix_index_back).second;

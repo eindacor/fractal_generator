@@ -124,7 +124,8 @@ private:
 		float &starting_size,
 		int matrix_index_front,
 		int matrix_index_back,
-		vector<float> &points);
+		vector<float> &points,
+		vector<int> &indices);
 
 	void addPointSequenceAndIterate(
 		mat4 &origin_matrix,
@@ -132,7 +133,8 @@ private:
 		float &starting_size,
 		int matrix_index_front,
 		int matrix_index_back,
-		vector<float> &points);
+		vector<float> &points,
+		vector<int> &indices);
 
 	void addNewPoint(
 		const vec4 &point,
