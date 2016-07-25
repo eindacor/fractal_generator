@@ -9,9 +9,9 @@ void settings_manager::randomize(const random_generator &mc)
 	num_matrices = mc.getRandomIntInRange(3, 12);
 	background_front_index = mc.getRandomIntInRange(0, num_matrices);
 	background_back_index = mc.getRandomIntInRange(0, num_matrices);
-	translate_weight = mc.getRandomIntInRange(1, 10);
-	rotate_weight = mc.getRandomIntInRange(1, 10);
-	scale_weight = mc.getRandomIntInRange(1, 10);
+	translate_weight = mc.getRandomIntInRange(1, 5);
+	rotate_weight = mc.getRandomIntInRange(1, 5);
+	scale_weight = mc.getRandomIntInRange(1, 5);
 
 	matrix_geometry_weights[TRIANGLE] = mc.getRandomIntInRange(0, 10);
 	matrix_geometry_weights[U_RECTANGLE] = mc.getRandomIntInRange(0, 10);
@@ -70,7 +70,7 @@ void settings_manager::randomize(const random_generator &mc)
 	randomize_lightness = mc.getBool(0.8f);
 	randomize_alpha = mc.getBool(0.8f);
 	inverted = mc.getBool(0.5f);
-	scale_matrices = mc.getBool(0.5f);
+	scale_matrices = mc.getBool(0.9f);
 	show_growth = mc.getBool(0.25f);
 	no_background = mc.getBool(0.2f);
 	//light_effects_transparency = mc.getRandomFloat() < 0.5f;

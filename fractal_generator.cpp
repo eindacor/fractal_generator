@@ -96,7 +96,8 @@ vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &
 {
 	vector< pair<string, mat4> > matrix_vector;
 
-	if (mc.getRandomFloat() < sm.matrix_geometry_coefficient)
+	// temporarily disable geometry matrices
+	if (false && mc.getRandomFloat() < sm.matrix_geometry_coefficient)
 	{
 		vector<vec4> point_sequence;
 		geometry_type matrix_geometry;
@@ -384,7 +385,9 @@ void fractal_generator::generateFractalFromPointSequence()
 		vec4 transformation_color = influenceElement<vec4>(colors_back.at(matrix_index_back), colors_front.at(matrix_index_front), sm.interpolation_state);
 		float transformation_size = influenceElement<float>(sizes_back.at(matrix_index_back), sizes_front.at(matrix_index_front), sm.interpolation_state);
 
+		cout << glm::to_string(point_color) << endl;
 		addPointSequenceAndIterate(origin_matrix, point_color, starting_size, matrix_index_front, matrix_index_back, points);
+		cout << glm::to_string(point_color) << endl;
 	}
 
 	addPalettePointsAndBufferData(points);
@@ -628,8 +631,10 @@ void fractal_generator::addNewPointAndIterate(
 	vec4 point_front = matrix_front * starting_point;
 	vec4 point_back = matrix_back * starting_point;
 
-	vec4 matrix_color_front = influenceElement<vec4>(starting_color, colors_front.at(matrix_index_front), sm.bias_coefficient);
-	vec4 matrix_color_back = influenceElement<vec4>(starting_color, colors_back.at(matrix_index_back), sm.bias_coefficient);
+	//vec4 matrix_color_front = influenceElement<vec4>(starting_color, colors_front.at(matrix_index_front), sm.bias_coefficient);
+	//vec4 matrix_color_back = influenceElement<vec4>(starting_color, colors_back.at(matrix_index_back), sm.bias_coefficient);
+	vec4 matrix_color_front = influenceElement<vec4>(starting_color, colors_front.at(matrix_index_front), 1.0f / float(points.size() + 1));
+	vec4 matrix_color_back = influenceElement<vec4>(starting_color, colors_back.at(matrix_index_back), 1.0f / float(points.size() + 1));
 
 	float point_size_front = influenceElement<float>(starting_size, sizes_front.at(matrix_index_front), sm.bias_coefficient);
 	float point_size_back = influenceElement<float>(starting_size, sizes_back.at(matrix_index_back), sm.bias_coefficient);
@@ -689,8 +694,10 @@ void fractal_generator::addPointSequenceAndIterate(
 	mat4 interpolated_matrix = influenceElement<mat4>(matrix_back, matrix_front, sm.interpolation_state);
 	mat4 final_matrix = interpolated_matrix * origin_matrix;
 
-	vec4 matrix_color_front = influenceElement<vec4>(starting_color, colors_front.at(matrix_index_front), sm.bias_coefficient);
-	vec4 matrix_color_back = influenceElement<vec4>(starting_color, colors_back.at(matrix_index_back), sm.bias_coefficient);
+	//vec4 matrix_color_front = influenceElement<vec4>(starting_color, colors_front.at(matrix_index_front), sm.bias_coefficient);
+	//vec4 matrix_color_back = influenceElement<vec4>(starting_color, colors_back.at(matrix_index_back), sm.bias_coefficient);
+	vec4 matrix_color_front = influenceElement<vec4>(starting_color, colors_front.at(matrix_index_front), 1.0f / float((points.size() / sm.point_sequence.size()) + 1));
+	vec4 matrix_color_back = influenceElement<vec4>(starting_color, colors_back.at(matrix_index_back), 1.0f / float((points.size() / sm.point_sequence.size()) + 1));
 
 	float point_size_front = influenceElement<float>(starting_size, sizes_front.at(matrix_index_front), sm.bias_coefficient);
 	float point_size_back = influenceElement<float>(starting_size, sizes_back.at(matrix_index_back), sm.bias_coefficient);
@@ -1303,7 +1310,7 @@ void fractal_generator::cycleGeometryType()
 		if (loaded_sequences.size() == 0 || current_sequence == loaded_sequences.size() - 1)
 		{
 			current_sequence = 0;
-			sm.geo_type = (geometry_type)0;
+			sm.geo_type = DEFAULT_GEOMETRY_TYPE;
 		}
 
 		else current_sequence++;
