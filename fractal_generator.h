@@ -36,9 +36,6 @@ public:
 	void applyBackground(const int &num_samples);
 	void checkKeys(const shared_ptr<key_handler> &keys);
 	void drawFractal() const;
-	void drawVertices() const;
-	void drawLines() const;
-	void drawTriangles() const;
 	
 	// keeps track of how many indices are called by draw command, set by geometry index pattern generated in geometry_generator.cpp
 	int vertex_index_count;
@@ -122,6 +119,7 @@ private:
 	int palette_vertex_count;
 
 	GLuint vertices_vbo;
+	GLuint palette_vbo;
 	GLuint vertices_indices;
 	GLuint lines_indices;
 	GLuint triangles_indices;
@@ -162,6 +160,7 @@ private:
 		vector<int> &triangle_indices);
 
 	void bufferData(const vector<float> &vertex_data, const vector<int> &point_indices, const vector<int> &line_indices, const vector<int> &triangle_indices);
+	void bufferPalette(const vector<float> &vertex_data);
 
 	vector< pair<string, mat4> > generateMatrixVector(const int &count, geometry_type &geo_type);
 	vector<vec4> generateColorVector(const vec4 &seed, color_palette palette, const int &count, color_palette &random_selection) const;
@@ -169,6 +168,11 @@ private:
 	vector<float> getPalettePoints();
 	void addDataToPalettePoints(const vec2 &point, const vec4 &color, vector<float> &points) const;
 	void addPalettePointsAndBufferData(const vector<float> &vertex_data, const vector<int> &point_indices, const vector<int> &line_indices, const vector<int> &triangle_indices);
+
+	void drawVertices() const;
+	void drawLines() const;
+	void drawTriangles() const;
+	void drawPalette() const;
 };
 
 #endif

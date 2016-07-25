@@ -66,6 +66,42 @@ void fractal_generator::bufferData(const vector<float> &vertex_data, const vecto
 	initialized = true;
 }
 
+void fractal_generator::bufferPalette(const vector<float> &vertex_data)
+{
+	if (initialized)
+	{
+		glDeleteVertexArrays(1, &VAO);
+		glDeleteBuffers(1, &vertices_vbo);
+	}
+
+	// create/bind Vertex Array Object
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	// create/bind Vertex Buffer Object
+	glGenBuffers(1, &vertices_vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertex_data.size(), &vertex_data[0], GL_STATIC_DRAW);
+
+	// 6 floats total -> 2 for position, 4 for color
+	int stride = 6 * sizeof(float);
+
+	// load color data
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, stride, (void*)0);
+
+	// load position data
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, stride, (void*)(4 * sizeof(float)));
+
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(3);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	initialized = true;
+}
+
 void fractal_generator::drawFractal() const
 {
 	// bind target VAO
@@ -74,22 +110,32 @@ void fractal_generator::drawFractal() const
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 
+	glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo);
 	if (sm.enable_triangles && sm.triangle_mode != 0)
-		glDrawArrays(sm.triangle_mode, 0, vertex_count);
+		drawTriangles();
 
 	if (sm.enable_lines && sm.line_mode != 0)
-		glDrawArrays(sm.line_mode, 0, vertex_count);
+		drawLines();
 
 	if (sm.show_points)
 		drawVertices();
-
-	if (sm.show_palette)
-		glDrawArrays(GL_TRIANGLES, vertex_count, palette_vertex_count);
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
 	glBindVertexArray(0);
+
+	if (sm.show_palette)
+	{
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(3);
+
+		glBindBuffer(GL_ARRAY_BUFFER, palette_vbo);
+		drawPalette();
+
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(3);
+	}
 }
 
 void fractal_generator::drawVertices() const
@@ -108,6 +154,12 @@ void fractal_generator::drawTriangles() const
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, triangles_indices);
 	glDrawElements(GL_POINTS, triangle_index_count, GL_INT, (void*)0);
+}
+
+void fractal_generator::drawPalette() const
+{
+	glBindBuffer(GL_ARRAY_BUFFER, palette_vbo);
+	glDrawArrays(GL_TRIANGLES, 0, palette_vertex_count);
 }
 
 vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &count, geometry_type &geo_type)
@@ -1341,30 +1393,25 @@ vector<float> fractal_generator::getPalettePoints()
 		}
 	}
 
-	palette_vertex_count = point_data.size() / vertex_size;
+	// 6 floats per palette vertex -> 4 for color, 2 for positoin
+	palette_vertex_count = point_data.size() / 6;
 	return point_data;
 }
 
 void fractal_generator::addDataToPalettePoints(const vec2 &point, const vec4 &color, vector<float> &points) const
 {
-	points.push_back(point.x);
-	points.push_back(point.y);
-	points.push_back(0.0f);		//to make vec4-compliant
-	points.push_back(1.0f);		//to make vec4-compliant
 	points.push_back(color.r);
 	points.push_back(color.g);
 	points.push_back(color.b);
 	points.push_back(color.a);
-	points.push_back(0.0f);		//point size
+	points.push_back(point.x);
+	points.push_back(point.y);
 }
 
 void fractal_generator::addPalettePointsAndBufferData(const vector<float> &vertex_data, const vector<int> &point_indices, const vector<int> &line_indices, const vector<int> &triangle_indices)
 {
-	glUniform1i(context->getShaderGLint("palette_vertex_id"), vertex_count);
-	vector<float> all_data = vertex_data;
-	vector<float> palette_points = getPalettePoints();
-	all_data.insert(all_data.end(), palette_points.begin(), palette_points.end());
-	bufferData(all_data, point_indices, line_indices, triangle_indices);
+	bufferPalette(getPalettePoints());
+	bufferData(vertex_data, point_indices, line_indices, triangle_indices);
 }
 
 void fractal_generator::cycleGeometryType()
