@@ -14,14 +14,14 @@ void settings_manager::randomize(const random_generator &mc)
 	scale_weight = mc.getRandomIntInRange(1, 10);
 
 	matrix_geometry_weights[TRIANGLE] = mc.getRandomIntInRange(0, 10);
-	matrix_geometry_weights[U_RECTANGLE] = mc.getRandomIntInRange(0, 10);
-	matrix_geometry_weights[U_SQUARE] = mc.getRandomIntInRange(0, 10);
-	matrix_geometry_weights[U_CUBOID] = mc.getRandomIntInRange(0, 10);
-	matrix_geometry_weights[U_CUBE] = mc.getRandomIntInRange(0, 10);
-	matrix_geometry_weights[U_TETRAHEDRON] = mc.getRandomIntInRange(0, 10);
-	matrix_geometry_weights[U_OCTAHEDRON] = mc.getRandomIntInRange(0, 10);
-	matrix_geometry_weights[U_DODECAHEDRON] = mc.getRandomIntInRange(0, 10);
-	matrix_geometry_weights[U_ICOSAHEDRON] = mc.getRandomIntInRange(0, 10);
+	matrix_geometry_weights[RECTANGLE] = mc.getRandomIntInRange(0, 10);
+	matrix_geometry_weights[SQUARE] = mc.getRandomIntInRange(0, 10);
+	matrix_geometry_weights[CUBOID] = mc.getRandomIntInRange(0, 10);
+	matrix_geometry_weights[CUBE] = mc.getRandomIntInRange(0, 10);
+	matrix_geometry_weights[TETRAHEDRON] = mc.getRandomIntInRange(0, 10);
+	matrix_geometry_weights[OCTAHEDRON] = mc.getRandomIntInRange(0, 10);
+	matrix_geometry_weights[DODECAHEDRON] = mc.getRandomIntInRange(0, 10);
+	matrix_geometry_weights[ICOSAHEDRON] = mc.getRandomIntInRange(0, 10);
 
 	// MATRIX CREATOR CALL RESERVATIONS	- INTEGER
 	// calls to mc below are made to preserve the consistency of seeded generation throughout development
@@ -59,7 +59,7 @@ void settings_manager::randomize(const random_generator &mc)
 	mc.getRandomFloat();
 	// END OF CALL RESERVATIONS
 
-	use_point_sequence = mc.getBool(0.5f);
+	use_point_sequence = mc.getBool(0.2f);
 	two_dimensional = mc.getBool(0.2f);
 	refresh_enabled = mc.getBool(0.5f);
 	size_enabled = mc.getBool(0.5f);
@@ -126,9 +126,9 @@ void settings_manager::randomize(const random_generator &mc)
 	default: break;
 	}
 
-	lm = lighting_mode((int)mc.getRandomFloatInRange(0, (int)LIGHTING_MODE_SIZE));
+	lm = lighting_mode(mc.getRandomIntInRange(0, (int)LIGHTING_MODE_SIZE));
 
-	geo_type = geometry_type((int)mc.getRandomFloatInRange(0, (int)DEFAULT_GEOMETRY_TYPE));
+	geo_type = geometry_type(mc.getRandomIntInRange(0, (int)DEFAULT_GEOMETRY_TYPE));
 	// TODO refactor load sequence system
 	if (geo_type == LOADED_SEQUENCE)
 		geo_type = DEFAULT_GEOMETRY_TYPE;
@@ -150,18 +150,17 @@ void settings_manager::randomize(const random_generator &mc)
 		case OCTAHEDRON: point_sequence = gm.getOctahedronVertices(random_width); break;
 		case DODECAHEDRON: point_sequence = gm.getDodecahedronVertices(random_width); break;
 		case ICOSAHEDRON: point_sequence = gm.getIcosahedronVertices(random_width); break;
-		case U_RECTANGLE: point_sequence = gm.getRectangleVertices(random_width, random_height); break;
-		case U_SQUARE: point_sequence = gm.getSquareVertices(random_width); break;
-		case U_CUBOID: point_sequence = gm.getCuboidVertices(random_width, random_height, random_depth); break;
-		case U_CUBE: point_sequence = gm.getCubeVertices(random_width); break;
-		case U_TETRAHEDRON: point_sequence = gm.getTetrahedronVertices(random_width); break;
-		case U_OCTAHEDRON: point_sequence = gm.getOctahedronVertices(random_width); break;
-		case U_DODECAHEDRON: point_sequence = gm.getDodecahedronVertices(random_width); break;
-		case U_ICOSAHEDRON: point_sequence = gm.getIcosahedronVertices(random_width); break;
 		case LOADED_SEQUENCE: geo_type = DEFAULT_GEOMETRY_TYPE;
 		case DEFAULT_GEOMETRY_TYPE:
 		default: use_point_sequence = false;
 		}
+
+		lines_aim = attribute_index_method(mc.getRandomIntInRange(0, (int)ATTRIBUTE_INDEX_METHOD_SIZE));
+		triangles_aim = attribute_index_method(mc.getRandomIntInRange(0, (int)ATTRIBUTE_INDEX_METHOD_SIZE));
+
+		point_indices = gm.getIndices(geo_type, POINT_INDICES);
+		line_indices = gm.getIndices(geo_type, lines_aim);
+		triangle_indices = gm.getIndices(geo_type, triangles_aim);
 	}
 }
 
