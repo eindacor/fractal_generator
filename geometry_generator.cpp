@@ -13,14 +13,6 @@ string getStringFromGeometryType(geometry_type gt)
 	case OCTAHEDRON: return "octahedron";
 	case DODECAHEDRON: return "dodecahedron";
 	case ICOSAHEDRON: return "icosahedron";
-	case U_RECTANGLE: return "unordered rectangle";
-	case U_SQUARE: return "unordered square";
-	case U_CUBOID: return "unordered cuboid";
-	case U_CUBE: return "unordered cube";
-	case U_TETRAHEDRON: return "unordered tetrahedron";
-	case U_OCTAHEDRON: return "unordered octahedron";
-	case U_DODECAHEDRON: return "unordered dodecahedron";
-	case U_ICOSAHEDRON: return "unordered icosahedron";
 	case LOADED_SEQUENCE: return "custom sequence";
 	case DEFAULT_GEOMETRY_TYPE: return "points";
 	default: return "unknown type";
@@ -646,4 +638,100 @@ int geometry_generator::findOtherHypotenuseFromTargetAndHypotenuse(int target, i
 	}
 
 	return 0;
+}
+
+vector<int> geometry_generator::getIndices(geometry_type gt, attribute_index_method aim) const
+{
+	switch (gt)
+	{
+	case TRIANGLE: return getTriangleIndices(aim);
+	case RECTANGLE: return getRectangleIndices(aim);
+	case SQUARE: return getRectangleIndices(aim);
+	case CUBOID: return getCuboidIndices(aim);
+	case CUBE: return getCuboidIndices(aim);
+	case TETRAHEDRON: return getTetrahedronIndices(aim);
+	case OCTAHEDRON: return getOctahedronIndices(aim);
+	case DODECAHEDRON: return getDodecahedronIndices(aim);
+	case ICOSAHEDRON: return getIcosahedronIndices(aim);
+	case LOADED_SEQUENCE:
+	case DEFAULT_GEOMETRY_TYPE:
+	default: 
+		cout << "unable to generate indices for specified geometry type" << endl;
+		throw;
+	}
+}
+
+vector<int> geometry_generator::getTriangleIndices(attribute_index_method aim) const
+{
+	switch (aim)
+	{
+	case LINE_INDICES: return getTriangleLineIndices();
+	default: return getTrianglePointIndices();
+	}
+}
+
+vector<int> geometry_generator::getRectangleIndices(attribute_index_method aim) const
+{
+	switch (aim)
+	{
+	case POINT_INDICES: return getRectanglePointIndices();
+	case LINE_INDICES: return getRectanglePointIndices();
+	case TRIANGLE_INDICES: return getRectangleTriangleIndices();
+	default: return getRectanglePointIndices();
+	}
+}
+
+vector<int> geometry_generator::getCuboidIndices(attribute_index_method aim) const
+{
+	switch (aim)
+	{
+	case POINT_INDICES: return getCuboidPointIndices();
+	case LINE_INDICES: return getCuboidPointIndices();
+	case TRIANGLE_INDICES: return getCuboidTriangleIndices();
+	default: return getCuboidPointIndices();
+	}
+}
+
+vector<int> geometry_generator::getTetrahedronIndices(attribute_index_method aim) const
+{
+	switch (aim)
+	{
+	case POINT_INDICES: return getTetrahedronPointIndices();
+	case LINE_INDICES: return getTetrahedronPointIndices();
+	case TRIANGLE_INDICES: return getTetrahedronTriangleIndices();
+	default: return getTetrahedronPointIndices();
+	}
+}
+
+vector<int> geometry_generator::getOctahedronIndices(attribute_index_method aim) const
+{
+	switch (aim)
+	{
+	case POINT_INDICES: return getOctahedronPointIndices();
+	case LINE_INDICES: return getOctahedronPointIndices();
+	case TRIANGLE_INDICES: return getOctahedronTriangleIndices();
+	default: return getOctahedronPointIndices();
+	}
+}
+
+vector<int> geometry_generator::getDodecahedronIndices(attribute_index_method aim) const
+{
+	switch (aim)
+	{
+	case POINT_INDICES: return getDodecahedronPointIndices();
+	case LINE_INDICES: return getDodecahedronPointIndices();
+	case TRIANGLE_INDICES: return getDodecahedronTriangleIndices();
+	default: return getDodecahedronPointIndices();
+	}
+}
+
+vector<int> geometry_generator::getIcosahedronIndices(attribute_index_method aim) const
+{
+	switch (aim)
+	{
+	case POINT_INDICES: return getIcosahedronPointIndices();
+	case LINE_INDICES: return getIcosahedronPointIndices();
+	case TRIANGLE_INDICES: return getIcosahedronTriangleIndices();
+	default: return getIcosahedronPointIndices();
+	}
 }

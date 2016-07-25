@@ -5,7 +5,7 @@
 #define BASE_LENGTH 2.0f * 0.61803398875f
 #define HYPOTENUSE_LENGTH 2.0f
 
-enum geometry_type { TRIANGLE, RECTANGLE, U_RECTANGLE, SQUARE, U_SQUARE, CUBOID, U_CUBOID, CUBE, U_CUBE, TETRAHEDRON, U_TETRAHEDRON, OCTAHEDRON, U_OCTAHEDRON, DODECAHEDRON, U_DODECAHEDRON, ICOSAHEDRON, U_ICOSAHEDRON, LOADED_SEQUENCE, DEFAULT_GEOMETRY_TYPE };
+enum geometry_type { TRIANGLE, RECTANGLE, SQUARE, CUBOID, CUBE, TETRAHEDRON, OCTAHEDRON, DODECAHEDRON, ICOSAHEDRON, LOADED_SEQUENCE, DEFAULT_GEOMETRY_TYPE };
 enum attribute_index_method { POINT_INDICES, LINE_INDICES, TRIANGLE_INDICES, ATTRIBUTE_INDEX_METHOD_SIZE };
 
 string getStringFromGeometryType(geometry_type gt);
@@ -23,32 +23,41 @@ public:
 	vector<vec4> getDodecahedronVertices(float size) const;
 	vector<vec4> getIcosahedronVertices(float size) const;
 
+	vector<int> getIndices(geometry_type gt, attribute_index_method aim) const;
+
 	void setExportAsTriangles(bool b) { export_as_triangles = b; }
 
 private:
+	vector<int> getTriangleIndices(attribute_index_method aim) const;
 	vector<int> getTrianglePointIndices() const;
 	vector<int> getTriangleLineIndices() const;
 
+	vector<int> getRectangleIndices(attribute_index_method aim) const;
 	vector<int> getRectanglePointIndices() const;
 	vector<int> getRectangleLineIndices() const;
 	vector<int> getRectangleTriangleIndices() const;
 
+	vector<int> getCuboidIndices(attribute_index_method aim) const;
 	vector<int> getCuboidPointIndices() const;
 	vector<int> getCuboidLineIndices() const;
 	vector<int> getCuboidTriangleIndices() const;
 
+	vector<int> getTetrahedronIndices(attribute_index_method aim) const;
 	vector<int> getTetrahedronPointIndices() const;
 	vector<int> getTetrahedronLineIndices() const;
 	vector<int> getTetrahedronTriangleIndices() const;
 
+	vector<int> getOctahedronIndices(attribute_index_method aim) const;
 	vector<int> getOctahedronPointIndices() const;
 	vector<int> getOctahedronLineIndices() const;
 	vector<int> getOctahedronTriangleIndices() const;
 
+	vector<int> getIcosahedronIndices(attribute_index_method aim) const;
 	vector<int> getIcosahedronPointIndices() const;
 	vector<int> getIcosahedronLineIndices() const;
 	vector<int> getIcosahedronTriangleIndices() const;
 
+	vector<int> getDodecahedronIndices(attribute_index_method aim) const;
 	vector<int> getDodecahedronPointIndices() const;
 	vector<int> getDodecahedronLineIndices() const;
 	vector<int> getDodecahedronTriangleIndices() const;
