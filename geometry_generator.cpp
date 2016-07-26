@@ -19,6 +19,17 @@ string getStringFromGeometryType(geometry_type gt)
 	}
 }
 
+string getStringFromAttributeIndexMethod(attribute_index_method aim)
+{
+	switch (aim)
+	{
+	case POINT_INDICES: return "point indices";
+	case LINE_INDICES: return "line indices";
+	case TRIANGLE_INDICES: return "triangle indices";
+	default: return "unknown attribute index method: " + std::to_string(aim);
+	}
+}
+
 vector<vec4> geometry_generator::getTriangleVertices(float size) const
 {
 	float half_height = size / 2.0f;
@@ -631,7 +642,7 @@ vector<int> geometry_generator::getRectangleIndices(attribute_index_method aim) 
 	switch (aim)
 	{
 	case POINT_INDICES: return getRectanglePointIndices();
-	case LINE_INDICES: return getRectanglePointIndices();
+	case LINE_INDICES: return getRectangleLineIndices();
 	case TRIANGLE_INDICES: return getRectangleTriangleIndices();
 	default: return getRectanglePointIndices();
 	}
@@ -642,7 +653,7 @@ vector<int> geometry_generator::getCuboidIndices(attribute_index_method aim) con
 	switch (aim)
 	{
 	case POINT_INDICES: return getCuboidPointIndices();
-	case LINE_INDICES: return getCuboidPointIndices();
+	case LINE_INDICES: return getCuboidLineIndices();
 	case TRIANGLE_INDICES: return getCuboidTriangleIndices();
 	default: return getCuboidPointIndices();
 	}
@@ -653,7 +664,7 @@ vector<int> geometry_generator::getTetrahedronIndices(attribute_index_method aim
 	switch (aim)
 	{
 	case POINT_INDICES: return getTetrahedronPointIndices();
-	case LINE_INDICES: return getTetrahedronPointIndices();
+	case LINE_INDICES: return getTetrahedronLineIndices();
 	case TRIANGLE_INDICES: return getTetrahedronTriangleIndices();
 	default: return getTetrahedronPointIndices();
 	}
@@ -664,7 +675,7 @@ vector<int> geometry_generator::getOctahedronIndices(attribute_index_method aim)
 	switch (aim)
 	{
 	case POINT_INDICES: return getOctahedronPointIndices();
-	case LINE_INDICES: return getOctahedronPointIndices();
+	case LINE_INDICES: return getOctahedronLineIndices();
 	case TRIANGLE_INDICES: return getOctahedronTriangleIndices();
 	default: return getOctahedronPointIndices();
 	}
@@ -675,7 +686,7 @@ vector<int> geometry_generator::getDodecahedronIndices(attribute_index_method ai
 	switch (aim)
 	{
 	case POINT_INDICES: return getDodecahedronPointIndices();
-	case LINE_INDICES: return getDodecahedronPointIndices();
+	case LINE_INDICES: return getDodecahedronLineIndices();
 	case TRIANGLE_INDICES: return getDodecahedronTriangleIndices();
 	default: return getDodecahedronPointIndices();
 	}
@@ -686,7 +697,7 @@ vector<int> geometry_generator::getIcosahedronIndices(attribute_index_method aim
 	switch (aim)
 	{
 	case POINT_INDICES: return getIcosahedronPointIndices();
-	case LINE_INDICES: return getIcosahedronPointIndices();
+	case LINE_INDICES: return getIcosahedronLineIndices();
 	case TRIANGLE_INDICES: return getIcosahedronTriangleIndices();
 	default: return getIcosahedronPointIndices();
 	}

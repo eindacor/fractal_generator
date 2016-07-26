@@ -32,6 +32,9 @@ uniform float light_cutoff = float(0.005f);\n\
 uniform mat4 quadrant_matrix;\n\
 uniform int render_quadrant;\n\
 uniform int render_palette;\n\
+uniform int geometry_type; //0 = vertices, 1 = lines, 2 = triangles\n\
+uniform int override_line_color_enabled;\n\
+uniform vec4 line_override_color;\n\
 void main()\n\
 {\n\
 	if (render_palette > 0)\n\
@@ -53,8 +56,17 @@ void main()\n\
 	}\n\
 	gl_PointSize = point_size * point_size_scale;\n\
 	gl_Position = MVP * fractal_scale * position;\n\
-	float alpha_value = color.a;\n\
-	fragment_color = vec4(color.rgb, alpha_value);\n\
+	float alpha_value;\n\
+	if (override_line_color_enabled == 1 && geometry_type == 1)\n\
+	{\n\
+		alpha_value = 1.0f;\n\
+		fragment_color = line_override_color;\n\
+	}\n\
+	else\n\
+	{\n\
+		alpha_value = color.a;\n\
+		fragment_color = vec4(color.rgb, alpha_value);\n\
+	}\n\
 	if (invert_colors > 0)\n\
 	{\n\
 		fragment_color = vec4(vec3(1.0) - fragment_color.rgb, alpha_value); \n\
@@ -85,9 +97,12 @@ void main()\n\
 		float attenuation = 1.0f / (denom * denom);\n\
 		attenuation = (attenuation - light_cutoff) / (1.0f - light_cutoff);\n\
 		attenuation = max(attenuation, 0);\n\
-		fragment_color = (fragment_color * attenuation) + (background_color * (1.0f - attenuation));\n\
-		if (light_effects_transparency == 0)\n\
- 			fragment_color.a = alpha_value;\n\
+		if (override_line_color_enabled != 1 || geometry_type != 1)\n\
+		{\n\
+			fragment_color = (fragment_color * attenuation) + (background_color * (1.0f - attenuation));\n\
+			if (light_effects_transparency == 0)\n\
+			fragment_color.a = alpha_value;\n\
+		}\n\
 	}\n\
 	if (render_quadrant > 0)\n\
 	{\n\
@@ -169,12 +184,12 @@ int main()
 
 	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 2.0f), 45.0f));
 
-	jep::obj_contents torus("torus.obj");
+	/*jep::obj_contents torus("torus.obj");
 	jep::obj_contents helix("helix.obj");
 	jep::obj_contents sphere("sphere.obj");
 	generator->loadPointSequence("torus", torus.getAllVerticesOfAllMeshes());
 	generator->loadPointSequence("helix", helix.getAllVerticesOfAllMeshes());
-	generator->loadPointSequence("sphere", sphere.getAllVerticesOfAllMeshes());
+	generator->loadPointSequence("sphere", sphere.getAllVerticesOfAllMeshes());*/
 
 	/*
 	SEEDS
@@ -199,6 +214,7 @@ int main()
 	bool paused = false;
 	bool reverse = false;
 	bool pause_on_swap = false;
+	bool growth_paused = false;
 
 	generator->printContext();
 
@@ -226,7 +242,7 @@ int main()
 				pause_on_swap = false;
 			}
 
-			if (!paused && generator->getSettings().show_growth)
+			if (!paused && generator->getSettings().show_growth && !growth_paused)
 			{
 				if (generator->getSettings().show_growth && reverse && frame_counter > counter_increment)
 					frame_counter -= counter_increment;
@@ -238,6 +254,11 @@ int main()
 			if (!paused)
 			{
 				generator->tickAnimation();
+			}
+
+			if (keys->checkPress(GLFW_KEY_5, false))
+			{
+				growth_paused = !growth_paused;
 			}
 
 			if (settings.auto_tracking && !paused)
@@ -351,9 +372,9 @@ int main()
 				shared_ptr<fractal_generator> new_generator(new fractal_generator(settings.base_seed, context, settings.num_points));
 				generator = new_generator;
 				generator->printContext();
-				generator->loadPointSequence("torus", torus.getAllVerticesOfAllMeshes());
+				/*generator->loadPointSequence("torus", torus.getAllVerticesOfAllMeshes());
 				generator->loadPointSequence("helix", helix.getAllVerticesOfAllMeshes());
-				generator->loadPointSequence("sphere", sphere.getAllVerticesOfAllMeshes());
+				generator->loadPointSequence("sphere", sphere.getAllVerticesOfAllMeshes());*/
 				frame_counter = 0;
 				counter_increment = 1;
 				paused = false;
@@ -365,9 +386,9 @@ int main()
 				shared_ptr<fractal_generator> new_generator(new fractal_generator(settings.base_seed, context, settings.num_points));
 				generator = new_generator;
 				generator->printContext();
-				generator->loadPointSequence("torus", torus.getAllVerticesOfAllMeshes());
+				/*generator->loadPointSequence("torus", torus.getAllVerticesOfAllMeshes());
 				generator->loadPointSequence("helix", helix.getAllVerticesOfAllMeshes());
-				generator->loadPointSequence("sphere", sphere.getAllVerticesOfAllMeshes());
+				generator->loadPointSequence("sphere", sphere.getAllVerticesOfAllMeshes());*/
 				frame_counter = 0;
 				counter_increment = 1;
 				paused = false;

@@ -143,18 +143,21 @@ void fractal_generator::drawFractal() const
 
 void fractal_generator::drawVertices() const
 {
+	glUniform1i(context->getShaderGLint("geometry_type"), 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, point_indices);
 	glDrawElements(GL_POINTS, point_index_count, GL_UNSIGNED_SHORT, (void*)0);
 }
 
 void fractal_generator::drawLines() const
 {
+	glUniform1i(context->getShaderGLint("geometry_type"), 1);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, line_indices);
 	glDrawElements(sm.line_mode, line_index_count, GL_UNSIGNED_SHORT, (void*)0);
 }
 
 void fractal_generator::drawTriangles() const
 {
+	glUniform1i(context->getShaderGLint("geometry_type"), 2);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, triangle_indices);
 	glDrawElements(sm.triangle_mode, triangle_index_count, GL_UNSIGNED_SHORT, (void*)0);
 }
@@ -488,7 +491,10 @@ void fractal_generator::generateFractal()
 		vec4 transformation_color = influenceElement<vec4>(colors_back.at(matrix_index_back), colors_front.at(matrix_index_front), sm.interpolation_state);
 		float transformation_size = influenceElement<float>(sizes_back.at(matrix_index_back), sizes_front.at(matrix_index_front), sm.interpolation_state);
 
-		addNewPointAndIterate(starting_point, point_color, starting_size, matrix_index_front, matrix_index_back, points, point_indices_to_buffer, line_indices_to_buffer, triangle_indices_to_buffer);
+		addNewPointAndIterate(starting_point, point_color, starting_size, matrix_index_front, matrix_index_back, points);
+		point_indices_to_buffer.push_back(point_indices_to_buffer.size());
+		line_indices_to_buffer.push_back(line_indices_to_buffer.size());
+		triangle_indices_to_buffer.push_back(triangle_indices_to_buffer.size());
 	}
 
 	addPalettePointsAndBufferData(points, point_indices_to_buffer, line_indices_to_buffer, triangle_indices_to_buffer);
@@ -534,7 +540,10 @@ void fractal_generator::generateFractalWithRefresh()
 		point_color /= ((float)actual_refresh + 1.0f);
 		new_size /= ((float)actual_refresh + 1.0f);
 
-		addNewPoint(new_point, point_color, new_size, points, point_indices_to_buffer, line_indices_to_buffer, triangle_indices_to_buffer);
+		addNewPoint(new_point, point_color, new_size, points);
+		point_indices_to_buffer.push_back(point_indices_to_buffer.size());
+		line_indices_to_buffer.push_back(line_indices_to_buffer.size());
+		triangle_indices_to_buffer.push_back(triangle_indices_to_buffer.size());
 	}
 
 	addPalettePointsAndBufferData(points, point_indices_to_buffer, line_indices_to_buffer, triangle_indices_to_buffer);
@@ -577,9 +586,33 @@ void fractal_generator::generateFractalFromPointSequenceWithRefresh()
 		final_color /= float(actual_refresh + 1);
 		final_size /= float(actual_refresh + 1);
 
-		for (const vec4 &point : sm.point_sequence)
+		int index_sequences_added = point_indices_to_buffer.size() / sm.point_sequence.size();
+
+		// determine where values should begin based on the used sequence and number of indices already added
+		vector<int>::iterator max_local_value_points = std::max_element(sm.point_indices.begin(), sm.point_indices.end());
+		int starting_index_points = index_sequences_added * (*max_local_value_points + 1);
+		for (const unsigned short index : sm.point_indices)
 		{
-			addNewPoint(final_matrix * point, final_color, final_size, points, point_indices_to_buffer, line_indices_to_buffer, triangle_indices_to_buffer);
+			point_indices_to_buffer.push_back(starting_index_points + index);
+		}
+
+		vector<int>::iterator max_local_value_lines = std::max_element(sm.line_indices.begin(), sm.line_indices.end());
+		int starting_index_lines = index_sequences_added * (*max_local_value_lines + 1);
+		for (const unsigned short index : sm.line_indices)
+		{
+			line_indices_to_buffer.push_back(starting_index_lines + index);
+		}
+
+		vector<int>::iterator max_local_value_triangles = std::max_element(sm.triangle_indices.begin(), sm.triangle_indices.end());
+		int starting_index_triangles = index_sequences_added * (*max_local_value_triangles + 1);
+		for (const unsigned short index : sm.triangle_indices)
+		{
+			triangle_indices_to_buffer.push_back(starting_index_triangles + index);
+		}
+
+		for (int n = 0; n < sm.point_sequence.size(); n++)
+		{
+			addNewPoint(final_matrix * sm.point_sequence.at(n), final_color, final_size, points);
 		}
 	}
 
@@ -706,10 +739,7 @@ void fractal_generator::addNewPointAndIterate(
 	float &starting_size,
 	int matrix_index_front,
 	int matrix_index_back,
-	vector<float> &points,
-	vector<unsigned short> &point_indices,
-	vector<unsigned short> &line_indices,
-	vector<unsigned short> &triangle_indices)
+	vector<float> &points)
 {
 	mat4 matrix_front = matrices_front.at(matrix_index_front).second;
 	mat4 matrix_back = matrices_back.at(matrix_index_back).second;
@@ -762,10 +792,6 @@ void fractal_generator::addNewPointAndIterate(
 	points.push_back((float)(starting_color.b));
 	points.push_back((float)(starting_color.a));
 	points.push_back(starting_size);
-
-	point_indices.push_back(point_indices.size());
-	line_indices.push_back(line_indices.size());
-	triangle_indices.push_back(triangle_indices.size());
 }
 
 void fractal_generator::addPointSequenceAndIterate(
@@ -839,7 +865,6 @@ void fractal_generator::addPointSequenceAndIterate(
 	// determine where values should begin based on the used sequence and number of indices already added
 	vector<int>::iterator max_local_value_points = std::max_element(sm.point_indices.begin(), sm.point_indices.end());
 	int starting_index_points = index_sequences_added * (*max_local_value_points + 1);
-
 	for (const unsigned short index : sm.point_indices)
 	{
 		point_indices.push_back(starting_index_points + index);
@@ -847,7 +872,6 @@ void fractal_generator::addPointSequenceAndIterate(
 
 	vector<int>::iterator max_local_value_lines = std::max_element(sm.line_indices.begin(), sm.line_indices.end());
 	int starting_index_lines = index_sequences_added * (*max_local_value_lines + 1);
-
 	for (const unsigned short index : sm.line_indices)
 	{
 		line_indices.push_back(starting_index_lines + index);
@@ -855,7 +879,6 @@ void fractal_generator::addPointSequenceAndIterate(
 
 	vector<int>::iterator max_local_value_triangles = std::max_element(sm.triangle_indices.begin(), sm.triangle_indices.end());
 	int starting_index_triangles = index_sequences_added * (*max_local_value_triangles + 1);
-
 	for (const unsigned short index : sm.triangle_indices)
 	{
 		triangle_indices.push_back(starting_index_triangles + index);
@@ -868,10 +891,7 @@ void fractal_generator::addNewPoint(
 	const vec4 &point,
 	const vec4 &color,
 	const float &size,
-	vector<float> &points, 
-	vector<unsigned short> &point_indices,
-	vector<unsigned short> &line_indices,
-	vector<unsigned short> &triangle_indices)
+	vector<float> &points)
 {
 	vec4 point_to_add = point;
 
@@ -909,10 +929,6 @@ void fractal_generator::addNewPoint(
 	points.push_back((float)color.b);
 	points.push_back((float)color.a);
 	points.push_back(size);
-
-	point_indices.push_back(point_indices.size());
-	line_indices.push_back(line_indices.size());
-	triangle_indices.push_back(triangle_indices.size());
 }
 
 vec4 fractal_generator::getSampleColor(const int &samples, const vector<vec4> &color_pool) const
@@ -974,7 +990,12 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 	}
 
 	if (keys->checkPress(GLFW_KEY_M, false))
-		newColors();
+	{
+		if (keys->checkShiftHold())
+			cycleLineOverride();
+
+		else newColors();
+	}
 
 	if (keys->checkPress(GLFW_KEY_P, false))
 		sm.show_points = !sm.show_points;
@@ -995,11 +1016,6 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 	{
 		sm.light_effects_transparency = !sm.light_effects_transparency;
 		glUniform1i(context->getShaderGLint("light_effects_transparency"), sm.light_effects_transparency);
-	}
-
-	if (keys->checkPress(GLFW_KEY_5, true))
-	{
-		//available
 	}
 
 	if (keys->checkPress(GLFW_KEY_Q, false)) 
@@ -1246,6 +1262,25 @@ void fractal_generator::regenerateFractal()
 	glUniform1i(context->getShaderGLint("lighting_mode"), sm.lm);
 	glUniform3fv(context->getShaderGLint("centerpoint"), 1, &focal_point[0]);
 	glUniform1f(context->getShaderGLint("illumination_distance"), sm.illumination_distance);
+
+	updateLineColorOverride();
+}
+
+void fractal_generator::updateLineColorOverride()
+{
+	glUniform1i(context->getShaderGLint("override_line_color_enabled"), color_override_index != -3);
+
+	vec4 line_color;
+	switch (color_override_index)
+	{
+	case -3: break;
+	case -2: line_color = vec4(0.0f, 0.0f, 0.0f, 1.0f); break;
+	case -1: line_color = vec4(1.0f, 1.0f, 1.0f, 1.0f); break;
+	default: line_color = influenceElement<vec4>(colors_back.at(color_override_index), colors_front.at(color_override_index), sm.interpolation_state); break;
+	}
+
+	if (color_override_index != -3)
+		glUniform4fv(context->getShaderGLint("line_override_color"), 1, &line_color[0]);
 }
 
 void fractal_generator::applyBackground(const int &num_samples)
@@ -1322,6 +1357,11 @@ void fractal_generator::printContext()
 	cout << "lighting mode: " << getStringFromLightingMode(sm.lm) << endl;
 	cout << "front geometry matrix type: " << getStringFromGeometryType(geo_type_front) << endl;
 	cout << "back geometry matrix type: " << getStringFromGeometryType(geo_type_back) << endl;
+	if (sm.lines_aim != ATTRIBUTE_INDEX_METHOD_SIZE)
+	{
+		cout << "line attribute index method: " << getStringFromAttributeIndexMethod(sm.lines_aim) << endl;
+		cout << "traingle attribute index method: " << getStringFromAttributeIndexMethod(sm.triangles_aim) << endl;
+	}
 	cout << "matrix geometry coefficient: " << sm.matrix_geometry_coefficient << endl;
 	cout << "matrix geometry map: " << endl;
 	for (const auto &geo_pair : sm.matrix_geometry_weights)
@@ -1477,7 +1517,7 @@ void fractal_generator::cycleGeometryType()
 		}
 
 		sm.lines_aim = attribute_index_method(mc.getRandomIntInRange(0, (int)ATTRIBUTE_INDEX_METHOD_SIZE));
-		sm.triangles_aim = attribute_index_method(mc.getRandomIntInRange(0, (int)ATTRIBUTE_INDEX_METHOD_SIZE));
+		sm.triangles_aim = mc.getRandomFloat() < 0.5f ? POINT_INDICES : TRIANGLE_INDICES;
 
 		sm.point_indices = gm.getIndices(sm.geo_type, POINT_INDICES);
 		sm.line_indices = gm.getIndices(sm.geo_type, sm.lines_aim);
@@ -1492,6 +1532,16 @@ void fractal_generator::cycleBackgroundColorIndex()
 	sm.background_front_index + 1 == colors_front.size() ? sm.background_front_index = 0 : sm.background_front_index++;
 	sm.background_back_index = sm.background_front_index;
 	updateBackground();
+}
+
+void fractal_generator::cycleLineOverride()
+{
+	if (color_override_index == colors_front.size() - 1)
+		color_override_index = -3;
+
+	else color_override_index++;
+
+	updateLineColorOverride();
 }
 
 void fractal_generator::setBackgroundColorIndex(int index)

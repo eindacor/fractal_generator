@@ -49,6 +49,7 @@ public:
 	//vector<mat4> generateMatrixSequence(const vector<int> &matrix_indices) const;
 	vector<mat4> generateMatrixSequence(const int &sequence_size) const;
 
+	void updateLineColorOverride();
 	void applyBackground(const int &num_samples);
 	void checkKeys(const shared_ptr<key_handler> &keys);
 	void drawFractal() const;
@@ -78,6 +79,7 @@ public:
 	void printContext();
 	void cycleGeometryType();
 	void cycleBackgroundColorIndex();
+	void cycleLineOverride();
 	void setBackgroundColorIndex(int index);
 	int getBackgroundColorIndex() const { return sm.background_front_index; }
 
@@ -120,6 +122,8 @@ private:
 	geometry_generator gm;
 	vec3 focal_point;
 	float average_delta, max_x, max_y, max_z;
+	// -3 = no override, -2 = black, -1 = white, 0 - n for each interpolated matrix_color
+	int color_override_index = -2;
 	
 	// current gen parameters	
 	vec4 origin = vec4(0.0f, 0.0f, 0.0f, 1.0f);	
@@ -151,10 +155,7 @@ private:
 		float &starting_size,
 		int matrix_index_front,
 		int matrix_index_back,
-		vector<float> &points,
-		vector<unsigned short> &point_indices, 
-		vector<unsigned short> &line_indices,
-		vector<unsigned short> &triangle_indices);
+		vector<float> &points);
 
 	void addPointSequenceAndIterate(
 		mat4 &origin_matrix,
@@ -171,10 +172,7 @@ private:
 		const vec4 &point,
 		const vec4 &color,
 		const float &size,
-		vector<float> &points, 
-		vector<unsigned short> &point_indices,
-		vector<unsigned short> &line_indices,
-		vector<unsigned short> &triangle_indices);
+		vector<float> &points);
 
 	void bufferData(const vector<float> &vertex_data, const vector<unsigned short> &point_indices, const vector<unsigned short> &line_indices, const vector<unsigned short> &triangle_indices);
 	void bufferPalette(const vector<float> &vertex_data);

@@ -10,6 +10,7 @@ enum geometry_type { TRIANGLE, RECTANGLE, SQUARE, CUBOID, CUBE, TETRAHEDRON, OCT
 enum attribute_index_method { POINT_INDICES, LINE_INDICES, TRIANGLE_INDICES, ATTRIBUTE_INDEX_METHOD_SIZE };
 
 string getStringFromGeometryType(geometry_type gt);
+string getStringFromAttributeIndexMethod(attribute_index_method aim);
 
 class geometry_generator
 {
