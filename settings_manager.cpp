@@ -128,10 +128,10 @@ void settings_manager::randomize(const random_generator &mc)
 
 	lm = lighting_mode(mc.getRandomIntInRange(0, (int)LIGHTING_MODE_SIZE));
 
-	geo_type = geometry_type(mc.getRandomIntInRange(0, (int)DEFAULT_GEOMETRY_TYPE));
+	geo_type = geometry_type(mc.getRandomIntInRange(0, (int)GEOMETRY_TYPE_SIZE));
 	// TODO refactor load sequence system
-	if (geo_type == LOADED_SEQUENCE)
-		geo_type = DEFAULT_GEOMETRY_TYPE;
+	/*if (geo_type == LOADED_SEQUENCE)
+		geo_type = GEOMETRY_TYPE_SIZE;*/
 
 	if (use_point_sequence)
 	{
@@ -150,8 +150,8 @@ void settings_manager::randomize(const random_generator &mc)
 		case OCTAHEDRON: point_sequence = gm.getOctahedronVertices(random_width); break;
 		case DODECAHEDRON: point_sequence = gm.getDodecahedronVertices(random_width); break;
 		case ICOSAHEDRON: point_sequence = gm.getIcosahedronVertices(random_width); break;
-		case LOADED_SEQUENCE: geo_type = DEFAULT_GEOMETRY_TYPE;
-		case DEFAULT_GEOMETRY_TYPE:
+		//case LOADED_SEQUENCE: geo_type = DEFAULT_GEOMETRY_TYPE;
+		case GEOMETRY_TYPE_SIZE:
 		default: use_point_sequence = false;
 		}
 

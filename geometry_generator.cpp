@@ -13,8 +13,8 @@ string getStringFromGeometryType(geometry_type gt)
 	case OCTAHEDRON: return "octahedron";
 	case DODECAHEDRON: return "dodecahedron";
 	case ICOSAHEDRON: return "icosahedron";
-	case LOADED_SEQUENCE: return "custom sequence";
-	case DEFAULT_GEOMETRY_TYPE: return "points";
+	//case LOADED_SEQUENCE: return "custom sequence";
+	case GEOMETRY_TYPE_SIZE: return "points";
 	default: return "unknown type";
 	}
 }
@@ -144,50 +144,6 @@ vector<vec4> geometry_generator::getTetrahedronVertices(float size) const
 	point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, -1.0f * half_height, 1.0f));	//B
 	point_sequence.push_back(vec4(half_height, -1.0f * half_height, half_height, 1.0f));	//C
 	point_sequence.push_back(vec4(half_height, half_height, -1.0f * half_height, 1.0f));	//D
-
-	return point_sequence;
-}
-
-vector<int> geometry_generator::getRectanglePointIndices() const
-{
-	vector<int> indices;
-	for (int i = 0; i < 4; i++)
-	{
-		indices.push_back(i);
-	}
-	return indices;
-}
-
-vector<int> geometry_generator::getRectangleLineIndices() const
-{
-	return vector<int>{ 0, 1, 1, 2, 2, 3, 3, 0 };
-}
-
-vector<int> geometry_generator::getRectangleTriangleIndices() const
-{
-	return vector<int>{ 0, 1, 2, 2, 3, 0 };
-}
-
-vector<vec4> geometry_generator::getTetrahedronVertices(float size) const
-{
-	float half_height = size / 2.0f;
-	vector<vec4> point_sequence;
-
-	point_sequence.push_back(vec4(-1.0f * half_height, half_height, half_height, 1.0f));	//A
-	point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, -1.0f * half_height, 1.0f));	//B
-	point_sequence.push_back(vec4(half_height, -1.0f * half_height, half_height, 1.0f));	//C
-
-	point_sequence.push_back(vec4(half_height, -1.0f * half_height, half_height, 1.0f));	//C
-	point_sequence.push_back(vec4(-1.0f * half_height, half_height, half_height, 1.0f));	//A
-	point_sequence.push_back(vec4(half_height, half_height, -1.0f * half_height, 1.0f));	//D
-
-	point_sequence.push_back(vec4(half_height, half_height, -1.0f * half_height, 1.0f));	//D
-	point_sequence.push_back(vec4(-1.0f * half_height, half_height, half_height, 1.0f));	//A
-	point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, -1.0f * half_height, 1.0f));	//B
-
-	point_sequence.push_back(vec4(half_height, half_height, -1.0f * half_height, 1.0f));	//D
-	point_sequence.push_back(vec4(half_height, -1.0f * half_height, half_height, 1.0f));	//C
-	point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, -1.0f * half_height, 1.0f));	//B
 
 	return point_sequence;
 }
@@ -653,8 +609,8 @@ vector<int> geometry_generator::getIndices(geometry_type gt, attribute_index_met
 	case OCTAHEDRON: return getOctahedronIndices(aim);
 	case DODECAHEDRON: return getDodecahedronIndices(aim);
 	case ICOSAHEDRON: return getIcosahedronIndices(aim);
-	case LOADED_SEQUENCE:
-	case DEFAULT_GEOMETRY_TYPE:
+	//case LOADED_SEQUENCE:
+	case GEOMETRY_TYPE_SIZE:
 	default: 
 		cout << "unable to generate indices for specified geometry type" << endl;
 		throw;

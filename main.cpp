@@ -36,7 +36,7 @@ void main()\n\
 {\n\
 	if (render_palette > 0)\n\
 	{\n\
-		gl_position = vec4(palette_position.x, palette_position.y, 0.0f, 1.0f);\n\
+		gl_Position = vec4(palette_position.x, palette_position.y, 0.0f, 1.0f);\n\
 		float alpha_value = color.a;\n\
 		fragment_color = vec4(color.rgb, alpha_value);\n\
 		if (invert_colors > 0)\n\

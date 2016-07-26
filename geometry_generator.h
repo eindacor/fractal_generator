@@ -5,7 +5,8 @@
 #define BASE_LENGTH 2.0f * 0.61803398875f
 #define HYPOTENUSE_LENGTH 2.0f
 
-enum geometry_type { TRIANGLE, RECTANGLE, SQUARE, CUBOID, CUBE, TETRAHEDRON, OCTAHEDRON, DODECAHEDRON, ICOSAHEDRON, LOADED_SEQUENCE, DEFAULT_GEOMETRY_TYPE };
+enum geometry_type { TRIANGLE, RECTANGLE, SQUARE, CUBOID, CUBE, TETRAHEDRON, OCTAHEDRON, DODECAHEDRON, ICOSAHEDRON, GEOMETRY_TYPE_SIZE };
+//enum geometry_type { TRIANGLE, RECTANGLE, SQUARE, CUBOID, CUBE, TETRAHEDRON, OCTAHEDRON, DODECAHEDRON, ICOSAHEDRON, LOADED_SEQUENCE, DEFAULT_GEOMETRY_TYPE };
 enum attribute_index_method { POINT_INDICES, LINE_INDICES, TRIANGLE_INDICES, ATTRIBUTE_INDEX_METHOD_SIZE };
 
 string getStringFromGeometryType(geometry_type gt);
@@ -24,8 +25,6 @@ public:
 	vector<vec4> getIcosahedronVertices(float size) const;
 
 	vector<int> getIndices(geometry_type gt, attribute_index_method aim) const;
-
-	void setExportAsTriangles(bool b) { export_as_triangles = b; }
 
 private:
 	vector<int> getTriangleIndices(attribute_index_method aim) const;
@@ -77,6 +76,4 @@ private:
 	int findThirdIcosahedronTrianglePoint(int first, int second, const vector<vec4> &vertices) const;
 	int findSideFromTargetAndHypotenuse(int target, int hypotenuse, const vector<vec4> &vertices) const;
 	int findOtherHypotenuseFromTargetAndHypotenuse(int target, int hypotenuse, const vector<vec4> &vertices) const;
-
-	bool export_as_triangles = true;
 };
