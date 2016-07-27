@@ -9,6 +9,14 @@
 #include "settings_manager.h"
 #include "geometry_generator.h"
 
+typedef std::pair<GLenum, attribute_index_method> render_style;
+
+#define SEGMENTED_LINES render_style(GL_LINES, POINTS)
+#define CONTINUOUS_LINES render_style(GL_LINE_STRIP, POINTS)
+#define WIREFRAME_SOLIDS render_style(GL_LINES, LINES)
+#define SEGMENTED_SOLIDS render_style(GL_LINES, TRIANGLES)
+#define WIREFRAME_CONNECTED render_style(GL_LINE_STRIP, TRIANGLES)
+
 class fractal_generator
 {
 public:
@@ -17,7 +25,15 @@ public:
 		const shared_ptr<jep::ogl_context> &con,
 		int num_points);
 
-	~fractal_generator() { glDeleteVertexArrays(1, &pg_VAO); glDeleteBuffers(1, &pg_VBO); }
+	~fractal_generator() { 
+		glDeleteVertexArrays(1, &VAO); 
+		glDeleteBuffers(1, &vertices_vbo); 
+		glDeleteBuffers(1, &point_indices); 
+		glDeleteBuffers(1, &line_indices); 
+		glDeleteBuffers(1, &triangle_indices); 
+		glDeleteVertexArrays(1, &palette_vao);
+		glDeleteBuffers(1, &palette_vbo);
+	}
 
 	string getSeed() const { return base_seed; }
 
@@ -33,9 +49,15 @@ public:
 	//vector<mat4> generateMatrixSequence(const vector<int> &matrix_indices) const;
 	vector<mat4> generateMatrixSequence(const int &sequence_size) const;
 
+	void updateLineColorOverride();
 	void applyBackground(const int &num_samples);
 	void checkKeys(const shared_ptr<key_handler> &keys);
 	void drawFractal() const;
+	
+	// keeps track of how many indices are called by draw command, set by geometry index pattern generated in geometry_generator.cpp
+	int point_index_count;
+	int line_index_count;
+	int triangle_index_count;
 
 	void invertColors();
 	void newColors();
@@ -57,6 +79,7 @@ public:
 	void printContext();
 	void cycleGeometryType();
 	void cycleBackgroundColorIndex();
+	void cycleLineOverride();
 	void setBackgroundColorIndex(int index);
 	int getBackgroundColorIndex() const { return sm.background_front_index; }
 
@@ -92,13 +115,15 @@ private:
 	vec4 seed_color_back;
 	vector<float> sizes_front;
 	vector<float> sizes_back;
-	geometry_type geo_type_front = DEFAULT_GEOMETRY_TYPE;
-	geometry_type geo_type_back = DEFAULT_GEOMETRY_TYPE;
+	geometry_type geo_type_front = GEOMETRY_TYPE_SIZE;
+	geometry_type geo_type_back = GEOMETRY_TYPE_SIZE;
 	random_generator mc;
 	color_manager color_man;
 	geometry_generator gm;
 	vec3 focal_point;
 	float average_delta, max_x, max_y, max_z;
+	// -3 = no override, -2 = black, -1 = white, 0 - n for each interpolated matrix_color
+	int color_override_index = -2;
 	
 	// current gen parameters	
 	vec4 origin = vec4(0.0f, 0.0f, 0.0f, 1.0f);	
@@ -113,8 +138,14 @@ private:
 	int vertex_count;
 	int palette_vertex_count;
 
-	GLuint pg_VBO;
-	GLuint pg_VAO;
+	GLuint vertices_vbo;
+	GLuint palette_vbo;
+	GLuint point_indices;
+	GLuint line_indices;
+	GLuint triangle_indices;
+
+	GLuint VAO;
+	GLuint palette_vao;
 
 	shared_ptr<ogl_context> context;
 
@@ -132,7 +163,10 @@ private:
 		float &starting_size,
 		int matrix_index_front,
 		int matrix_index_back,
-		vector<float> &points);
+		vector<float> &points,
+		vector<unsigned short> &point_indices,
+		vector<unsigned short> &line_indices,
+		vector<unsigned short> &triangle_indices);
 
 	void addNewPoint(
 		const vec4 &point,
@@ -140,14 +174,20 @@ private:
 		const float &size,
 		vector<float> &points);
 
-	void bufferData(const vector<float> &vertex_data);
+	void bufferData(const vector<float> &vertex_data, const vector<unsigned short> &point_indices, const vector<unsigned short> &line_indices, const vector<unsigned short> &triangle_indices);
+	void bufferPalette(const vector<float> &vertex_data);
 
 	vector< pair<string, mat4> > generateMatrixVector(const int &count, geometry_type &geo_type);
 	vector<vec4> generateColorVector(const vec4 &seed, color_palette palette, const int &count, color_palette &random_selection) const;
 	vector<float> generateSizeVector(const int &count) const;
 	vector<float> getPalettePoints();
 	void addDataToPalettePoints(const vec2 &point, const vec4 &color, vector<float> &points) const;
-	void addPalettePointsAndBufferData(const vector<float> &vertex_data);
+	void addPalettePointsAndBufferData(const vector<float> &vertex_data, const vector<unsigned short> &point_indices, const vector<unsigned short> &line_indices, const vector<unsigned short> &triangle_indices);
+
+	void drawVertices() const;
+	void drawLines() const;
+	void drawTriangles() const;
+	void drawPalette() const;
 };
 
 #endif

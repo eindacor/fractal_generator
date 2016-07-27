@@ -14,7 +14,11 @@ public:
 	string base_seed = "";
 
 	int refresh_value = 5;
+#ifdef _DEBUG
+	int num_points = 2000;
+#else
 	int num_points = 10000;
+#endif
 
 #ifdef _DEBUG
 	int window_width = 400;
@@ -72,9 +76,14 @@ public:
 	color_palette random_palette_back = DEFAULT_COLOR_PALETTE;
 	GLenum line_mode = GL_LINES;
 	GLenum triangle_mode = 0;
-	geometry_type geo_type = DEFAULT_GEOMETRY_TYPE;
+	geometry_type geo_type = GEOMETRY_TYPE_SIZE;
 	vector<vec4> point_sequence;
+	vector<int> point_indices;
+	vector<int> line_indices;
+	vector<int> triangle_indices;
 	lighting_mode lm;
+	attribute_index_method lines_aim = ATTRIBUTE_INDEX_METHOD_SIZE;
+	attribute_index_method triangles_aim = ATTRIBUTE_INDEX_METHOD_SIZE;
 
 	std::map<geometry_type, unsigned int> matrix_geometry_weights;
 
