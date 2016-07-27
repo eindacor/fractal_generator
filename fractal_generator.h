@@ -123,7 +123,7 @@ private:
 	vec3 focal_point;
 	float average_delta, max_x, max_y, max_z;
 	// -3 = no override, -2 = black, -1 = white, 0 - n for each interpolated matrix_color
-	int color_override_index = -2;
+	int color_override_index = -3;
 	
 	// current gen parameters	
 	vec4 origin = vec4(0.0f, 0.0f, 0.0f, 1.0f);	

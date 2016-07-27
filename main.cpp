@@ -97,12 +97,9 @@ void main()\n\
 		float attenuation = 1.0f / (denom * denom);\n\
 		attenuation = (attenuation - light_cutoff) / (1.0f - light_cutoff);\n\
 		attenuation = max(attenuation, 0);\n\
-		if (override_line_color_enabled != 1 || geometry_type != 1)\n\
-		{\n\
-			fragment_color = (fragment_color * attenuation) + (background_color * (1.0f - attenuation));\n\
-			if (light_effects_transparency == 0)\n\
-			fragment_color.a = alpha_value;\n\
-		}\n\
+		fragment_color = (fragment_color * attenuation) + (background_color * (1.0f - attenuation));\n\
+		if (light_effects_transparency == 0)\n\
+		fragment_color.a = alpha_value;\n\
 	}\n\
 	if (render_quadrant > 0)\n\
 	{\n\
@@ -183,6 +180,10 @@ int main()
 	shared_ptr<key_handler> keys(new key_handler(context));
 
 	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 2.0f), 45.0f));
+	camera->setStepDistance(0.02f);
+	camera->setStrafeDistance(0.02f);
+	camera->setRotateAngle(1.0f);
+	camera->setTiltAngle(1.0f);
 
 	/*jep::obj_contents torus("torus.obj");
 	jep::obj_contents helix("helix.obj");
