@@ -1108,9 +1108,11 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		if (keys->checkShiftHold())
 		{
 			if (keys->checkPress(GLFW_KEY_RIGHT_BRACKET, true))
-				sm.illumination_distance = glm::clamp(sm.illumination_distance + 0.5f, 1.0f, 100.0f);
+				sm.illumination_distance = glm::clamp(sm.illumination_distance + 0.01f, 0.01f, 1.0f);
 
-			else sm.illumination_distance = glm::clamp(sm.illumination_distance - 0.5f, 1.0f, 100.0f);
+			else sm.illumination_distance = glm::clamp(sm.illumination_distance - 0.01f, 0.01f, 1.0f);
+
+			cout << sm.illumination_distance << endl;
 
 			glUniform1f(context->getShaderGLint("illumination_distance"), sm.illumination_distance);
 		}

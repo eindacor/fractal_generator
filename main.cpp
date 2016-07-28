@@ -186,13 +186,29 @@ int main()
 	camera->setRotateAngle(1.0f);
 	camera->setTiltAngle(1.0f);
 
+	glUseProgram(context->getProgramID());
 	vec4 lights[256];
+	vec4 light_colors[256];
+	float light_illumination_distances[256];
+	int light_count = 0;
 	for (int i = 0; i < 256; i++)
 	{
-		lights[i] = vec4(1.0f);
-	}
+		if (mc.getBool(0.01f))
+		{
+			lights[i] = vec4(mc.getRandomFloatInScope(), mc.getRandomFloatInScope(), mc.getRandomFloatInScope(), 1.0f);
+			light_colors[i] = mc.getRandomVec4();
+			light_illumination_distances[i] = mc.getRandomFloatInRange(0.0f, 1.0f);
+			light_count++;
+		}
 
-	glUniform4fv(context->getShaderGLint("lights"), 256, (const GLfloat*)lights);
+		else
+		{
+			lights[i] = vec4(0.0f);
+			light_colors[i] = vec4(0.0f);
+			light_illumination_distances[i] = 0.0f;
+		}
+	}
+	cout << "light count: " << light_count << endl;
 
 	/*jep::obj_contents torus("torus.obj");
 	jep::obj_contents helix("helix.obj");
@@ -240,6 +256,10 @@ int main()
 
 			glUniform1i(context->getShaderGLint("enable_growth_animation"), generator->getSettings().show_growth ? 1 : 0);
 			glUniform1i(context->getShaderGLint("frame_count"), frame_counter);
+
+			glUniform4fv(context->getShaderGLint("lights"), 256, &lights[0][0]);
+			glUniform4fv(context->getShaderGLint("light_colors"), 256, &light_colors[0][0]);
+			glUniform1fv(context->getShaderGLint("light_illumination_distances"), 256, light_illumination_distances);
 
 			if (keys->checkPress(GLFW_KEY_SLASH, false))
 			{

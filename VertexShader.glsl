@@ -1,4 +1,4 @@
-#version 330
+#version 430
 layout(location = 0) in vec4 position; 
 layout(location = 1) in vec4 color; 
 layout(location = 2) in float point_size; 
@@ -20,7 +20,7 @@ out vec4 fragment_color;
 uniform float point_size_scale = 1.0f; 
 uniform float illumination_distance; 
 uniform int invert_colors; 
-uniform float light_cutoff = float(0.005f);
+uniform float light_cutoff = float(0.3f);
 uniform mat4 quadrant_matrix; 
 uniform int render_quadrant; 
 uniform int render_palette; 
@@ -28,37 +28,80 @@ uniform int geometry_type; //0 = vertices, 1 = lines, 2 = triangles
 uniform int override_line_color_enabled;
 uniform vec4 line_override_color;
 uniform vec4 lights[256];
+uniform vec4 light_colors[256];
+uniform float light_illumination_distances[256];
 uniform int light_count;
+
+vec4 modifyLight(vec4 vertex_color, float illumination_dist, vec4 light_pos, vec4 vertex_pos, vec4 light_color, float cutoff)
+{
+	float attenuation;
+	vec4 L = light_pos - vertex_pos;
+	float distance = length(L);
+	float d = max(distance - illumination_dist, 0);
+	L /= distance;
+	float denom = d / (illumination_dist * illumination_distance) + 1.0f;
+	attenuation = 1.0f / (denom * denom);
+	attenuation = (attenuation - cutoff) / (1.0f - cutoff);
+	attenuation = max(attenuation, 0.0f);
+
+	vec4 new_color = vertex_color;
+	new_color += (light_color * attenuation);
+
+	new_color.r = clamp(new_color.r, 0.0f, 1.0f);
+	new_color.g = clamp(new_color.g, 0.0f, 1.0f);
+	new_color.b = clamp(new_color.b, 0.0f, 1.0f);
+	new_color.a = clamp(new_color.a, 0.0f, 1.0f);
+
+	return new_color;
+}
+
+float getAttenuationFromPosition(float illumination_dist, vec4 light_pos, vec4 vertex_pos, float cutoff)
+{
+	float attenuation;
+	vec4 L = light_pos - vertex_pos;
+	float distance = length(L);
+	float d = max(distance - illumination_dist, 0);
+	L /= distance;
+	float denom = d / (illumination_dist) + 1.0f;
+	attenuation = 1.0f / (denom * denom);
+	attenuation = (attenuation - cutoff) / (1.0f - cutoff);
+	
+	return max(attenuation, 0);
+}
 
 float getAttenuation()
 {
-	vec3 light_position;
+	vec4 light_position;
+	float light_intensity = 1.0f;
 	float distance_from_light;
+
 	if (lighting_mode == 1)
 	{
-		light_position = camera_position;
+		light_position = vec4(camera_position.xyz, light_intensity);
 	}
 
 	else if (lighting_mode == 2)
 	{
-		light_position = vec3(0.0f, 0.0f, 0.0f);
+		light_position = vec4(0.0f, 0.0f, 0.0f, light_intensity);
 	}
 
 	else if (lighting_mode == 3)
 	{
-		light_position = centerpoint;
+		light_position = vec4(centerpoint.xyz, light_intensity);
 	}
 
-	// lighting calcs from https://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/ 
-	float r = illumination_distance;
-	vec3 L = light_position - vec3(position);
-	float distance = length(L);
-	float d = max(distance - r, 0);
-	L /= distance;
-	float denom = d/r + 1.0f;
-	float attenuation = 1.0f / (denom * denom);
-	attenuation = (attenuation - light_cutoff) / (1.0f - light_cutoff);
-	return max(attenuation, 0);
+	float global_attenuation = getAttenuationFromPosition(illumination_distance, light_position, position, light_cutoff);
+	global_attenuation = 0.0f;
+
+	for (int i = 0; i < 256; i++)
+	{
+		if (lights[i].w < .001f)
+			continue;
+
+		global_attenuation += getAttenuationFromPosition(illumination_distance, lights[i], position, light_cutoff);
+	}
+
+	return clamp(global_attenuation, 0.0f, 1.0f);
 }
 
 void main()
@@ -104,8 +147,16 @@ void main()
 
 	if (lighting_mode > 0)
 	{
-		float attenuation = getAttenuation();
-		fragment_color = (fragment_color * attenuation) + (background_color * (1.0f - attenuation));
+		/*float attenuation = getAttenuation();
+		fragment_color = (fragment_color * attenuation) + (background_color * (1.0f - attenuation));*/
+
+		for (int i = 0; i < 256; i++)
+		{
+			if (lights[i].w < .001f)
+				continue;
+
+			fragment_color = modifyLight(fragment_color, light_illumination_distances[i], lights[i], position, light_colors[i], light_cutoff);
+		}
 		
 		if (light_effects_transparency == 0)
 			fragment_color.a = alpha_value;
@@ -115,6 +166,4 @@ void main()
 	{
 		gl_Position = quadrant_matrix * gl_Position;
 	}
-
-	//fragment_color = lights[0];
 }
