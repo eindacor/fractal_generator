@@ -161,23 +161,6 @@ void settings_manager::randomize(const random_generator &mc)
 		point_indices = gm.getIndices(geo_type, POINT_INDICES);
 		line_indices = gm.getIndices(geo_type, lines_aim);
 		triangle_indices = gm.getIndices(geo_type, triangles_aim);
-
-		cout << "point sequence: " << endl;
-		for (int i = 0; i < point_sequence.size(); i++)
-		{
-			vec4 point = point_sequence.at(i);
-			cout << i << ": " << point.x << ", " << point.y << ", " << point.z << endl;
-		}
-
-		cout << "line indices: " << endl;
-		for (int index : line_indices)
-			cout << index << " ";
-		cout << endl;
-
-		cout << "triangle indices: " << endl;
-		for (int index : triangle_indices)
-			cout << index << " ";
-		cout << endl;
 	}
 }
 

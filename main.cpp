@@ -174,7 +174,8 @@ int main()
 		settings.base_seed = mc.generateAlphanumericString(32);
 
 	float eye_level = 0.0f;
-	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, settings.window_width, settings.window_height, true));
+	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", "VertexShader.glsl", "PixelShader.glsl", settings.window_width, settings.window_height, false));
+	//shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, settings.window_width, settings.window_height, true));
 
 	shared_ptr<fractal_generator> generator(new fractal_generator(settings.base_seed, context, settings.num_points));
 	shared_ptr<key_handler> keys(new key_handler(context));
@@ -184,6 +185,14 @@ int main()
 	camera->setStrafeDistance(0.02f);
 	camera->setRotateAngle(1.0f);
 	camera->setTiltAngle(1.0f);
+
+	vec4 lights[256];
+	for (int i = 0; i < 256; i++)
+	{
+		lights[i] = vec4(1.0f);
+	}
+
+	glUniform4fv(context->getShaderGLint("lights"), 256, (const GLfloat*)lights);
 
 	/*jep::obj_contents torus("torus.obj");
 	jep::obj_contents helix("helix.obj");
@@ -380,6 +389,7 @@ int main()
 				counter_increment = 1;
 				paused = false;
 				reverse = false;
+				growth_paused = false;
 			}
 
 			if (keys->checkPress(GLFW_KEY_R, false))
@@ -394,6 +404,7 @@ int main()
 				counter_increment = 1;
 				paused = false;
 				reverse = false;
+				growth_paused = false;
 			}
 
 			glfwSetTime(0.0f);
