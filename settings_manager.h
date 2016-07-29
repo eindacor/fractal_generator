@@ -36,6 +36,7 @@ public:
 	int rotate_weight = 1;
 	int scale_weight = 1;
 	int num_matrices = 5;
+	int num_lights = 4;
 
 	float line_width = 1.0f;
 	float interpolation_state = 0.0f;

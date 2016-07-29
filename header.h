@@ -2,6 +2,7 @@
 
 #define THETA 1.61803398875f
 #define PI 3.14159f
+#define LIGHT_COUNT 128
 
 #include <string>
 #include <vector>
@@ -29,7 +30,7 @@
 #include <Windows.h>
 #include <memory>
 
-enum lighting_mode { UNIFORM_LIGHTING, CAMERA, ORIGIN, CENTERPOINT, LIGHTING_MODE_SIZE };
+enum lighting_mode { UNIFORM_LIGHTING, CAMERA, ORIGIN, CENTERPOINT, DYNAMIC_LIGHTING, LIGHTING_MODE_SIZE };
 enum image_extension {JPG, TIFF, PNG, BMP};
 
 using jep::ogl_context;
@@ -71,6 +72,7 @@ static string getStringFromLightingMode(lighting_mode lm)
 	case ORIGIN: return "origin"; 
 	case CENTERPOINT: return "centerpoint";
 	case CAMERA: return "camera";
+	case DYNAMIC_LIGHTING: return "dynamic";
 	default: return "unknown";
 	}
 }

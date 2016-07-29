@@ -132,6 +132,10 @@ private:
 	int current_sequence = 0;
 	mat4 fractal_scale_matrix;
 
+	vec4 light_positions[LIGHT_COUNT];
+	vec4 light_colors[LIGHT_COUNT];
+	vector<int> light_indices;
+
 	bool initialized = false;
 
 	const unsigned short vertex_size = 9;
@@ -176,6 +180,7 @@ private:
 
 	void bufferData(const vector<float> &vertex_data, const vector<unsigned short> &point_indices, const vector<unsigned short> &line_indices, const vector<unsigned short> &triangle_indices);
 	void bufferPalette(const vector<float> &vertex_data);
+	void bufferLightData(const vector<float> &vertex_data);
 
 	vector< pair<string, mat4> > generateMatrixVector(const int &count, geometry_type &geo_type);
 	vector<vec4> generateColorVector(const vec4 &seed, color_palette palette, const int &count, color_palette &random_selection) const;
@@ -188,6 +193,8 @@ private:
 	void drawLines() const;
 	void drawTriangles() const;
 	void drawPalette() const;
+
+	void generateLights();
 };
 
 #endif

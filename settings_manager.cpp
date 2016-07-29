@@ -23,10 +23,12 @@ void settings_manager::randomize(const random_generator &mc)
 	matrix_geometry_weights[DODECAHEDRON] = mc.getRandomIntInRange(0, 10);
 	matrix_geometry_weights[ICOSAHEDRON] = mc.getRandomIntInRange(0, 10);
 
+	num_lights = mc.getRandomIntInRange(LIGHT_COUNT / 2, LIGHT_COUNT);
+
 	// MATRIX CREATOR CALL RESERVATIONS	- INTEGER
 	// calls to mc below are made to preserve the consistency of seeded generation throughout development
 	// when another INTEGER is added to the settings, relocate one of the calls below to the section above
-	mc.getRandomIntInRange(0, 10);
+	//mc.getRandomIntInRange(0, 10); -> num_lights
 	mc.getRandomIntInRange(0, 10);
 	mc.getRandomIntInRange(0, 10);
 	mc.getRandomIntInRange(0, 10);

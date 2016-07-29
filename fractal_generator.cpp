@@ -12,6 +12,7 @@ fractal_generator::fractal_generator(
 	mc.seed(base_seed);
 	color_man.seed(base_seed);
 	sm.randomize(mc);
+	generateLights();
 	setMatrices();
 	initialized = false;
 
@@ -100,6 +101,33 @@ void fractal_generator::bufferPalette(const vector<float> &vertex_data)
 	glDisableVertexAttribArray(3);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+}
+
+void fractal_generator::bufferLightData(const vector<float> &vertex_data)
+{
+	for (int i = 0; i < LIGHT_COUNT; i++)
+	{
+		if (i < light_indices.size())
+		{
+			int light_index = light_indices.at(i);
+			int data_index = light_index * vertex_size;
+
+			vec4 light_position(vertex_data.at(data_index), vertex_data.at(data_index + 1), vertex_data.at(data_index + 2), vertex_data.at(data_index + 3));
+			vec4 light_color(vertex_data.at(data_index + 4), vertex_data.at(data_index + 5), vertex_data.at(data_index + 6), vertex_data.at(data_index + 7));
+
+			light_positions[i] = light_position;
+			light_colors[i] = light_color;
+		}
+
+		else
+		{
+			light_positions[i] = vec4(0.0f);
+			light_colors[i] = vec4(0.0f);
+		}
+	}
+
+	glUniform4fv(context->getShaderGLint("light_positions"), LIGHT_COUNT, &light_positions[0][0]);
+	glUniform4fv(context->getShaderGLint("light_colors"), LIGHT_COUNT, &light_colors[0][0]);
 }
 
 void fractal_generator::drawFractal() const
@@ -488,9 +516,6 @@ void fractal_generator::generateFractal()
 	{
 		int matrix_index_front = sm.smooth_render ? matrix_sequence_front.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
 		int matrix_index_back = sm.smooth_render ? matrix_sequence_back.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
-		
-		vec4 transformation_color = influenceElement<vec4>(colors_back.at(matrix_index_back), colors_front.at(matrix_index_front), sm.interpolation_state);
-		float transformation_size = influenceElement<float>(sizes_back.at(matrix_index_back), sizes_front.at(matrix_index_front), sm.interpolation_state);
 
 		addNewPointAndIterate(starting_point, point_color, starting_size, matrix_index_front, matrix_index_back, points);
 		point_indices_to_buffer.push_back(point_indices_to_buffer.size());
@@ -1108,9 +1133,9 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		if (keys->checkShiftHold())
 		{
 			if (keys->checkPress(GLFW_KEY_RIGHT_BRACKET, true))
-				sm.illumination_distance = glm::clamp(sm.illumination_distance + 0.01f, 0.01f, 1.0f);
+				sm.illumination_distance = glm::clamp(sm.illumination_distance + 0.01f, 0.01f, 10.0f);
 
-			else sm.illumination_distance = glm::clamp(sm.illumination_distance - 0.01f, 0.01f, 1.0f);
+			else sm.illumination_distance = glm::clamp(sm.illumination_distance - 0.01f, 0.01f, 10.0f);
 
 			cout << sm.illumination_distance << endl;
 
@@ -1470,6 +1495,7 @@ void fractal_generator::addPalettePointsAndBufferData(const vector<float> &verte
 		glDeleteBuffers(1, &palette_vbo);
 	}
 
+	bufferLightData(vertex_data);
 	bufferPalette(getPalettePoints());
 	bufferData(vertex_data, point_indices_to_buffer, line_indices_to_buffer, triangle_indices_to_buffer);
 
@@ -1572,5 +1598,16 @@ string fractal_generator::getStringFromGeometryType(geometry_type gt) const
 	//case LOADED_SEQUENCE: return loaded_sequences.at(current_sequence).first;
 	case GEOMETRY_TYPE_SIZE: return "points";
 	default: return "unknown type";
+	}
+}
+
+void fractal_generator::generateLights()
+{
+	light_indices.clear();
+	int light_index_spacing = sm.num_points / sm.num_lights;
+
+	for (int i = 0; i < sm.num_lights; i++)
+	{
+		light_indices.push_back(i * light_index_spacing);
 	}
 }

@@ -1,4 +1,7 @@
 #version 430
+
+#define LIGHT_COUNT 256
+
 layout(location = 0) in vec4 position; 
 layout(location = 1) in vec4 color; 
 layout(location = 2) in float point_size; 
@@ -27,32 +30,56 @@ uniform int render_palette;
 uniform int geometry_type; //0 = vertices, 1 = lines, 2 = triangles
 uniform int override_line_color_enabled;
 uniform vec4 line_override_color;
-uniform vec4 lights[256];
-uniform vec4 light_colors[256];
-uniform float light_illumination_distances[256];
+uniform vec4 light_positions[LIGHT_COUNT];
+uniform vec4 light_colors[LIGHT_COUNT];
 uniform int light_count;
 
-vec4 modifyLight(vec4 vertex_color, float illumination_dist, vec4 light_pos, vec4 vertex_pos, vec4 light_color, float cutoff)
+vec4 getReflectedColor(vec4 diffuse_color, vec4 light_pos, vec4 vertex_pos, vec4 light_color, float light_intensity)
+{
+	vec4 L = light_pos - vertex_pos;
+	float distance = length(L);
+	float attenuation = (1.0f / (distance * distance)) * illumination_distance;
+
+	attenuation = clamp(max(attenuation, 0.0f), 0.0f, 1.0f);
+
+	vec4 absorption_color = vec4(1.0f) - diffuse_color;
+	vec4 reflected_color = light_color - absorption_color;
+
+	reflected_color.r = clamp(reflected_color.r, 0.0f, 1.0f);
+	reflected_color.g = clamp(reflected_color.g, 0.0f, 1.0f);
+	reflected_color.b = clamp(reflected_color.b, 0.0f, 1.0f);
+
+	reflected_color *= attenuation;
+	reflected_color.a = attenuation;
+
+	return reflected_color;
+}
+
+float getAttenuationFromLight(float illumination_dist, vec4 light_pos, vec4 light_color, vec4 vertex_pos, float cutoff)
 {
 	float attenuation;
 	vec4 L = light_pos - vertex_pos;
 	float distance = length(L);
 	float d = max(distance - illumination_dist, 0);
 	L /= distance;
-	float denom = d / (illumination_dist * illumination_distance) + 1.0f;
+	float denom = d / (illumination_dist) + 1.0f;
 	attenuation = 1.0f / (denom * denom);
 	attenuation = (attenuation - cutoff) / (1.0f - cutoff);
-	attenuation = max(attenuation, 0.0f);
+	
+	return max(attenuation, 0);
+}
 
-	vec4 new_color = vertex_color;
-	new_color += (light_color * attenuation);
+vec4 getAmbientReflection(vec4 diffuse_color, vec4 background_color, float light_intensity)
+{
+	vec4 absorption_color = vec4(1.0f) - diffuse_color;
+	vec4 reflected_color = (background_color * light_intensity) - absorption_color;
 
-	new_color.r = clamp(new_color.r, 0.0f, 1.0f);
-	new_color.g = clamp(new_color.g, 0.0f, 1.0f);
-	new_color.b = clamp(new_color.b, 0.0f, 1.0f);
-	new_color.a = clamp(new_color.a, 0.0f, 1.0f);
+	reflected_color.r = clamp(reflected_color.r, 0.0f, 1.0f);
+	reflected_color.g = clamp(reflected_color.g, 0.0f, 1.0f);
+	reflected_color.b = clamp(reflected_color.b, 0.0f, 1.0f);
+	reflected_color.a = clamp(reflected_color.a, 0.0f, 1.0f);
 
-	return new_color;
+	return reflected_color;
 }
 
 float getAttenuationFromPosition(float illumination_dist, vec4 light_pos, vec4 vertex_pos, float cutoff)
@@ -69,7 +96,7 @@ float getAttenuationFromPosition(float illumination_dist, vec4 light_pos, vec4 v
 	return max(attenuation, 0);
 }
 
-float getAttenuation()
+float getAttenuation(vec4 scaled_position)
 {
 	vec4 light_position;
 	float light_intensity = 1.0f;
@@ -90,22 +117,14 @@ float getAttenuation()
 		light_position = vec4(centerpoint.xyz, light_intensity);
 	}
 
-	float global_attenuation = getAttenuationFromPosition(illumination_distance, light_position, position, light_cutoff);
-	global_attenuation = 0.0f;
-
-	for (int i = 0; i < 256; i++)
-	{
-		if (lights[i].w < .001f)
-			continue;
-
-		global_attenuation += getAttenuationFromPosition(illumination_distance, lights[i], position, light_cutoff);
-	}
+	float global_attenuation = getAttenuationFromPosition(illumination_distance, light_position, scaled_position, light_cutoff);
 
 	return clamp(global_attenuation, 0.0f, 1.0f);
 }
 
 void main()
 {
+	vec4 scaled_position = fractal_scale * position;
 	if (render_palette > 0)
 	{
 		gl_Position = vec4(palette_position.x, palette_position.y, 0.0f, 1.0f);
@@ -119,7 +138,7 @@ void main()
 	}
 
 	gl_PointSize = point_size * point_size_scale;
-	gl_Position = MVP * fractal_scale * position;
+	gl_Position = MVP * scaled_position;
 
 	if (frame_count < gl_VertexID && enable_growth_animation > 0)
 	{
@@ -147,19 +166,34 @@ void main()
 
 	if (lighting_mode > 0)
 	{
-		/*float attenuation = getAttenuation();
-		fragment_color = (fragment_color * attenuation) + (background_color * (1.0f - attenuation));*/
-
-		for (int i = 0; i < 256; i++)
+		if (lighting_mode < 4)
 		{
-			if (lights[i].w < .001f)
-				continue;
-
-			fragment_color = modifyLight(fragment_color, light_illumination_distances[i], lights[i], position, light_colors[i], light_cutoff);
+			float attenuation = getAttenuation(scaled_position);
+			fragment_color = (fragment_color * attenuation) + (background_color * (1.0f - attenuation));
 		}
-		
-		if (light_effects_transparency == 0)
-			fragment_color.a = alpha_value;
+
+		else
+		{
+			float total_attenuation = 0.0f;
+			int light_count = 0;
+			for (int i = 0; i < LIGHT_COUNT; i++)
+			{
+				if (light_positions[i].w < .001f)
+					continue;
+
+				total_attenuation += getAttenuationFromLight(illumination_distance, fractal_scale * light_positions[i], light_colors[i], scaled_position, light_cutoff);
+				//fragment_color += getReflectedColor(fragment_color, light_positions[i], scaled_position, light_colors[i], light_colors[i].a);
+				light_count++;
+			}
+
+			//fragment_color += getAmbientReflection(fragment_color, background_color, 0.2f);
+
+			// add one for background color
+			//fragment_color /= (float(light_count));
+
+			total_attenuation = clamp(total_attenuation, 0.0f, 1.0f);
+			fragment_color = (fragment_color * total_attenuation) + (background_color * (1.0f - total_attenuation));
+		}
 	}
 
 	if (render_quadrant > 0)
