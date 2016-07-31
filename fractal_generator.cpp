@@ -1139,7 +1139,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 			cout << sm.illumination_distance << endl;
 
-			glUniform1f(context->getShaderGLint("illumination_distance"), sm.illumination_distance);
+			glUniform1f(context->getShaderGLint("illumination_distance"), sm.lm == CAMERA ? sm.illumination_distance * 10.0f : sm.illumination_distance);
 		}
 
 		else
@@ -1169,6 +1169,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		cout << "lighting mode: " << getStringFromLightingMode(sm.lm) << endl;
 
 		glUniform1i(context->getShaderGLint("lighting_mode"), int(sm.lm));
+		glUniform1f(context->getShaderGLint("illumination_distance"), sm.lm == CAMERA ? sm.illumination_distance * 10.0f : sm.illumination_distance);
 	}
 
 	if (sm.refresh_value != -1 && keys->checkPress(GLFW_KEY_6, false))
@@ -1289,7 +1290,7 @@ void fractal_generator::regenerateFractal()
 	glUniform1i(context->getShaderGLint("invert_colors"), sm.inverted ? 1 : 0);
 	glUniform1i(context->getShaderGLint("lighting_mode"), sm.lm);
 	glUniform3fv(context->getShaderGLint("centerpoint"), 1, &focal_point[0]);
-	glUniform1f(context->getShaderGLint("illumination_distance"), sm.illumination_distance);
+	glUniform1f(context->getShaderGLint("illumination_distance"), sm.lm == CAMERA ? sm.illumination_distance * 10.0f : sm.illumination_distance);
 
 	updateLineColorOverride();
 }

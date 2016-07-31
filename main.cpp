@@ -180,7 +180,7 @@ int main()
 	shared_ptr<fractal_generator> generator(new fractal_generator(settings.base_seed, context, settings.num_points));
 	shared_ptr<key_handler> keys(new key_handler(context));
 
-	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 2.0f), 45.0f));
+	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 10.0f), 45.0f));
 	camera->setStepDistance(0.02f);
 	camera->setStrafeDistance(0.02f);
 	camera->setRotateAngle(1.0f);
@@ -342,6 +342,16 @@ int main()
 					bool mix_background = getYesOrNo("varied background?", false);
 
 					batchRender(4.0f, *generator, context, BMP, 4, x_quadrants, y_quadrants, quadrant_size, mix_background);
+				}
+
+				else if (keys->checkCtrlHold())
+				{
+					bool mix_background = getYesOrNo("varied background?", false);
+
+					batchRender(4.0f, *generator, context, BMP, 4, 4, 4, 2250, mix_background); // 30x30
+					batchRender(4.0f, *generator, context, BMP, 4, 4, 4, 1800, mix_background);	// 24x24
+					batchRender(4.0f, *generator, context, BMP, 4, 2, 2, 2400, mix_background);	// 16x16
+					batchRender(4.0f, *generator, context, BMP, 4, 2, 2, 1800, mix_background);	// 12x12
 				}
 
 				else

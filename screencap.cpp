@@ -358,7 +358,8 @@ bool batchRender(float image_scale, fractal_generator &fg, const shared_ptr<ogl_
 		int image_count = 0;
 		while (image_count < 256)
 		{
-			filename = fg.getSeed() + "_g" + paddedValue(fg.getGeneration(), 3) + "_" + paddedValue(image_count, 3) + "_q" + paddedValue(quadrant_index, 2) + file_extension;
+			string dimension_string = std::to_string(y_count * quadrant_size) + "x" + std::to_string(x_count * quadrant_size);
+			filename = fg.getSeed() + "_g" + paddedValue(fg.getGeneration(), 3) + "_" + dimension_string + "_" + paddedValue(image_count, 3) + "_q" + paddedValue(quadrant_index, 2) + file_extension;
 			file_check = fopen(filename.c_str(), "rb");
 			if (file_check == NULL) break;
 			else fclose(file_check);
