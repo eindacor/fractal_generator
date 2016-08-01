@@ -153,7 +153,7 @@ void fractal_generator::drawFractal() const
 	glDisableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	if (false && sm.show_palette)
+	if (sm.show_palette)
 	{
 		glBindVertexArray(VAO);
 		glEnableVertexAttribArray(1);
@@ -200,8 +200,7 @@ vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &
 {
 	vector< pair<string, mat4> > matrix_vector;
 
-	// temporarily disable geometry matrices
-	if (false && mc.getRandomFloat() < sm.matrix_geometry_coefficient)
+	if (mc.getRandomFloat() < sm.matrix_geometry_coefficient)
 	{
 		vector<vec4> point_sequence;
 		geometry_type matrix_geometry;

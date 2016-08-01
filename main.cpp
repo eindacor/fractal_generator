@@ -5,119 +5,6 @@
 #include "geometry_generator.h"
 #include "settings_manager.h"
 
-const char* vertex_shader_string = "\n\
-#version 330\n\
-layout(location = 0) in vec4 position;\n\
-layout(location = 1) in vec4 color;\n\
-layout(location = 2) in float point_size;\n\
-layout(location = 3) in vec2 palette_position;\n\
-uniform mat4 MVP;\n\
-uniform mat4 MV;\n\
-uniform mat4 model_matrix;\n\
-uniform mat4 view_matrix;\n\
-uniform vec3 camera_position;\n\
-uniform vec3 centerpoint;\n\
-uniform vec4 background_color;\n\
-uniform mat4 projection_matrix;\n\
-uniform mat4 fractal_scale = mat4(1.0f);\n\
-uniform int enable_growth_animation;\n\
-uniform int light_effects_transparency;\n\
-uniform int lighting_mode;\n\
-uniform int frame_count;\n\
-out vec4 fragment_color;\n\
-uniform float point_size_scale = 1.0f;\n\
-uniform float illumination_distance;\n\
-uniform int invert_colors;\n\
-uniform float light_cutoff = float(0.005f);\n\
-uniform mat4 quadrant_matrix;\n\
-uniform int render_quadrant;\n\
-uniform int render_palette;\n\
-uniform int geometry_type; //0 = vertices, 1 = lines, 2 = triangles\n\
-uniform int override_line_color_enabled;\n\
-uniform vec4 line_override_color;\n\
-void main()\n\
-{\n\
-	if (render_palette > 0)\n\
-	{\n\
-		gl_Position = vec4(palette_position.x, palette_position.y, 0.0f, 1.0f);\n\
-		float alpha_value = color.a;\n\
-		fragment_color = vec4(color.rgb, alpha_value);\n\
-		if (invert_colors > 0)\n\
-		{\n\
-			fragment_color = vec4(vec3(1.0) - fragment_color.rgb, alpha_value); \n\
-		}\n\
-		return;\n\
-	}\n\
-	if (frame_count < gl_VertexID && enable_growth_animation > 0)\n\
-	{\n\
-		fragment_color = vec4(color.rgb, 0.0f);\n\
-		gl_Position = MVP * fractal_scale * position;\n\
-		return;\n\
-	}\n\
-	gl_PointSize = point_size * point_size_scale;\n\
-	gl_Position = MVP * fractal_scale * position;\n\
-	float alpha_value;\n\
-	if (override_line_color_enabled == 1 && geometry_type == 1)\n\
-	{\n\
-		alpha_value = 1.0f;\n\
-		fragment_color = line_override_color;\n\
-	}\n\
-	else\n\
-	{\n\
-		alpha_value = color.a;\n\
-		fragment_color = vec4(color.rgb, alpha_value);\n\
-	}\n\
-	if (invert_colors > 0)\n\
-	{\n\
-		fragment_color = vec4(vec3(1.0) - fragment_color.rgb, alpha_value); \n\
-	}\n\
-	if (lighting_mode > 0)\n\
-	{\n\
-		vec3 light_position;\n\
-		float distance_from_light;\n\
-		if (lighting_mode == 1)\n\
-		{\n\
-			light_position = camera_position;\n\
-		}\n\
-		else if (lighting_mode == 2)\n\
-		{\n\
-			light_position = vec3(0.0f, 0.0f, 0.0f);\n\
-		}\n\
-		else if (lighting_mode == 3)\n\
-		{\n\
-			light_position = centerpoint;\n\
-		}\n\
-		// lighting calcs from https://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/ \n\
-		float r = illumination_distance;\n\
-		vec3 L = light_position - vec3(position);\n\
-		float distance = length(L);\n\
-		float d = max(distance - r, 0);\n\
-		L /= distance;\n\
-		float denom = d/r + 1.0f;\n\
-		float attenuation = 1.0f / (denom * denom);\n\
-		attenuation = (attenuation - light_cutoff) / (1.0f - light_cutoff);\n\
-		attenuation = max(attenuation, 0);\n\
-		fragment_color = (fragment_color * attenuation) + (background_color * (1.0f - attenuation));\n\
-		if (light_effects_transparency == 0)\n\
-		fragment_color.a = alpha_value;\n\
-	}\n\
-	if (render_quadrant > 0)\n\
-	{\n\
-		gl_Position = quadrant_matrix * gl_Position;\n\
-	}\n\
-}\n\
-";
-
-const char* fragment_shader_string = "\
-#version 330\n\
-in vec4 fragment_color;\n\
-out vec4 output_color;\n\
-void main()\n\
-{\n\
-	output_color = fragment_color;\n\
-}\n\
-";
-
 bool getYesOrNo(string prompt, bool default)
 {
 	string response;
@@ -175,12 +62,13 @@ int main()
 
 	float eye_level = 0.0f;
 	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", "VertexShader.glsl", "PixelShader.glsl", settings.window_width, settings.window_height, false));
-	//shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", vertex_shader_string, fragment_shader_string, settings.window_width, settings.window_height, true));
 
 	shared_ptr<fractal_generator> generator(new fractal_generator(settings.base_seed, context, settings.num_points));
 	shared_ptr<key_handler> keys(new key_handler(context));
 
-	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 10.0f), 45.0f));
+	float camera_fov = 45.0f;
+
+	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 5.0f), camera_fov));
 	camera->setStepDistance(0.02f);
 	camera->setStrafeDistance(0.02f);
 	camera->setRotateAngle(1.0f);
@@ -217,6 +105,9 @@ int main()
 	bool reverse = false;
 	bool pause_on_swap = false;
 	bool growth_paused = false;
+	bool recording = false;
+	int gif_frame_count = 150;
+	int current_gif_frame = 0;
 
 	generator->printContext();
 
@@ -229,6 +120,18 @@ int main()
 
 			glfwPollEvents();
 			context->clearBuffers();
+
+			if (recording)
+			{
+				batchRender(4.0f, *generator, context, BMP, 4, 1, 1, 720, false);
+				current_gif_frame++;
+
+				if (current_gif_frame == gif_frame_count)
+				{
+					recording = false;
+					current_gif_frame = 0;
+				}
+			}
 
 			glUniform1i(context->getShaderGLint("enable_growth_animation"), generator->getSettings().show_growth ? 1 : 0);
 			glUniform1i(context->getShaderGLint("frame_count"), frame_counter);
@@ -286,8 +189,22 @@ int main()
 
 			if (keys->checkPress(GLFW_KEY_9, false))
 			{
-				camera->setPosition(vec3(0.0f, eye_level, 2.0f));
+				camera->setPosition(vec3(0.0f, eye_level, 5.0f));
 				camera->setFocus(vec3(0.0f, 0.0f, 0.0f));
+			}
+
+			if (keys->checkPress(GLFW_KEY_INSERT, true))
+			{
+				camera_fov = glm::clamp(camera_fov + 0.5f, 1.0f, 180.0f);
+				camera->setFOV(camera_fov);
+				cout << camera_fov << endl;
+			}
+
+			if (keys->checkPress(GLFW_KEY_DELETE, true))
+			{
+				camera_fov = glm::clamp(camera_fov - 0.5f, 1.0f, 180.0f);
+				camera->setFOV(camera_fov);
+				cout << camera_fov << endl;
 			}
 
 			//TODO see why this only works when include_hold is enabled
@@ -354,6 +271,19 @@ int main()
 					batchRender(4.0f, *generator, context, BMP, 4, 2, 2, 1800, mix_background);	// 12x12
 				}
 
+				else if (keys->checkAltHold())
+				{
+					string frame_record_count;
+					cout << "frames to record: ";
+					std::getline(std::cin, frame_record_count);
+					cout << endl;
+					gif_frame_count = (frame_record_count == "" || frame_record_count == "\n") ? 150 : std::stoi(frame_record_count);
+					gif_frame_count = glm::clamp(gif_frame_count, 30, 900);
+
+					recording = true;
+					paused = false;
+				}
+
 				else
 				{
 					//saveImage(4.0f, *generator, context, JPG);
@@ -392,6 +322,8 @@ int main()
 				paused = false;
 				reverse = false;
 				growth_paused = false;
+				camera_fov = 45.0f;
+				camera->setFOV(camera_fov);
 			}
 
 			if (keys->checkPress(GLFW_KEY_R, false))
@@ -407,6 +339,8 @@ int main()
 				paused = false;
 				reverse = false;
 				growth_paused = false;
+				camera_fov = 45.0f;
+				camera->setFOV(camera_fov);
 			}
 
 			glfwSetTime(0.0f);
