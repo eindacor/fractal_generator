@@ -178,8 +178,42 @@ int main()
 			glUniform3fv(context->getShaderGLint("camera_position"), 1, &camera_pos[0]);
 			camera->setMVP(context, mat4(1.0f), jep::NORMAL);
 
-			generator->drawFractal();
+			int rays = 10;
+			float aperture = 0.5f;
+
+			vec3 right = glm::normalize(glm::cross(camera->getFocus() - camera->getPosition(), vec3(0, 1, 0)));
+			vec3 p_up = glm::normalize(glm::cross(camera->getFocus() - camera->getPosition(), vec3(1, 0, 0)));
+
+			vec3 original_position(camera->getPosition());
+
+			for (int i = 0; i < rays; i++)
+			{
+				vec3 bokeh = right * cos(i * 2 * PI / (float)rays) + p_up * sinf(i * 2 * PI / (float)rays);
+				camera->setPosition(camera->getPosition() + aperture * bokeh);
+				vec3 camera_pos = camera->getPosition();
+				glUniform3fv(context->getShaderGLint("camera_position"), 1, &camera_pos[0]);
+				camera->setMVP(context, mat4(1.0f), jep::NORMAL);
+				generator->drawFractal();
+				glAccum(i ? GL_ACCUM : GL_LOAD, 1.0f / rays);
+			}		
+
+			camera->setPosition(original_position);
+
+			glAccum(GL_RETURN, 1);
+
 			generator->checkKeys(keys);
+
+			if (keys->checkPress(GLFW_KEY_HOME, true))
+			{
+				camera->adjustFocalLength(1.1f);
+				cout << "focal length: " << glm::length(camera->getFocus() - camera->getPosition()) << endl;
+			}
+
+			if (keys->checkPress(GLFW_KEY_END, true))
+			{
+				camera->adjustFocalLength(0.9f);
+				cout << "focal length: " << glm::length(camera->getFocus() - camera->getPosition()) << endl;
+			}
 
 			if (keys->checkPress(GLFW_KEY_0, false))
 			{
