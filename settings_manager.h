@@ -79,12 +79,9 @@ public:
 	GLenum triangle_mode = 0;
 	geometry_type geo_type = GEOMETRY_TYPE_SIZE;
 	vector<vec4> point_sequence;
-	vector<int> point_indices;
 	vector<int> line_indices;
 	vector<int> triangle_indices;
 	lighting_mode lm;
-	attribute_index_method lines_aim = ATTRIBUTE_INDEX_METHOD_SIZE;
-	attribute_index_method triangles_aim = ATTRIBUTE_INDEX_METHOD_SIZE;
 
 	std::map<geometry_type, unsigned int> matrix_geometry_weights;
 

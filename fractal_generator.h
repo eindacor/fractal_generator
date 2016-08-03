@@ -28,7 +28,6 @@ public:
 	~fractal_generator() { 
 		glDeleteVertexArrays(1, &VAO); 
 		glDeleteBuffers(1, &vertices_vbo); 
-		glDeleteBuffers(1, &point_indices); 
 		glDeleteBuffers(1, &line_indices); 
 		glDeleteBuffers(1, &triangle_indices); 
 		glDeleteVertexArrays(1, &palette_vao);
@@ -124,6 +123,9 @@ private:
 	float average_delta, max_x, max_y, max_z;
 	// -3 = no override, -2 = black, -1 = white, 0 - n for each interpolated matrix_color
 	int color_override_index = -3;
+	bool dof_enabled = false;
+	int dof_passes = 10;
+	float dof_aperture = 0.005;
 	
 	// current gen parameters	
 	vec4 origin = vec4(0.0f, 0.0f, 0.0f, 1.0f);	
@@ -144,7 +146,6 @@ private:
 
 	GLuint vertices_vbo;
 	GLuint palette_vbo;
-	GLuint point_indices;
 	GLuint line_indices;
 	GLuint triangle_indices;
 
@@ -168,7 +169,6 @@ private:
 		int matrix_index_front,
 		int matrix_index_back,
 		vector<float> &points,
-		vector<unsigned short> &point_indices,
 		vector<unsigned short> &line_indices,
 		vector<unsigned short> &triangle_indices);
 
@@ -178,7 +178,7 @@ private:
 		const float &size,
 		vector<float> &points);
 
-	void bufferData(const vector<float> &vertex_data, const vector<unsigned short> &point_indices, const vector<unsigned short> &line_indices, const vector<unsigned short> &triangle_indices);
+	void bufferData(const vector<float> &vertex_data, const vector<unsigned short> &line_indices, const vector<unsigned short> &triangle_indices);
 	void bufferPalette(const vector<float> &vertex_data);
 	void bufferLightData(const vector<float> &vertex_data);
 
@@ -187,7 +187,7 @@ private:
 	vector<float> generateSizeVector(const int &count) const;
 	vector<float> getPalettePoints();
 	void addDataToPalettePoints(const vec2 &point, const vec4 &color, vector<float> &points) const;
-	void addPalettePointsAndBufferData(const vector<float> &vertex_data, const vector<unsigned short> &point_indices, const vector<unsigned short> &line_indices, const vector<unsigned short> &triangle_indices);
+	void addPalettePointsAndBufferData(const vector<float> &vertex_data, const vector<unsigned short> &line_indices, const vector<unsigned short> &triangle_indices);
 
 	void drawVertices() const;
 	void drawLines() const;

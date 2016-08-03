@@ -31,7 +31,6 @@ uniform int override_line_color_enabled;
 uniform vec4 line_override_color;
 uniform vec4 light_positions[LIGHT_COUNT];
 uniform vec4 light_colors[LIGHT_COUNT];
-uniform int light_count;
 
 vec4 getReflectedColor(vec4 diffuse_color, vec4 light_pos, vec4 vertex_pos, vec4 light_color, float light_intensity)
 {
@@ -190,7 +189,6 @@ void main()
 		else
 		{
 			float total_attenuation = 0.0f;
-			int light_count = 0;
 			vec4 final_color = vec4(0.0f);
 			for (int i = 0; i < LIGHT_COUNT; i++)
 			{
@@ -198,22 +196,10 @@ void main()
 					continue;
 
 				final_color += getReflectedLight(fragment_color, illumination_distance, light_positions[i], light_colors[i], scaled_position, light_cutoff);
-				//total_attenuation += getAttenuationFromLight(illumination_distance, fractal_scale * light_positions[i], light_colors[i], scaled_position, light_cutoff);
-				//fragment_color += getReflectedColor(fragment_color, light_positions[i], scaled_position, light_colors[i], light_colors[i].a);
-				//light_count++;
 			}
 			
 			final_color += getAmbientReflection(fragment_color, background_color);
 			fragment_color = clampColor(final_color);
-			//fragment_color.a = alpha_value;
-
-			//fragment_color += getAmbientReflection(fragment_color, background_color, 0.2f);
-
-			// add one for background color
-			//fragment_color /= (float(light_count));
-
-			//total_attenuation = clamp(total_attenuation, 0.0f, 1.0f);
-			//fragment_color = (fragment_color * total_attenuation) + (background_color * (1.0f - total_attenuation));
 		}
 	}
 

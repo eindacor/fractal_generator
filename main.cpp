@@ -182,13 +182,13 @@ int main()
 
 			generator->checkKeys(keys);
 
-			if (keys->checkPress(GLFW_KEY_HOME, true))
+			if (keys->checkPress(GLFW_KEY_HOME, true) && !keys->checkShiftHold())
 			{
 				camera->adjustFocalLength(1.1f);
 				cout << "focal length: " << glm::length(camera->getFocus() - camera->getPosition()) << endl;
 			}
 
-			if (keys->checkPress(GLFW_KEY_END, true))
+			if (keys->checkPress(GLFW_KEY_END, true) && !keys->checkShiftHold())
 			{
 				camera->adjustFocalLength(0.9f);
 				cout << "focal length: " << glm::length(camera->getFocus() - camera->getPosition()) << endl;

@@ -157,12 +157,20 @@ void settings_manager::randomize(const random_generator &mc)
 		default: use_point_sequence = false;
 		}
 
-		lines_aim = attribute_index_method(mc.getRandomIntInRange(0, (int)ATTRIBUTE_INDEX_METHOD_SIZE));
-		triangles_aim = mc.getRandomFloat() < 0.5f ? POINT_INDICES : TRIANGLE_INDICES;
+		line_indices = gm.getIndices(geo_type, LINE_INDICES);
+		triangle_indices = gm.getIndices(geo_type, TRIANGLE_INDICES);
 
-		point_indices = gm.getIndices(geo_type, POINT_INDICES);
-		line_indices = gm.getIndices(geo_type, lines_aim);
-		triangle_indices = gm.getIndices(geo_type, triangles_aim);
+		for (int i = 0; i < line_indices.size(); i++)
+		{
+			cout << line_indices.at(i) << ", ";
+		}
+		cout << endl;
+
+		for (int i = 0; i < triangle_indices.size(); i++)
+		{
+			cout << triangle_indices.at(i) << ", ";
+		}
+		cout << endl;
 	}
 }
 
