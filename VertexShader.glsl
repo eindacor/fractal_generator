@@ -7,7 +7,6 @@ layout(location = 1) in vec4 color;
 layout(location = 2) in float point_size; 
 layout(location = 3) in vec2 palette_position; 
 uniform mat4 MVP; 
-uniform mat4 MV; 
 uniform mat4 model_matrix; 
 uniform mat4 view_matrix; 
 uniform vec3 camera_position; 

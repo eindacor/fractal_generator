@@ -52,7 +52,7 @@ public:
 	void updateLineColorOverride();
 	void applyBackground(const int &num_samples);
 	void checkKeys(const shared_ptr<key_handler> &keys);
-	void drawFractal() const;
+	void drawFractal(shared_ptr<ogl_camera_flying> &cam) const;
 	
 	// keeps track of how many indices are called by draw command, set by geometry index pattern generated in geometry_generator.cpp
 	int point_index_count;

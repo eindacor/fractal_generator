@@ -14,7 +14,7 @@ string paddedValue(unsigned int value, unsigned short total_digits)
 	return padded_number;
 }
 
-bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<ogl_context> &context, image_extension ie, int multisample_count)
+bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<ogl_context> &context, image_extension ie, int multisample_count, shared_ptr<ogl_camera_flying> &camera)
 {
 	cout << "rendering image..." << endl;
 	vec4 background_color = context->getBackgroundColor();
@@ -68,7 +68,7 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 
 	// render
 	glUniform1f(context->getShaderGLint("point_size_scale"), image_scale);
-	fg.drawFractal();
+	fg.drawFractal(camera);
 	glUniform1f(context->getShaderGLint("point_size_scale"), 1.0f);
 
 	// initialize downsample texture
@@ -204,7 +204,7 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	return true;
 }
 
-bool batchRender(float image_scale, fractal_generator &fg, const shared_ptr<ogl_context> &context, image_extension ie, int multisample_count, int x_count, int y_count, int quadrant_size, bool mix_background)
+bool batchRender(float image_scale, fractal_generator &fg, const shared_ptr<ogl_context> &context, image_extension ie, int multisample_count, int x_count, int y_count, int quadrant_size, bool mix_background, shared_ptr<ogl_camera_flying> &camera)
 {
 	cout << "rendering image..." << endl;
 	int initial_background_index = fg.getBackgroundColorIndex();
@@ -284,7 +284,7 @@ bool batchRender(float image_scale, fractal_generator &fg, const shared_ptr<ogl_
 
 		// render
 		glUniform1f(context->getShaderGLint("point_size_scale"), image_scale);
-		fg.drawFractal();
+		fg.drawFractal(camera);
 		glUniform1f(context->getShaderGLint("point_size_scale"), 1.0f);
 
 		// initialize downsample texture

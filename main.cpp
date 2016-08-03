@@ -123,7 +123,7 @@ int main()
 
 			if (recording)
 			{
-				batchRender(4.0f, *generator, context, BMP, 4, 1, 1, 720, false);
+				batchRender(4.0f, *generator, context, BMP, 4, 1, 1, 720, false, camera);
 				current_gif_frame++;
 
 				if (current_gif_frame == gif_frame_count)
@@ -178,28 +178,7 @@ int main()
 			glUniform3fv(context->getShaderGLint("camera_position"), 1, &camera_pos[0]);
 			camera->setMVP(context, mat4(1.0f), jep::NORMAL);
 
-			int rays = 10;
-			float aperture = 0.5f;
-
-			vec3 right = glm::normalize(glm::cross(camera->getFocus() - camera->getPosition(), vec3(0, 1, 0)));
-			vec3 p_up = glm::normalize(glm::cross(camera->getFocus() - camera->getPosition(), vec3(1, 0, 0)));
-
-			vec3 original_position(camera->getPosition());
-
-			for (int i = 0; i < rays; i++)
-			{
-				vec3 bokeh = right * cos(i * 2 * PI / (float)rays) + p_up * sinf(i * 2 * PI / (float)rays);
-				camera->setPosition(camera->getPosition() + aperture * bokeh);
-				vec3 camera_pos = camera->getPosition();
-				glUniform3fv(context->getShaderGLint("camera_position"), 1, &camera_pos[0]);
-				camera->setMVP(context, mat4(1.0f), jep::NORMAL);
-				generator->drawFractal();
-				glAccum(i ? GL_ACCUM : GL_LOAD, 1.0f / rays);
-			}		
-
-			camera->setPosition(original_position);
-
-			glAccum(GL_RETURN, 1);
+			generator->drawFractal(camera);
 
 			generator->checkKeys(keys);
 
@@ -292,17 +271,17 @@ int main()
 
 					bool mix_background = getYesOrNo("varied background?", false);
 
-					batchRender(4.0f, *generator, context, BMP, 4, x_quadrants, y_quadrants, quadrant_size, mix_background);
+					batchRender(4.0f, *generator, context, BMP, 4, x_quadrants, y_quadrants, quadrant_size, mix_background, camera);
 				}
 
 				else if (keys->checkCtrlHold())
 				{
 					bool mix_background = getYesOrNo("varied background?", false);
 
-					batchRender(4.0f, *generator, context, BMP, 4, 4, 4, 2250, mix_background); // 30x30
-					batchRender(4.0f, *generator, context, BMP, 4, 4, 4, 1800, mix_background);	// 24x24
-					batchRender(4.0f, *generator, context, BMP, 4, 2, 2, 2400, mix_background);	// 16x16
-					batchRender(4.0f, *generator, context, BMP, 4, 2, 2, 1800, mix_background);	// 12x12
+					batchRender(4.0f, *generator, context, BMP, 4, 4, 4, 2250, mix_background, camera); // 30x30
+					batchRender(4.0f, *generator, context, BMP, 4, 4, 4, 1800, mix_background, camera);	// 24x24
+					batchRender(4.0f, *generator, context, BMP, 4, 2, 2, 2400, mix_background, camera);	// 16x16
+					batchRender(4.0f, *generator, context, BMP, 4, 2, 2, 1800, mix_background, camera);	// 12x12
 				}
 
 				else if (keys->checkAltHold())
@@ -322,7 +301,7 @@ int main()
 				{
 					//saveImage(4.0f, *generator, context, JPG);
 					//saveImage(4.0f, *generator, context, PNG);
-					saveImage(4.0f, *generator, context, BMP, 4);
+					saveImage(4.0f, *generator, context, BMP, 4, camera);
 					//saveImage(4.0f, *generator, context, TIFF);
 				}
 				

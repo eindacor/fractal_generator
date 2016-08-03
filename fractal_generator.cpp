@@ -130,7 +130,7 @@ void fractal_generator::bufferLightData(const vector<float> &vertex_data)
 	glUniform4fv(context->getShaderGLint("light_colors"), LIGHT_COUNT, &light_colors[0][0]);
 }
 
-void fractal_generator::drawFractal() const
+void fractal_generator::drawFractal(shared_ptr<ogl_camera_flying> &camera) const
 {
 	// bind target VAO
 	glBindVertexArray(VAO);
@@ -139,14 +139,38 @@ void fractal_generator::drawFractal() const
 	glEnableVertexAttribArray(2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo);
-	if (sm.enable_triangles && sm.triangle_mode != 0)
-		drawTriangles();
 
-	if (sm.enable_lines && sm.line_mode != 0)
-		drawLines();
+	int rays = 10;
+	float aperture = 0.05f;
 
-	if (sm.show_points)
-		drawVertices();
+	vec3 right = glm::normalize(glm::cross(camera->getFocus() - camera->getPosition(), vec3(1, 0, 0)));
+	vec3 p_up = glm::normalize(glm::cross(camera->getFocus() - camera->getPosition(), vec3(0, 1, 0)));
+
+	vec3 original_position(camera->getPosition());
+
+	for (int i = 0; i < rays; i++)
+	{
+		vec3 bokeh = right * cos((float)i * 2.0f * PI / (float)rays) + p_up * sinf((float)i * 2.0f * PI / (float)rays);
+		glm::mat4 modelview = glm::lookAt(camera->getPosition() + aperture * bokeh, camera->getFocus(), p_up);
+		glm::mat4 mvp = camera->getProjectionMatrix() * modelview;
+
+		glUniformMatrix4fv(context->getShaderGLint("MVP"), 1, GL_FALSE, &mvp[0][0]);
+		
+		if (sm.enable_triangles && sm.triangle_mode != 0)
+			drawTriangles();
+
+		if (sm.enable_lines && sm.line_mode != 0)
+			drawLines();
+
+		if (sm.show_points)
+			drawVertices();
+
+		glAccum(i ? GL_ACCUM : GL_LOAD, 1.0f / (float)rays);
+	}
+
+	camera->setPosition(original_position);
+
+	glAccum(GL_RETURN, 1);
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
