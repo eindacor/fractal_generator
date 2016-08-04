@@ -25,6 +25,7 @@
 #include <boost/functional/hash.hpp>
 #include <typeinfo>
 #include "jeploot.h"
+#include <limits>
 
 //for bitmap creation
 #include <Windows.h>

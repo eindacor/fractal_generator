@@ -236,7 +236,7 @@ void fractal_generator::drawFractal(shared_ptr<ogl_camera_flying> &camera) const
 void fractal_generator::drawVertices() const
 {
 	glUniform1i(context->getShaderGLint("geometry_type"), 0);
-	glDrawArrays(GL_POINTS, 0, vertex_count);
+	glDrawArrays(GL_POINTS, 0, show_growth ? glm::clamp(vertices_to_render, 0, vertex_count) : vertex_count);
 }
 
 void fractal_generator::drawLines() const
@@ -245,12 +245,12 @@ void fractal_generator::drawLines() const
 	if (sm.line_mode == GL_LINES)
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, line_indices);
-		glDrawElements(sm.line_mode, line_index_count, GL_UNSIGNED_SHORT, (void*)0);
+		glDrawElements(sm.line_mode, show_growth ? glm::clamp(vertices_to_render, 0, line_index_count) : line_index_count, GL_UNSIGNED_SHORT, (void*)0);
 	}
 
 	else
 	{
-		glDrawArrays(sm.line_mode, 0, vertex_count);
+		glDrawArrays(sm.line_mode, 0, show_growth ? glm::clamp(vertices_to_render, 0, vertex_count) : vertex_count);
 	}
 }
 
@@ -260,12 +260,12 @@ void fractal_generator::drawTriangles() const
 	if (sm.triangle_mode == GL_TRIANGLES)
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, triangle_indices);
-		glDrawElements(sm.triangle_mode, triangle_index_count, GL_UNSIGNED_SHORT, (void*)0);
+		glDrawElements(sm.triangle_mode, show_growth ? glm::clamp(vertices_to_render, 0, triangle_index_count) : triangle_index_count, GL_UNSIGNED_SHORT, (void*)0);
 	}
 
 	else
 	{
-		glDrawArrays(sm.triangle_mode, 0, vertex_count);
+		glDrawArrays(sm.triangle_mode, 0, show_growth ? glm::clamp(vertices_to_render, 0, vertex_count) : vertex_count);
 	}
 }
 
@@ -1049,6 +1049,22 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		else glDisable(GL_PROGRAM_POINT_SIZE);
 	}
 
+	if (keys->checkPress(GLFW_KEY_J, false))
+		show_growth = !show_growth;
+
+	if (keys->checkPress(GLFW_KEY_G, false))
+	{
+		frame_increment = glm::clamp(int(frame_increment) * 2, 1, 100);
+	}
+
+	if (keys->checkPress(GLFW_KEY_F, false))
+	{
+		frame_increment = glm::clamp(int(frame_increment) / 2, 1, 100);
+	}
+
+	if (keys->checkPress(GLFW_KEY_H, false))
+		reverse_growth = !reverse_growth;
+
 	if (keys->checkPress(GLFW_KEY_HOME, false) && keys->checkShiftHold())
 	{
 		dof_passes = glm::clamp(dof_passes + 1, 1, 50);
@@ -1158,9 +1174,6 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, width_range);
 		glLineWidth(GLfloat(sm.line_width) * width_range[1]);
 	}
-
-	if (keys->checkPress(GLFW_KEY_J, false))
-		sm.show_growth = !sm.show_growth;
 
 	if (keys->checkPress(GLFW_KEY_B))
 	{
@@ -1297,6 +1310,16 @@ void fractal_generator::tickAnimation() {
 
 	regenerateFractal();
 	updateBackground();
+
+	if (show_growth)
+	{
+		if (reverse_growth)
+			current_frame <= frame_increment ? current_frame = 0 : current_frame -= frame_increment;
+
+		else current_frame = glm::clamp(int(current_frame + frame_increment), 0, INT_MAX);
+
+		vertices_to_render = current_frame;
+	}
 }
 
 void fractal_generator::updateBackground()

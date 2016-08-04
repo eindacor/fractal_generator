@@ -65,7 +65,6 @@ public:
 	bool inverted = false;
 	bool scale_matrices = true;
 	bool solid_geometry = true;
-	bool show_growth = false;
 	bool no_background = false;
 	bool light_effects_transparency = false;
 

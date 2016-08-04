@@ -73,7 +73,7 @@ void settings_manager::randomize(const random_generator &mc)
 	randomize_alpha = mc.getBool(0.8f);
 	inverted = mc.getBool(0.5f);
 	scale_matrices = mc.getBool(0.9f);
-	show_growth = mc.getBool(0.25f);
+	mc.getBool(0.25f); // formerly show_growth
 	no_background = mc.getBool(0.2f);
 	//light_effects_transparency = mc.getRandomFloat() < 0.5f;
 
@@ -211,7 +211,6 @@ string settings_manager::toString() const
 	encoded_string += std::to_string(randomize_alpha) + "_";
 	encoded_string += std::to_string(inverted) + "_";
 	encoded_string += std::to_string(scale_matrices) + "_";
-	encoded_string += std::to_string(show_growth) + "_";
 
 	encoded_string += std::to_string(palette_front) + "_";
 	encoded_string += std::to_string(palette_back) + "_";
