@@ -137,46 +137,79 @@ void fractal_generator::drawFractal(shared_ptr<ogl_camera_flying> &camera) const
 
 	if (dof_enabled)
 	{
-		vec3 right = glm::normalize(glm::cross(camera->getFocus() - camera->getPosition(), vec3(1, 0, 0)));
-		vec3 p_up = glm::normalize(glm::cross(camera->getFocus() - camera->getPosition(), vec3(0, 1, 0)));
+		vec3 camera_vector = glm::normalize(camera->getFocus() - camera->getPosition());
+		vec3 camera_right =  glm::normalize(glm::cross(vec3(camera_vector.x, 0.0f, camera_vector.z), vec3(0.0f, 1.0f, 0.0f)));
+		vec3 camera_up = -1.0f * glm::normalize(glm::cross(camera_vector, camera_right));
 
-		vec3 original_position(camera->getPosition());
+		int geometry_passes = 0;
+		geometry_passes = int(sm.enable_triangles && sm.triangle_mode != 0) + int(sm.enable_lines && sm.line_mode != 0) + int(sm.show_points);
+
+		float total_passes = float(dof_passes * geometry_passes);
+		bool accum_loaded = false;
 
 		for (int i = 0; i < dof_passes; i++)
 		{
-			vec3 bokeh = right * cos((float)i * 2.0f * PI / (float)dof_passes) + p_up * sinf((float)i * 2.0f * PI / (float)dof_passes);
-			glm::mat4 modelview = glm::lookAt(camera->getPosition() + dof_aperture * bokeh, camera->getFocus(), vec3(0, 1, 0));
+			vec3 bokeh = camera_right * cos((float)i * 2.0f * PI / (float)dof_passes) + camera_up * sinf((float)i * 2.0f * PI / (float)dof_passes);
+			glm::mat4 modelview = glm::lookAt(camera->getPosition() + dof_aperture * bokeh, camera->getFocus(), camera_up);
 			glm::mat4 mvp = camera->getProjectionMatrix() * modelview;
 
 			glUniformMatrix4fv(context->getShaderGLint("MVP"), 1, GL_FALSE, &mvp[0][0]);
 
-			if (sm.enable_triangles && sm.triangle_mode != 0)
-				drawTriangles();
+			if (sm.show_points)
+			{
+				drawVertices();
+				glAccum(accum_loaded ? GL_ACCUM : GL_LOAD, 1.0f / total_passes);
+				accum_loaded = true;
+			}
 
 			if (sm.enable_lines && sm.line_mode != 0)
+			{
 				drawLines();
+				glAccum(accum_loaded ? GL_ACCUM : GL_LOAD, 1.0f / total_passes);
+				accum_loaded = true;
+			}
 
-			if (sm.show_points)
-				drawVertices();
-
-			glAccum(i ? GL_ACCUM : GL_LOAD, 1.0f / (float)dof_passes);
+			if (sm.enable_triangles && sm.triangle_mode != 0)
+			{
+				drawTriangles();
+				glAccum(accum_loaded ? GL_ACCUM : GL_LOAD, 1.0f / total_passes);
+				accum_loaded = true;
+			}
 		}
-
-		camera->setPosition(original_position);
-
-		glAccum(GL_RETURN, 1.0f / float(dof_passes));
+		if (total_passes > 0.5f)
+			glAccum(GL_RETURN, 1.0f / total_passes);
 	}
 
 	else
 	{
-		if (sm.enable_triangles && sm.triangle_mode != 0)
-			drawTriangles();
+		int geometry_passes = 0;
+		geometry_passes = int(sm.enable_triangles && sm.triangle_mode != 0) + int(sm.enable_lines && sm.line_mode != 0) + int(sm.show_points);
 
-		if (sm.enable_lines && sm.line_mode != 0)
-			drawLines();
+		bool accum_loaded = false;
 
 		if (sm.show_points)
+		{
 			drawVertices();
+			glAccum(accum_loaded ? GL_ACCUM : GL_LOAD, 1.0f / float(geometry_passes));
+			accum_loaded = true;
+		}
+
+		if (sm.enable_lines && sm.line_mode != 0)
+		{
+			drawLines();
+			glAccum(accum_loaded ? GL_ACCUM : GL_LOAD, 1.0f / float(geometry_passes));
+			accum_loaded = true;
+		}
+
+		if (sm.enable_triangles && sm.triangle_mode != 0)
+		{
+			drawTriangles();
+			glAccum(accum_loaded ? GL_ACCUM : GL_LOAD, 1.0f / float(geometry_passes));
+			accum_loaded = true;
+		}
+
+		if (geometry_passes != 0)
+			glAccum(GL_RETURN, 1.0f / float(geometry_passes));
 	}
 
 	glDisableVertexAttribArray(0);
