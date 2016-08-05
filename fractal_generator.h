@@ -92,7 +92,6 @@ public:
 	float getInterpolationState() const { return sm.interpolation_state; }
 
 	settings_manager getSettings() const { return sm; }
-	void setGrowth(bool b) { sm.show_growth = b; }
 	void setTwoDimensional(bool b) { sm.two_dimensional = b; }
 	void setCurrentCustomSequence(int sequence_index) { current_sequence = sequence_index; }
 	string getStringFromGeometryType(geometry_type gt) const;
@@ -126,6 +125,12 @@ private:
 	bool dof_enabled = false;
 	int dof_passes = 10;
 	float dof_aperture = 0.005;
+
+	unsigned int current_frame = 0;
+	unsigned int frame_increment = 1;
+	bool reverse_growth = false;
+	int vertices_to_render = 0;
+	bool show_growth = false;
 	
 	// current gen parameters	
 	vec4 origin = vec4(0.0f, 0.0f, 0.0f, 1.0f);	

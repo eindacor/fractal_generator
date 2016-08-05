@@ -14,10 +14,8 @@ uniform vec3 centerpoint;
 uniform vec4 background_color; 
 uniform mat4 projection_matrix; 
 uniform mat4 fractal_scale = mat4(1.0f); 
-uniform int enable_growth_animation; 
 uniform int light_effects_transparency; 
 uniform int lighting_mode; 
-uniform int frame_count; 
 out vec4 fragment_color; 
 uniform float point_size_scale = 1.0f; 
 uniform float illumination_distance; 
@@ -153,12 +151,6 @@ void main()
 
 	gl_PointSize = point_size * point_size_scale;
 	gl_Position = MVP * scaled_position;
-
-	if (frame_count < gl_VertexID && enable_growth_animation > 0)
-	{
-		fragment_color = vec4(color.rgb, 0.0f);
-		return;
-	}
 
 	float alpha_value;
 	if (override_line_color_enabled == 1 && geometry_type == 1)

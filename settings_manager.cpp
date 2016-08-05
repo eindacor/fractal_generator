@@ -68,12 +68,12 @@ void settings_manager::randomize(const random_generator &mc)
 	show_points = mc.getBool(0.5f);
 	enable_triangles = mc.getBool(0.4f);
 	enable_lines = mc.getBool(0.4f);
-	smooth_render = !refresh_enabled || mc.getBool(0.8f);
+	//smooth_render = !refresh_enabled || mc.getBool(0.8f);
 	randomize_lightness = mc.getBool(0.8f);
 	randomize_alpha = mc.getBool(0.8f);
 	inverted = mc.getBool(0.5f);
 	scale_matrices = mc.getBool(0.9f);
-	show_growth = mc.getBool(0.25f);
+	mc.getBool(0.25f); // formerly show_growth
 	no_background = mc.getBool(0.2f);
 	//light_effects_transparency = mc.getRandomFloat() < 0.5f;
 
@@ -159,18 +159,6 @@ void settings_manager::randomize(const random_generator &mc)
 
 		line_indices = gm.getIndices(geo_type, LINE_INDICES);
 		triangle_indices = gm.getIndices(geo_type, TRIANGLE_INDICES);
-
-		for (int i = 0; i < line_indices.size(); i++)
-		{
-			cout << line_indices.at(i) << ", ";
-		}
-		cout << endl;
-
-		for (int i = 0; i < triangle_indices.size(); i++)
-		{
-			cout << triangle_indices.at(i) << ", ";
-		}
-		cout << endl;
 	}
 }
 
@@ -211,7 +199,6 @@ string settings_manager::toString() const
 	encoded_string += std::to_string(randomize_alpha) + "_";
 	encoded_string += std::to_string(inverted) + "_";
 	encoded_string += std::to_string(scale_matrices) + "_";
-	encoded_string += std::to_string(show_growth) + "_";
 
 	encoded_string += std::to_string(palette_front) + "_";
 	encoded_string += std::to_string(palette_back) + "_";

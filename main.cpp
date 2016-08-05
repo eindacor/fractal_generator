@@ -99,10 +99,7 @@ int main()
 	float render_fps = 60.0f;
 	bool finished = false;
 	clock_t start = clock();
-	unsigned int frame_counter = 0;
-	unsigned int counter_increment = 1;
 	bool paused = false;
-	bool reverse = false;
 	bool pause_on_swap = false;
 	bool growth_paused = false;
 	bool recording = false;
@@ -133,9 +130,6 @@ int main()
 				}
 			}
 
-			glUniform1i(context->getShaderGLint("enable_growth_animation"), generator->getSettings().show_growth ? 1 : 0);
-			glUniform1i(context->getShaderGLint("frame_count"), frame_counter);
-
 			if (keys->checkPress(GLFW_KEY_SLASH, false))
 			{
 				pause_on_swap = !pause_on_swap;
@@ -145,15 +139,6 @@ int main()
 			{
 				paused = true;
 				pause_on_swap = false;
-			}
-
-			if (!paused && generator->getSettings().show_growth && !growth_paused)
-			{
-				if (generator->getSettings().show_growth && reverse && frame_counter > counter_increment)
-					frame_counter -= counter_increment;
-
-				else if (generator->getSettings().show_growth && !reverse)
-					frame_counter += counter_increment;
 			}
 
 			if (!paused)
@@ -223,21 +208,6 @@ int main()
 			//TODO see why this only works when include_hold is enabled
 			if (keys->checkPress(GLFW_KEY_ESCAPE))
 				finished = true;
-
-			if (keys->checkPress(GLFW_KEY_G, false))
-			{
-				if (counter_increment != 100)
-					counter_increment *= 10;
-			}
-
-			if (keys->checkPress(GLFW_KEY_F, false))
-			{
-				if (counter_increment != 1)
-					counter_increment /= 10;
-			}
-
-			if (keys->checkPress(GLFW_KEY_H, false))
-				reverse = !reverse;
 
 			if (keys->checkPress(GLFW_KEY_T, false))
 				paused = !paused;
@@ -330,10 +300,7 @@ int main()
 				/*generator->loadPointSequence("torus", torus.getAllVerticesOfAllMeshes());
 				generator->loadPointSequence("helix", helix.getAllVerticesOfAllMeshes());
 				generator->loadPointSequence("sphere", sphere.getAllVerticesOfAllMeshes());*/
-				frame_counter = 0;
-				counter_increment = 1;
 				paused = false;
-				reverse = false;
 				growth_paused = false;
 				camera_fov = 45.0f;
 				camera->setFOV(camera_fov);
@@ -347,10 +314,7 @@ int main()
 				/*generator->loadPointSequence("torus", torus.getAllVerticesOfAllMeshes());
 				generator->loadPointSequence("helix", helix.getAllVerticesOfAllMeshes());
 				generator->loadPointSequence("sphere", sphere.getAllVerticesOfAllMeshes());*/
-				frame_counter = 0;
-				counter_increment = 1;
 				paused = false;
-				reverse = false;
 				growth_paused = false;
 				camera_fov = 45.0f;
 				camera->setFOV(camera_fov);
