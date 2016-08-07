@@ -9,7 +9,6 @@ using namespace System::Drawing;
 using namespace System::Drawing::Imaging;
 
 bool saveImage(
-	float image_scale,
 	const fractal_generator &fg,
 	const shared_ptr<ogl_context> &context, 
 	image_extension ie, 
@@ -17,7 +16,6 @@ bool saveImage(
 	shared_ptr<ogl_camera_flying> &camera);
 
 bool batchRender(
-	float image_scale, 
 	fractal_generator &fg, 
 	const shared_ptr<ogl_context> &context, 
 	image_extension ie, 

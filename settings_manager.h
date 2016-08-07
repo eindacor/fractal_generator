@@ -52,7 +52,6 @@ public:
 	bool use_point_sequence = false;
 	bool two_dimensional = false;
 	bool refresh_enabled = false;
-	bool size_enabled = true;
 	bool show_points = true;
 	bool enable_triangles = false;
 	bool enable_lines = false;

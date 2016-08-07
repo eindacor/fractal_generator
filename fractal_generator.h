@@ -95,6 +95,7 @@ public:
 	void setTwoDimensional(bool b) { sm.two_dimensional = b; }
 	void setCurrentCustomSequence(int sequence_index) { current_sequence = sequence_index; }
 	string getStringFromGeometryType(geometry_type gt) const;
+	int getMaxPointSize() const { return max_point_size; }
 
 	vector < pair<string, vector<vec4> > > getLoadedSequences() const { return loaded_sequences; }
 
@@ -125,6 +126,7 @@ private:
 	bool dof_enabled = false;
 	int dof_passes = 10;
 	float dof_aperture = 0.005;
+	int max_point_size;
 
 	unsigned int current_frame = 0;
 	unsigned int frame_increment = 1;

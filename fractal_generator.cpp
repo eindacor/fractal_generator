@@ -16,7 +16,13 @@ fractal_generator::fractal_generator(
 	setMatrices();
 	initialized = false;
 
+	GLint range[2];
 	glEnable(GL_PROGRAM_POINT_SIZE);
+	glGetIntegerv(GL_ALIASED_POINT_SIZE_RANGE, range);
+	max_point_size = min(min(context->getWindowHeight(), context->getWindowWidth()), range[1]);
+	glUniform1i(con->getShaderGLint("max_point_size"), max_point_size);
+	cout << "max point size: " << max_point_size << endl;
+
 	glEnable(GL_DEPTH_CLAMP);
 	glDepthRange(0.0, 1.0);
 }
@@ -390,7 +396,7 @@ vector<float> fractal_generator::generateSizeVector(const int &count) const
 
 	for (int i = 0; i < count; i++)
 	{
-		size_vector.push_back(mc.getRandomUniform() * 5.0);
+		size_vector.push_back(mc.getRandomFloatInRange(POINT_SCALE_MIN, POINT_SCALE_MAX));
 	}
 
 	return size_vector;
@@ -558,7 +564,7 @@ void fractal_generator::generateFractalFromPointSequence()
 	int num_matrices = matrices_front.size();
 
 	vec4 point_color = sm.inverted ? vec4(0.0f, 0.0f, 0.0f, 1.0f) : vec4(1.0f);
-	float starting_size = 10.0;
+	float starting_size = POINT_SCALE_MAX;
 
 	mat4 origin_matrix = glm::scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f));
 
@@ -586,7 +592,7 @@ void fractal_generator::generateFractal()
 
 	vec4 starting_point = origin;
 	vec4 point_color = sm.inverted ? vec4(0.0f, 0.0f, 0.0f, 1.0f) : vec4(1.0f);
-	float starting_size = 10.0;
+	float starting_size = POINT_SCALE_MAX;
 
 	for (int i = 0; i < vertex_count && num_matrices > 0; i++)
 	{
@@ -615,7 +621,7 @@ void fractal_generator::generateFractalWithRefresh()
 	{
 		vec4 point_color = sm.inverted ? vec4(0.0f, 0.0f, 0.0f, 1.0f) : vec4(1.0f);
 		vec4 new_point = origin;
-		float new_size = 10.0f;
+		float new_size = POINT_SCALE_MAX;
 
 		for (int n = 0; n < actual_refresh; n++)
 		{
@@ -662,7 +668,7 @@ void fractal_generator::generateFractalFromPointSequenceWithRefresh()
 	for (int i = 0; i < vertex_count / sm.point_sequence.size() && num_matrices > 0; i++)
 	{
 		vec4 final_color = sm.inverted ? vec4(0.0f, 0.0f, 0.0f, 1.0f) : vec4(1.0f);
-		float final_size = 10.0;
+		float final_size = POINT_SCALE_MAX;
 		mat4 final_matrix = glm::scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f));
 
 		for (int n = 0; n < actual_refresh; n++)
@@ -1041,12 +1047,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 {
 	if (keys->checkPress(GLFW_KEY_O, false))
 	{
-		sm.size_enabled = !sm.size_enabled;
-
-		if (sm.size_enabled)
-			glEnable(GL_PROGRAM_POINT_SIZE);
-
-		else glDisable(GL_PROGRAM_POINT_SIZE);
+		//available
 	}
 
 	if (keys->checkPress(GLFW_KEY_J, false))

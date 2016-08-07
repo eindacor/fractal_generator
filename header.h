@@ -3,6 +3,8 @@
 #define THETA 1.61803398875f
 #define PI 3.14159f
 #define LIGHT_COUNT 128
+#define POINT_SCALE_MIN 0.01f
+#define POINT_SCALE_MAX 0.1f
 
 #include <string>
 #include <vector>

@@ -14,7 +14,7 @@ string paddedValue(unsigned int value, unsigned short total_digits)
 	return padded_number;
 }
 
-bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<ogl_context> &context, image_extension ie, int multisample_count, shared_ptr<ogl_camera_flying> &camera)
+bool saveImage(const fractal_generator &fg, const shared_ptr<ogl_context> &context, image_extension ie, int multisample_count, shared_ptr<ogl_camera_flying> &camera)
 {
 	cout << "rendering image..." << endl;
 	vec4 background_color = context->getBackgroundColor();
@@ -23,8 +23,12 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	cout << "resolution: ";
 	std::getline(std::cin, resolution_input);
 	cout << endl;
-	int image_height = glm::clamp((resolution_input == "" || resolution_input == "\n") ? int(context->getWindowHeight() * image_scale) : std::stoi(resolution_input), 100, 5000);
+	int image_height = glm::clamp((resolution_input == "" || resolution_input == "\n") ? context->getWindowHeight() : std::stoi(resolution_input), 100, 5000);
 	int image_width = int(float(image_height) * float(context->getAspectRatio()));
+
+	float render_scale = float(image_height) / float(context->getWindowHeight());
+	int render_max_point_size = int(float(fg.getMaxPointSize()) * render_scale);
+	glUniform1i(context->getShaderGLint("max_point_size"), render_max_point_size);
 
 	GLsizei width(image_width);
 	GLsizei height(image_height);
@@ -67,9 +71,7 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	glViewport(0, 0, width, height);
 
 	// render
-	glUniform1f(context->getShaderGLint("point_size_scale"), image_scale);
 	fg.drawFractal(camera);
-	glUniform1f(context->getShaderGLint("point_size_scale"), 1.0f);
 
 	// initialize downsample texture
 	GLuint downsample_tex;
@@ -187,6 +189,7 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	delete[] pixels;
 
 	context->setBackgroundColor(background_color);
+	glUniform1i(context->getShaderGLint("max_point_size"), fg.getMaxPointSize());
 
 	glViewport(0, 0, context->getWindowWidth(), context->getWindowHeight());
 
@@ -204,7 +207,7 @@ bool saveImage(float image_scale, const fractal_generator &fg, const shared_ptr<
 	return true;
 }
 
-bool batchRender(float image_scale, fractal_generator &fg, const shared_ptr<ogl_context> &context, image_extension ie, int multisample_count, int x_count, int y_count, int quadrant_size, bool mix_background, shared_ptr<ogl_camera_flying> &camera)
+bool batchRender(fractal_generator &fg, const shared_ptr<ogl_context> &context, image_extension ie, int multisample_count, int x_count, int y_count, int quadrant_size, bool mix_background, shared_ptr<ogl_camera_flying> &camera)
 {
 	cout << "rendering image..." << endl;
 	int initial_background_index = fg.getBackgroundColorIndex();
@@ -223,6 +226,10 @@ bool batchRender(float image_scale, fractal_generator &fg, const shared_ptr<ogl_
 		(width * 5), (width * 5) + 2, (width * 5) + 4, (width * 5) + 6,
 		(width * 6), (width * 6) + 2, (width * 6) + 3, (width * 6) + 4, (width * 6) + 5, (width * 6) + 6
 	};
+
+	float render_scale = max(x_count, y_count);
+	int render_max_point_size = int(float(fg.getMaxPointSize()) * render_scale);
+	glUniform1i(context->getShaderGLint("max_point_size"), render_max_point_size);
 
 	glUniform1i(context->getShaderGLint("render_quadrant"), 1);
 	for (int quadrant_index = 0; quadrant_index < x_count * y_count; quadrant_index++)
@@ -261,20 +268,19 @@ bool batchRender(float image_scale, fractal_generator &fg, const shared_ptr<ogl_
 			return false;
 		}
 
-		float scale = max(x_count, y_count);
 		// scaled_chunk_size is essentially the size of one quadrant scaled to the current viewspace
 		// the rendered viewspace is a square that's 2.0 long and 2.0 high (-1.0 to 1.0 in each axis)
 		// if that viewspace is to be broken up into 16 tiles, the scaled_chunk_size is the width and height of one of those tiles
 		// 16 tiles would mean the 2-unit viewspace becomes a 4x4 grid
 		// if scale == 4, then scaled_chunk_size is 0.5
 		// 4 tiles across x 0.5 = the original 2.0 of the viewspace
-		float scaled_chunk_size = 2.0f / scale;
+		float scaled_chunk_size = 2.0f / render_scale;
 		float x_translation_start = (float(x_count) * scaled_chunk_size) / 2.0f;
 		float y_translation_start = (float(y_count) * scaled_chunk_size) / 2.0f;
 		float x_translation = ((float(quadrant_index % x_count) * scaled_chunk_size) - (x_translation_start - (scaled_chunk_size / 2.0f))) * -1.0f;
 		float y_translation = ((float(quadrant_index / x_count) * scaled_chunk_size) - (y_translation_start - (scaled_chunk_size / 2.0f))) * -1.0f;
 		mat4 quadrant_translation = glm::translate(mat4(1.0f), vec3(x_translation, y_translation, 0.0f));
-		mat4 quadrant_scale = glm::scale(mat4(1.0f), vec3(scale, scale, 1.0f));
+		mat4 quadrant_scale = glm::scale(mat4(1.0f), vec3(render_scale, render_scale, 1.0f));
 		mat4 quadrant_matrix = quadrant_scale * quadrant_translation;
 		glUniformMatrix4fv(context->getShaderGLint("quadrant_matrix"), 1, GL_FALSE, &quadrant_matrix[0][0]);
 
@@ -283,9 +289,7 @@ bool batchRender(float image_scale, fractal_generator &fg, const shared_ptr<ogl_
 		glViewport(0, 0, quadrant_size, quadrant_size);
 
 		// render
-		glUniform1f(context->getShaderGLint("point_size_scale"), image_scale);
 		fg.drawFractal(camera);
-		glUniform1f(context->getShaderGLint("point_size_scale"), 1.0f);
 
 		// initialize downsample texture
 		GLuint downsample_tex;
@@ -409,7 +413,7 @@ bool batchRender(float image_scale, fractal_generator &fg, const shared_ptr<ogl_
 		fg.setBackgroundColorIndex(initial_background_index);
 
 	glViewport(0, 0, context->getWindowWidth(), context->getWindowHeight());
-
+	glUniform1i(context->getShaderGLint("max_point_size"), fg.getMaxPointSize());
 	glUniform1i(context->getShaderGLint("render_quadrant"), 0);
 
 	return true;

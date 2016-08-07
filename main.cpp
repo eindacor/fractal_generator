@@ -92,9 +92,6 @@ int main()
 	X2u1ZkbGw00mdWSK1ZRktRluL9y0H9CH	<-animated (disable lines)
 	*/
 
-	glfwWindowHint(GLFW_SAMPLES, 4);
-	glEnable(GL_MULTISAMPLE);
-
 	glfwSetTime(0);
 	float render_fps = 60.0f;
 	bool finished = false;
@@ -120,7 +117,7 @@ int main()
 
 			if (recording)
 			{
-				batchRender(4.0f, *generator, context, BMP, 4, 1, 1, 720, false, camera);
+				batchRender(*generator, context, BMP, 4, 1, 1, 720, false, camera);
 				current_gif_frame++;
 
 				if (current_gif_frame == gif_frame_count)
@@ -241,17 +238,17 @@ int main()
 
 					bool mix_background = getYesOrNo("varied background?", false);
 
-					batchRender(4.0f, *generator, context, BMP, 4, x_quadrants, y_quadrants, quadrant_size, mix_background, camera);
+					batchRender(*generator, context, BMP, 4, x_quadrants, y_quadrants, quadrant_size, mix_background, camera);
 				}
 
 				else if (keys->checkCtrlHold())
 				{
 					bool mix_background = getYesOrNo("varied background?", false);
 
-					batchRender(4.0f, *generator, context, BMP, 4, 4, 4, 2250, mix_background, camera); // 30x30
-					batchRender(4.0f, *generator, context, BMP, 4, 4, 4, 1800, mix_background, camera);	// 24x24
-					batchRender(4.0f, *generator, context, BMP, 4, 2, 2, 2400, mix_background, camera);	// 16x16
-					batchRender(4.0f, *generator, context, BMP, 4, 2, 2, 1800, mix_background, camera);	// 12x12
+					batchRender(*generator, context, BMP, 4, 4, 4, 2250, mix_background, camera); // 30x30
+					batchRender(*generator, context, BMP, 4, 4, 4, 1800, mix_background, camera);	// 24x24
+					batchRender(*generator, context, BMP, 4, 2, 2, 2400, mix_background, camera);	// 16x16
+					batchRender(*generator, context, BMP, 4, 2, 2, 1800, mix_background, camera);	// 12x12
 				}
 
 				else if (keys->checkAltHold())
@@ -269,10 +266,10 @@ int main()
 
 				else
 				{
-					//saveImage(4.0f, *generator, context, JPG);
-					//saveImage(4.0f, *generator, context, PNG);
-					saveImage(4.0f, *generator, context, BMP, 4, camera);
-					//saveImage(4.0f, *generator, context, TIFF);
+					//saveImage(*generator, context, JPG);
+					//saveImage(*generator, context, PNG);
+					saveImage(*generator, context, BMP, 4, camera);
+					//saveImage(*generator, context, TIFF);
 				}
 				
 			}

@@ -29,6 +29,7 @@ uniform int override_line_color_enabled;
 uniform vec4 line_override_color;
 uniform vec4 light_positions[LIGHT_COUNT];
 uniform vec4 light_colors[LIGHT_COUNT];
+uniform int max_point_size;
 
 vec4 getReflectedColor(vec4 diffuse_color, vec4 light_pos, vec4 vertex_pos, vec4 light_color, float light_intensity)
 {
@@ -149,7 +150,8 @@ void main()
 		return;
 	}
 
-	gl_PointSize = point_size * point_size_scale;
+	//gl_PointSize = int(10.0f * float(gl_PointSize));
+	//gl_PointSize = int(point_size * float(gl_PointSize));
 	gl_Position = MVP * scaled_position;
 
 	float alpha_value;
@@ -199,4 +201,8 @@ void main()
 	{
 		gl_Position = quadrant_matrix * gl_Position;
 	}
+
+	gl_PointSize = int(point_size * float(max_point_size) * (1.0f - clamp(length(position - vec4(camera_position, 1.0f)) / 5.0f, 0.1f, 1.0f)));
+	float distance = length(position - vec4(camera_position, 1.0f));
+	gl_PointSize = int(point_size * float(max_point_size) * clamp(1.0f / distance, 0.1f, float(max_point_size)));
 }

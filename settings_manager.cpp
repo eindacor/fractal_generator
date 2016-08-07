@@ -64,7 +64,7 @@ void settings_manager::randomize(const random_generator &mc)
 	use_point_sequence = mc.getBool(0.2f);
 	two_dimensional = mc.getBool(0.2f);
 	refresh_enabled = mc.getBool(0.5f);
-	size_enabled = mc.getBool(0.5f);
+	mc.getBool(0.5f); // formerly size_enabled
 	show_points = mc.getBool(0.5f);
 	enable_triangles = mc.getBool(0.4f);
 	enable_lines = mc.getBool(0.4f);
@@ -190,7 +190,6 @@ string settings_manager::toString() const
 	encoded_string += std::to_string(use_point_sequence) + "_";
 	encoded_string += std::to_string(two_dimensional) + "_";
 	encoded_string += std::to_string(refresh_enabled) + "_";
-	encoded_string += std::to_string(size_enabled) + "_";
 	encoded_string += std::to_string(show_points) + "_";
 	encoded_string += std::to_string(enable_triangles) + "_";
 	encoded_string += std::to_string(enable_lines) + "_";
