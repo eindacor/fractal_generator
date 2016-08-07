@@ -202,7 +202,6 @@ void main()
 		gl_Position = quadrant_matrix * gl_Position;
 	}
 
-	gl_PointSize = int(point_size * float(max_point_size) * (1.0f - clamp(length(position - vec4(camera_position, 1.0f)) / 5.0f, 0.1f, 1.0f)));
 	float distance = length(position - vec4(camera_position, 1.0f));
 	gl_PointSize = int(point_size * float(max_point_size) * clamp(1.0f / distance, 0.1f, float(max_point_size)));
 }

@@ -27,7 +27,7 @@ bool saveImage(const fractal_generator &fg, const shared_ptr<ogl_context> &conte
 	int image_width = int(float(image_height) * float(context->getAspectRatio()));
 
 	float render_scale = float(image_height) / float(context->getWindowHeight());
-	int render_max_point_size = int(float(fg.getMaxPointSize()) * render_scale);
+	int render_max_point_size = int(float(fg.getMaxPointSize()) * render_scale) * 2;
 	glUniform1i(context->getShaderGLint("max_point_size"), render_max_point_size);
 
 	GLsizei width(image_width);
@@ -228,7 +228,7 @@ bool batchRender(fractal_generator &fg, const shared_ptr<ogl_context> &context, 
 	};
 
 	float render_scale = max(x_count, y_count);
-	int render_max_point_size = int(float(fg.getMaxPointSize()) * render_scale);
+	int render_max_point_size = int(float(fg.getMaxPointSize()) * render_scale) * 2;
 	glUniform1i(context->getShaderGLint("max_point_size"), render_max_point_size);
 
 	glUniform1i(context->getShaderGLint("render_quadrant"), 1);

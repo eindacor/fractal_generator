@@ -238,17 +238,17 @@ int main()
 
 					bool mix_background = getYesOrNo("varied background?", false);
 
-					batchRender(*generator, context, BMP, 4, x_quadrants, y_quadrants, quadrant_size, mix_background, camera);
+					batchRender(*generator, context, BMP, 6, x_quadrants, y_quadrants, quadrant_size, mix_background, camera);
 				}
 
 				else if (keys->checkCtrlHold())
 				{
 					bool mix_background = getYesOrNo("varied background?", false);
 
-					batchRender(*generator, context, BMP, 4, 4, 4, 2250, mix_background, camera); // 30x30
-					batchRender(*generator, context, BMP, 4, 4, 4, 1800, mix_background, camera);	// 24x24
-					batchRender(*generator, context, BMP, 4, 2, 2, 2400, mix_background, camera);	// 16x16
-					batchRender(*generator, context, BMP, 4, 2, 2, 1800, mix_background, camera);	// 12x12
+					batchRender(*generator, context, BMP, 6, 4, 4, 2250, mix_background, camera); // 30x30
+					batchRender(*generator, context, BMP, 6, 4, 4, 1800, mix_background, camera);	// 24x24
+					batchRender(*generator, context, BMP, 6, 2, 2, 2400, mix_background, camera);	// 16x16
+					batchRender(*generator, context, BMP, 6, 2, 2, 1800, mix_background, camera);	// 12x12
 				}
 
 				else if (keys->checkAltHold())
@@ -268,7 +268,7 @@ int main()
 				{
 					//saveImage(*generator, context, JPG);
 					//saveImage(*generator, context, PNG);
-					saveImage(*generator, context, BMP, 4, camera);
+					saveImage(*generator, context, BMP, 6, camera);
 					//saveImage(*generator, context, TIFF);
 				}
 				
