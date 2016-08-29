@@ -37,6 +37,7 @@ public:
 	int scale_weight = 1;
 	int num_matrices = 5;
 	int num_lights = 4;
+	int point_sequence_index = 0;
 
 	float line_width = 1.0f;
 	float interpolation_state = 0.0f;
@@ -47,6 +48,7 @@ public:
 	float matrix_geometry_coefficient = 0.25f;
 	float bias_coefficient = 0.5f;
 	float illumination_distance = 0.5f;
+	float matrix_geometry_uses_solid_geometry_coefficient = 0.5f;
 
 	bool auto_tracking = false;
 	bool use_point_sequence = false;
@@ -75,18 +77,19 @@ public:
 	color_palette random_palette_back = DEFAULT_COLOR_PALETTE;
 	GLenum line_mode = GL_LINES;
 	GLenum triangle_mode = 0;
-	geometry_type geo_type = GEOMETRY_TYPE_SIZE;
 	vector<vec4> point_sequence;
 	vector<int> line_indices;
 	vector<int> triangle_indices;
 	lighting_mode lm;
 
-	std::map<geometry_type, unsigned int> matrix_geometry_weights;
+	std::map<int, unsigned int> matrix_geometry_weights;
 
 	string toString() const;
 	void settings_manager::setWithString(string settings);
 
 	geometry_generator gm;
+
+	void setPointSequenceGeometry(int index, const random_generator &rg);
 
 private:
 	string parseFloat(float f) const;

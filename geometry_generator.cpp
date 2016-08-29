@@ -4,9 +4,6 @@ string getStringFromGeometryType(geometry_type gt)
 {
 	switch (gt)
 	{
-	case TRIANGLE: return "triangle";
-	case RECTANGLE: return "rectangle";
-	case SQUARE: return "square";
 	case CUBOID: return "cuboid";
 	case CUBE: return "cube";
 	case TETRAHEDRON: return "tetrahedron";
@@ -30,67 +27,65 @@ string getStringFromAttributeIndexMethod(attribute_index_method aim)
 	}
 }
 
-vector<vec4> geometry_generator::getTriangleVertices(float size) const
+vector<vec4> geometry_generator::getNgonVertices(float size, int sides) const
 {
-	float half_height = size / 2.0f;
+	vector<vec4> ngon_vertices;
 
-	vector<vec4> point_sequence;
+	// if sides are even, rotate additionally to ensure bottom of ngon is a flat line
+	float even_side_offset = sides % 2 == 0 && sides != 0 ? PI / (float)sides : 0.0f;
 
-	point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, 0.0f, 1.0f));
-	point_sequence.push_back(vec4(0.0f, half_height, 0.0f, 1.0f));
-	point_sequence.push_back(vec4(half_height, -1.0f * half_height, 0.0f, 1.0f));
+	for (int i = 0; i < sides; i++)
+	{
+		vec4 new_point(0.0f, size, 0.0f, 1.0f);
+		mat4 rotation = glm::rotate(mat4(1.0f), ((float)i * 2.0f * PI / (float)sides) + even_side_offset, vec3(0.0f, 0.0f, 1.0f));
 
-	return point_sequence;
+		ngon_vertices.push_back(rotation * new_point);
+	}
+
+	return ngon_vertices;
 }
 
-vector<int> geometry_generator::getTrianglePointIndices() const
+vector<vec4> geometry_generator::getNgonVerticesWithOrientation(float size, int sides, vec4 normal) const
+{
+	vector<vec4> ngon_vertices;
+	return ngon_vertices;
+}
+
+
+vector<int> geometry_generator::getNgonPointIndices(int sides) const
 {
 	vector<int> indices;
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < sides; i++)
 	{
 		indices.push_back(i);
 	}
 	return indices;
 }
 
-vector<int> geometry_generator::getTriangleLineIndices() const
-{
-	return vector<int>{ 0, 1, 1, 2, 2, 0 };
-}
-
-vector<vec4> geometry_generator::getRectangleVertices(float width, float height) const
-{
-	float half_width = width / 2.0f;
-	float half_height = height / 2.0f;
-
-	vector<vec4> point_sequence;
-
-	point_sequence.push_back(vec4(-1.0f * half_width, -1.0f * half_height, 0.0f, 1.0f));
-	point_sequence.push_back(vec4(-1.0f * half_width, half_height, 0.0f, 1.0f));
-	point_sequence.push_back(vec4(half_width, half_height, 0.0f, 1.0f));
-	point_sequence.push_back(vec4(half_width, -1.0f * half_height, 0.0f, 1.0f));
-
-	return point_sequence;
-}
-
-vector<int> geometry_generator::getRectanglePointIndices() const
+vector<int> geometry_generator::getNgonLineIndices(int sides) const
 {
 	vector<int> indices;
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < sides && sides > 2; i++)
 	{
 		indices.push_back(i);
+		i == sides - 1 ? indices.push_back(0) : indices.push_back(i + 1); 
 	}
 	return indices;
 }
 
-vector<int> geometry_generator::getRectangleLineIndices() const
+vector<int> geometry_generator::getNgonTriangleIndices(int sides) const
 {
-	return vector<int>{ 0, 1, 1, 2, 2, 3, 3, 0 };
-}
+	vector<int> indices;
 
-vector<int> geometry_generator::getRectangleTriangleIndices() const
-{
-	return vector<int>{ 0, 1, 2, 2, 3, 0 };
+	// there are n-2 triangles for each ngon
+	for (int i = 0; i < sides - 2; i++)
+	{
+		indices.push_back(0);
+		indices.push_back(i + 1);
+		indices.push_back(i + 2);
+	}
+
+	return indices;
 }
 
 vector<vec4> geometry_generator::getCuboidVertices(float width, float height, float depth) const
@@ -607,13 +602,10 @@ int geometry_generator::findOtherHypotenuseFromTargetAndHypotenuse(int target, i
 	return 0;
 }
 
-vector<int> geometry_generator::getIndices(geometry_type gt, attribute_index_method aim) const
+vector<int> geometry_generator::getSolidGeometryIndices(geometry_type gt, attribute_index_method aim) const
 {
 	switch (gt)
 	{
-	case TRIANGLE: return getTriangleIndices(aim);
-	case RECTANGLE: return getRectangleIndices(aim);
-	case SQUARE: return getRectangleIndices(aim);
 	case CUBOID: return getCuboidIndices(aim);
 	case CUBE: return getCuboidIndices(aim);
 	case TETRAHEDRON: return getTetrahedronIndices(aim);
@@ -628,23 +620,32 @@ vector<int> geometry_generator::getIndices(geometry_type gt, attribute_index_met
 	}
 }
 
-vector<int> geometry_generator::getTriangleIndices(attribute_index_method aim) const
+vector<int> geometry_generator::getNgonIndices(ngon_type nt, attribute_index_method aim) const
 {
-	switch (aim)
+	if (nt == NGON_TYPE_SIZE)
 	{
-	case LINE_INDICES: return getTriangleLineIndices();
-	default: return getTrianglePointIndices();
+		cout << "unable to generate indices for specified ngon type" << endl;
+		throw;
 	}
+
+	int side_count = (int)nt + 3;
+	return getNgonIndicesBySideCount(side_count, aim);
 }
 
-vector<int> geometry_generator::getRectangleIndices(attribute_index_method aim) const
+vector<int> geometry_generator::getNgonIndicesBySideCount(int sides, attribute_index_method aim) const
 {
+	if (sides < 3)
+	{
+		cout << "unable to generate indices for specified ngon sides" << endl;
+		throw;
+	}
+
 	switch (aim)
 	{
-	case POINT_INDICES: return getRectanglePointIndices();
-	case LINE_INDICES: return getRectangleLineIndices();
-	case TRIANGLE_INDICES: return getRectangleTriangleIndices();
-	default: return getRectanglePointIndices();
+	case POINT_INDICES: return getNgonPointIndices(sides);
+	case LINE_INDICES: return getNgonLineIndices(sides);
+	case TRIANGLE_INDICES: return getNgonTriangleIndices(sides);
+	default: return getNgonPointIndices(sides);
 	}
 }
 

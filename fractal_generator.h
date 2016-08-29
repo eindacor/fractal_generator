@@ -116,7 +116,7 @@ private:
 	vector<float> sizes_back;
 	geometry_type geo_type_front = GEOMETRY_TYPE_SIZE;
 	geometry_type geo_type_back = GEOMETRY_TYPE_SIZE;
-	random_generator mc;
+	random_generator rg;
 	color_manager color_man;
 	geometry_generator gm;
 	vec3 focal_point;
@@ -127,6 +127,7 @@ private:
 	int dof_passes = 10;
 	float dof_aperture = 0.005;
 	int max_point_size;
+	bool matrix_geometry_uses_solid_geometry = false;
 
 	unsigned int current_frame = 0;
 	unsigned int frame_increment = 1;
@@ -177,7 +178,9 @@ private:
 		int matrix_index_back,
 		vector<float> &points,
 		vector<unsigned short> &line_indices,
-		vector<unsigned short> &triangle_indices);
+		vector<unsigned short> &triangle_indices,
+		int &current_sequence_index_lines,
+		int &current_sequence_index_triangles);
 
 	void addNewPoint(
 		const vec4 &point,

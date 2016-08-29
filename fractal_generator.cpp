@@ -9,9 +9,9 @@ fractal_generator::fractal_generator(
 	base_seed = randomization_seed;
 
 	context = con;
-	mc.seed(base_seed);
+	rg.seed(base_seed);
 	color_man.seed(base_seed);
-	sm.randomize(mc);
+	sm.randomize(rg);
 	generateLights();
 	setMatrices();
 	initialized = false;
@@ -106,6 +106,10 @@ void fractal_generator::bufferPalette(const vector<float> &vertex_data)
 
 void fractal_generator::bufferLightData(const vector<float> &vertex_data)
 {
+	// only buffer lighting data if light mode is set to "dynamic"
+	if (sm.lm != 4)
+		return;
+
 	for (int i = 0; i < LIGHT_COUNT; i++)
 	{
 		if (i < light_indices.size())
@@ -285,49 +289,55 @@ vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &
 {
 	vector< pair<string, mat4> > matrix_vector;
 
-	if (mc.getRandomFloat() < sm.matrix_geometry_coefficient)
+	if (rg.getRandomFloat() < sm.matrix_geometry_coefficient)
 	{
 		vector<vec4> point_sequence;
-		geometry_type matrix_geometry;
+		int matrix_geometry_index;
 		// TODO create mc exception class
 		/*if (loaded_sequences.size() > 0)
 			sm.matrix_geometry_weights[LOADED_SEQUENCE] = mc.getRandomIntInRange(0, loaded_sequences.size() * 10);*/
 
-		if (!mc.catRoll<geometry_type>(sm.matrix_geometry_weights, matrix_geometry))
+		if (!rg.catRoll<int>(sm.matrix_geometry_weights, matrix_geometry_index))
 			throw;
 
-		float random_width = mc.getRandomFloatInRange(0.2f, 1.0f);
-		float random_height = mc.getRandomFloatInRange(0.2f, 1.0f);
-		float random_depth = mc.getRandomFloatInRange(0.2f, 1.0f);
+		float random_width = rg.getRandomFloatInRange(0.2f, 1.0f);
+		float random_height = rg.getRandomFloatInRange(0.2f, 1.0f);
+		float random_depth = rg.getRandomFloatInRange(0.2f, 1.0f);
 
-		int random_loaded_sequence_index;
-
-		switch (matrix_geometry)
+		if (matrix_geometry_index < GEOMETRY_TYPE_SIZE)
 		{
-		case TRIANGLE: point_sequence = gm.getTriangleVertices(random_width); break;
-		case RECTANGLE: point_sequence = gm.getRectangleVertices(random_width, random_height); break;
-		case SQUARE: point_sequence = gm.getSquareVertices(random_width); break;
-		case CUBOID: point_sequence = gm.getCuboidVertices(random_width, random_height, random_depth); break;
-		case CUBE: point_sequence = gm.getCubeVertices(random_width); break;
-		case TETRAHEDRON: point_sequence = gm.getTetrahedronVertices(random_width); break;
-		case OCTAHEDRON: point_sequence = gm.getOctahedronVertices(random_width); break;
-		case DODECAHEDRON: point_sequence = gm.getDodecahedronVertices(random_width); break;
-		case ICOSAHEDRON: point_sequence = gm.getIcosahedronVertices(random_width); break;
-		/*case LOADED_SEQUENCE: 
-		{
-			random_loaded_sequence_index = mc.getRandomIntInRange(0, loaded_sequences.size());
-			point_sequence = loaded_sequences.at(random_loaded_sequence_index).second;
-		}
-		break;*/
-		default: break;
+			geometry_type gt = geometry_type(matrix_geometry_index);
+
+			float random_width = rg.getRandomFloatInRange(0.2f, 1.0f);
+			float random_height = rg.getRandomFloatInRange(0.2f, 1.0f);
+			float random_depth = rg.getRandomFloatInRange(0.2f, 1.0f);
+
+			switch (gt)
+			{
+			case CUBOID: point_sequence = gm.getCuboidVertices(random_width, random_height, random_depth); break;
+			case CUBE: point_sequence = gm.getCubeVertices(random_width); break;
+			case TETRAHEDRON: point_sequence = gm.getTetrahedronVertices(random_width); break;
+			case OCTAHEDRON: point_sequence = gm.getOctahedronVertices(random_width); break;
+			case DODECAHEDRON: point_sequence = gm.getDodecahedronVertices(random_width); break;
+			case ICOSAHEDRON: point_sequence = gm.getIcosahedronVertices(random_width); break;
+				//case LOADED_SEQUENCE: geo_type = DEFAULT_GEOMETRY_TYPE;
+			case GEOMETRY_TYPE_SIZE:
+			default: throw;
+			}
 		}
 
-		geo_type = matrix_geometry;
+		else
+		{
+			matrix_geometry_index -= (int)GEOMETRY_TYPE_SIZE;
+			ngon_type nt = ngon_type(matrix_geometry_index);
+			int side_count = (int)nt + 3;
+			point_sequence = gm.getNgonVertices(rg.getRandomFloatInRange(0.2f, 1.0f), side_count);
+		}
 
 		for (int i = 0; i < count; i++)
 		{
 			vec3 vertex(point_sequence.at(i % point_sequence.size()));
-			matrix_vector.push_back(std::pair<string, mat4>("translate (" + getStringFromGeometryType(matrix_geometry) + ")", glm::translate(mat4(1.0f), vertex)));
+			matrix_vector.push_back(std::pair<string, mat4>("translate (" + std::to_string(matrix_geometry_index) + ")", glm::translate(mat4(1.0f), vertex)));
 		}
 	}
 
@@ -345,7 +355,7 @@ vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &
 			matrix_map[2] = sm.scale_matrices ? sm.scale_weight : 0;
 
 			// TODO create mc exception class
-			if (!mc.catRoll<short>(matrix_map, matrix_type))
+			if (!rg.catRoll<short>(matrix_map, matrix_type))
 				throw;
 
 			string matrix_category;
@@ -354,15 +364,15 @@ vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &
 			switch (matrix_type)
 			{
 			case 0:
-				matrix_to_add = sm.two_dimensional ? mc.getRandomTranslation2D() : mc.getRandomTranslation();
+				matrix_to_add = sm.two_dimensional ? rg.getRandomTranslation2D() : rg.getRandomTranslation();
 				matrix_category = "translate";
 				break;
 			case 1:
-				matrix_to_add = sm.two_dimensional ? mc.getRandomRotation2D() : mc.getRandomRotation();
+				matrix_to_add = sm.two_dimensional ? rg.getRandomRotation2D() : rg.getRandomRotation();
 				matrix_category = "rotate";
 				break;
 			case 2:
-				matrix_to_add = sm.two_dimensional ? mc.getRandomScale2D() : mc.getRandomScale();
+				matrix_to_add = sm.two_dimensional ? rg.getRandomScale2D() : rg.getRandomScale();
 				matrix_category = "scale";
 				break;
 			default: break;
@@ -385,7 +395,7 @@ vector<vec4> fractal_generator::generateColorVector(const vec4 &seed, color_pale
 		color_man.randomizeAlpha(color_set, sm.alpha_min, sm.alpha_max);
 
 	if (sm.randomize_lightness)
-		color_man.modifyLightness(color_set, mc.getRandomFloatInRange(0.3, 1.2f));
+		color_man.modifyLightness(color_set, rg.getRandomFloatInRange(0.3, 1.2f));
 
 	return color_set;
 }
@@ -396,7 +406,7 @@ vector<float> fractal_generator::generateSizeVector(const int &count) const
 
 	for (int i = 0; i < count; i++)
 	{
-		size_vector.push_back(mc.getRandomFloatInRange(POINT_SCALE_MIN, POINT_SCALE_MAX));
+		size_vector.push_back(rg.getRandomFloatInRange(POINT_SCALE_MIN, POINT_SCALE_MAX));
 	}
 
 	return size_vector;
@@ -406,16 +416,16 @@ vector<float> fractal_generator::generateSizeVector(const int &count) const
 void fractal_generator::setMatrices()
 {
 	generation_seed = base_seed + "_" + std::to_string(sm.generation);
-	mc.seed(generation_seed);
+	rg.seed(generation_seed);
 	color_man.seed(generation_seed);
 
 	for (int i = 0; i < vertex_count; i++)
 	{
-		matrix_sequence_front.push_back(int(mc.getRandomFloatInRange(0.0f, float(sm.num_matrices))));
-		matrix_sequence_back.push_back(int(mc.getRandomFloatInRange(0.0f, float(sm.num_matrices))));
+		matrix_sequence_front.push_back(int(rg.getRandomFloatInRange(0.0f, float(sm.num_matrices))));
+		matrix_sequence_back.push_back(int(rg.getRandomFloatInRange(0.0f, float(sm.num_matrices))));
 	}
 
-	int random_palette_index = int(mc.getRandomFloatInRange(0.0f, float(DEFAULT_COLOR_PALETTE)));
+	int random_palette_index = int(rg.getRandomFloatInRange(0.0f, float(DEFAULT_COLOR_PALETTE)));
 	sm.palette_front = color_palette(random_palette_index);
 	sm.palette_back = color_palette(random_palette_index);
 
@@ -430,7 +440,7 @@ void fractal_generator::setMatrices()
 
 	//front data set
 	matrices_front = generateMatrixVector(sm.num_matrices, geo_type_front);
-	seed_color_front = mc.getRandomVec4FromColorRanges(
+	seed_color_front = rg.getRandomVec4FromColorRanges(
 		0.0f, 1.0f,		// red range
 		0.0f, 1.0f,		// green range
 		0.0f, 1.0f,		// blue range
@@ -442,11 +452,11 @@ void fractal_generator::setMatrices()
 	//back data set
 	sm.generation++;
 	generation_seed = base_seed + "_" + std::to_string(sm.generation);
-	mc.seed(generation_seed);
+	rg.seed(generation_seed);
 	color_man.seed(generation_seed);
 	matrices_back = generateMatrixVector(sm.num_matrices, geo_type_back);
 	//std::random_shuffle(matrices_front.begin(), matrices_front.end());
-	seed_color_back = mc.getRandomVec4FromColorRanges(
+	seed_color_back = rg.getRandomVec4FromColorRanges(
 		0.0f, 1.0f,		// red range
 		0.0f, 1.0f,		// green range
 		0.0f, 1.0f,		// blue range
@@ -464,7 +474,7 @@ void fractal_generator::swapMatrices()
 	else sm.generation++;
 
 	generation_seed = base_seed + "_" + std::to_string(sm.generation);
-	mc.seed(generation_seed);
+	rg.seed(generation_seed);
 
 	//TODO use pointers instead of loaded if statements
 	if (!sm.reverse)
@@ -477,9 +487,9 @@ void fractal_generator::swapMatrices()
 		sizes_back = sizes_front;
 		seed_color_back = seed_color_front;
 		sm.background_back_index = sm.background_front_index;
-		sm.background_front_index = mc.getRandomIntInRange(0, colors_front.size());
+		sm.background_front_index = rg.getRandomIntInRange(0, colors_front.size());
 
-		seed_color_front = mc.getRandomVec4FromColorRanges(
+		seed_color_front = rg.getRandomVec4FromColorRanges(
 			0.0f, 1.0f,		// red range
 			0.0f, 1.0f,		// green range
 			0.0f, 1.0f,		// blue range
@@ -501,9 +511,9 @@ void fractal_generator::swapMatrices()
 		sizes_front = sizes_back;
 		seed_color_front = seed_color_back;
 		sm.background_front_index = sm.background_back_index;
-		sm.background_back_index = mc.getRandomIntInRange(0, colors_back.size());
+		sm.background_back_index = rg.getRandomIntInRange(0, colors_back.size());
 
-		seed_color_back = mc.getRandomVec4FromColorRanges(
+		seed_color_back = rg.getRandomVec4FromColorRanges(
 			0.0f, 1.0f,		// red range
 			0.0f, 1.0f,		// green range
 			0.0f, 1.0f,		// blue range
@@ -568,14 +578,17 @@ void fractal_generator::generateFractalFromPointSequence()
 
 	mat4 origin_matrix = glm::scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f));
 
+	int current_sequence_index_lines = 0;
+	int current_sequence_index_triangles = 0;
+
 	for (int i = 0; i < vertex_count / sm.point_sequence.size(); i++)
 	{
-		int matrix_index_front = sm.smooth_render ? matrix_sequence_front.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
-		int matrix_index_back = sm.smooth_render ? matrix_sequence_back.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+		int matrix_index_front = sm.smooth_render ? matrix_sequence_front.at(i) : int(rg.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+		int matrix_index_back = sm.smooth_render ? matrix_sequence_back.at(i) : int(rg.getRandomFloatInRange(0.0f, float(matrices_front.size())));
 		vec4 transformation_color = influenceElement<vec4>(colors_back.at(matrix_index_back), colors_front.at(matrix_index_front), sm.interpolation_state);
 		float transformation_size = influenceElement<float>(sizes_back.at(matrix_index_back), sizes_front.at(matrix_index_front), sm.interpolation_state);
 
-		addPointSequenceAndIterate(origin_matrix, point_color, starting_size, matrix_index_front, matrix_index_back, points, line_indices_to_buffer, triangle_indices_to_buffer);
+		addPointSequenceAndIterate(origin_matrix, point_color, starting_size, matrix_index_front, matrix_index_back, points, line_indices_to_buffer, triangle_indices_to_buffer, current_sequence_index_lines, current_sequence_index_triangles);
 	}
 
 	addPalettePointsAndBufferData(points, line_indices_to_buffer, triangle_indices_to_buffer);
@@ -596,8 +609,8 @@ void fractal_generator::generateFractal()
 
 	for (int i = 0; i < vertex_count && num_matrices > 0; i++)
 	{
-		int matrix_index_front = sm.smooth_render ? matrix_sequence_front.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
-		int matrix_index_back = sm.smooth_render ? matrix_sequence_back.at(i) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+		int matrix_index_front = sm.smooth_render ? matrix_sequence_front.at(i) : int(rg.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+		int matrix_index_back = sm.smooth_render ? matrix_sequence_back.at(i) : int(rg.getRandomFloatInRange(0.0f, float(matrices_front.size())));
 
 		addNewPointAndIterate(starting_point, point_color, starting_size, matrix_index_front, matrix_index_back, points);
 		line_indices_to_buffer.push_back(line_indices_to_buffer.size());
@@ -615,7 +628,7 @@ void fractal_generator::generateFractalWithRefresh()
 	points.reserve(vertex_count * vertex_size);
 
 	int num_matrices = matrices_front.size();
-	signed int actual_refresh = sm.refresh_value == -1 ? int(mc.getRandomFloatInRange(sm.refresh_min, sm.refresh_max)) : sm.refresh_value;
+	signed int actual_refresh = sm.refresh_value == -1 ? int(rg.getRandomFloatInRange(sm.refresh_min, sm.refresh_max)) : sm.refresh_value;
 
 	for (int i = 0; i < vertex_count && num_matrices > 0; i++)
 	{
@@ -625,8 +638,8 @@ void fractal_generator::generateFractalWithRefresh()
 
 		for (int n = 0; n < actual_refresh; n++)
 		{
-			int matrix_index_front = sm.smooth_render ? matrix_sequence_front.at((i + n) % matrix_sequence_front.size()) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
-			int matrix_index_back = sm.smooth_render ? matrix_sequence_back.at((i + n) % matrix_sequence_back.size()) : int(mc.getRandomFloatInRange(0.0f, float(matrices_back.size())));
+			int matrix_index_front = sm.smooth_render ? matrix_sequence_front.at((i + n) % matrix_sequence_front.size()) : int(rg.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+			int matrix_index_back = sm.smooth_render ? matrix_sequence_back.at((i + n) % matrix_sequence_back.size()) : int(rg.getRandomFloatInRange(0.0f, float(matrices_back.size())));
 
 			mat4 matrix_front = matrices_front.at(matrix_index_front).second;
 			mat4 matrix_back = matrices_back.at(matrix_index_back).second;
@@ -663,7 +676,10 @@ void fractal_generator::generateFractalFromPointSequenceWithRefresh()
 
 	int num_matrices = matrices_front.size();
 
-	signed int actual_refresh = sm.refresh_value == -1 ? int(mc.getRandomFloatInRange(sm.refresh_min, sm.refresh_max)) : sm.refresh_value;
+	signed int actual_refresh = sm.refresh_value == -1 ? int(rg.getRandomFloatInRange(sm.refresh_min, sm.refresh_max)) : sm.refresh_value;
+
+	int current_sequence_index_lines = 0;
+	int current_sequence_index_triangles = 0;
 
 	for (int i = 0; i < vertex_count / sm.point_sequence.size() && num_matrices > 0; i++)
 	{
@@ -673,8 +689,8 @@ void fractal_generator::generateFractalFromPointSequenceWithRefresh()
 
 		for (int n = 0; n < actual_refresh; n++)
 		{
-			int matrix_index_front = sm.smooth_render ? matrix_sequence_front.at((i + n) % matrix_sequence_front.size()) : int(mc.getRandomFloatInRange(0.0f, float(matrices_front.size())));
-			int matrix_index_back = sm.smooth_render ? matrix_sequence_back.at((i + n) % matrix_sequence_back.size()) : int(mc.getRandomFloatInRange(0.0f, float(matrices_back.size())));
+			int matrix_index_front = sm.smooth_render ? matrix_sequence_front.at((i + n) % matrix_sequence_front.size()) : int(rg.getRandomFloatInRange(0.0f, float(matrices_front.size())));
+			int matrix_index_back = sm.smooth_render ? matrix_sequence_back.at((i + n) % matrix_sequence_back.size()) : int(rg.getRandomFloatInRange(0.0f, float(matrices_back.size())));
 
 			mat4 matrix_front = matrices_front.at(matrix_index_front).second;
 			mat4 matrix_back = matrices_back.at(matrix_index_back).second;
@@ -693,6 +709,7 @@ void fractal_generator::generateFractalFromPointSequenceWithRefresh()
 		int index_sequences_added = points.size() / (sm.point_sequence.size() * vertex_size);
 
 		// determine where values should begin based on the used sequence and number of indices already added
+
 		vector<int>::iterator max_local_value_lines = std::max_element(sm.line_indices.begin(), sm.line_indices.end());
 		int starting_index_lines = index_sequences_added * (*max_local_value_lines + 1);
 		for (const unsigned short index : sm.line_indices)
@@ -813,7 +830,7 @@ vector<mat4> fractal_generator::generateMatrixSequence(const int &sequence_size)
 
 	for (int i = 0; i < sequence_size; i++)
 	{
-		int random_index = mc.getRandomUniform() * (float)matrices_front.size();
+		int random_index = rg.getRandomUniform() * (float)matrices_front.size();
 		matrix_sequence.push_back(matrices_front.at(random_index).second);
 	}
 
@@ -899,7 +916,9 @@ void fractal_generator::addPointSequenceAndIterate(
 	int matrix_index_back,
 	vector<float> &points,
 	vector<unsigned short> &line_indices,
-	vector<unsigned short> &triangle_indices)
+	vector<unsigned short> &triangle_indices,
+	int &current_sequence_index_lines,
+	int &current_sequence_index_triangles)
 {
 	mat4 matrix_front = matrices_front.at(matrix_index_front).second;
 	mat4 matrix_back = matrices_back.at(matrix_index_back).second;
@@ -960,18 +979,22 @@ void fractal_generator::addPointSequenceAndIterate(
 
 	// determine where values should begin based on the used sequence and number of indices already added
 	vector<int>::iterator max_local_value_lines = std::max_element(sm.line_indices.begin(), sm.line_indices.end());
-	int starting_index_lines = index_sequences_added * (*max_local_value_lines + 1);
+	int starting_index_lines = current_sequence_index_lines;
 	for (const unsigned short index : sm.line_indices)
 	{
 		line_indices.push_back(starting_index_lines + index);
 	}
 
+	current_sequence_index_lines += *max_local_value_lines;
+
 	vector<int>::iterator max_local_value_triangles = std::max_element(sm.triangle_indices.begin(), sm.triangle_indices.end());
-	int starting_index_triangles = index_sequences_added * (*max_local_value_triangles + 1);
+	int starting_index_triangles = current_sequence_index_triangles;
 	for (const unsigned short index : sm.triangle_indices)
 	{
 		triangle_indices.push_back(starting_index_triangles + index);
 	}
+
+	current_sequence_index_triangles += *max_local_value_triangles;
 
 	origin_matrix = final_matrix;
 }
@@ -1035,7 +1058,7 @@ vec4 fractal_generator::getSampleColor(const int &samples, const vector<vec4> &c
 
 	for (int i = 0; i < samples; i++)
 	{
-		int random_index = (int)(mc.getRandomUniform() * color_pool.size());
+		int random_index = (int)(rg.getRandomUniform() * color_pool.size());
 		out_color += color_pool.at(random_index);
 	}
 
@@ -1355,14 +1378,14 @@ void fractal_generator::invertColors()
 
 void fractal_generator::newColors()
 {
-	seed_color_front = mc.getRandomVec4FromColorRanges(
+	seed_color_front = rg.getRandomVec4FromColorRanges(
 		0.0f, 1.0f,		// red range
 		0.0f, 1.0f,		// green range
 		0.0f, 1.0f,		// blue range
 		sm.alpha_min, sm.alpha_max		// alpha range
 		);
 
-	seed_color_back = mc.getRandomVec4FromColorRanges(
+	seed_color_back = rg.getRandomVec4FromColorRanges(
 		0.0f, 1.0f,		// red range
 		0.0f, 1.0f,		// green range
 		0.0f, 1.0f,		// blue range
@@ -1488,7 +1511,7 @@ void fractal_generator::printContext()
 	sm.scale_matrices ? cout << "scale matrices enabled" << endl : cout << "scale matrices disabled" << endl;
 	if (sm.inverted)
 		cout << "inverted colors" << endl;
-	cout << "geometry draw type: " << getStringFromGeometryType(sm.geo_type) << endl;
+	//cout << "geometry draw type: " << getStringFromGeometryType(sm.geo_type) << endl;
 	cout << "lighting mode: " << getStringFromLightingMode(sm.lm) << endl;
 	cout << "front geometry matrix type: " << getStringFromGeometryType(geo_type_front) << endl;
 	cout << "back geometry matrix type: " << getStringFromGeometryType(geo_type_back) << endl;
@@ -1496,7 +1519,7 @@ void fractal_generator::printContext()
 	cout << "matrix geometry map: " << endl;
 	for (const auto &geo_pair : sm.matrix_geometry_weights)
 	{
-		cout << getStringFromGeometryType(geo_pair.first) << ": " << geo_pair.second << endl;
+		cout << geo_pair.first << ": " << geo_pair.second << endl;
 	}
 
 	cout << "-----------------------------------------------" << endl;
@@ -1605,51 +1628,19 @@ void fractal_generator::addPalettePointsAndBufferData(const vector<float> &verte
 
 void fractal_generator::cycleGeometryType()
 {
-	if (sm.geo_type == GEOMETRY_TYPE_SIZE)
-		sm.geo_type = (geometry_type)0;
+	if (sm.point_sequence_index == GEOMETRY_ENUM_COUNT)
+		sm.point_sequence_index = 0;
 
-	//else if (sm.geo_type == LOADED_SEQUENCE)
-	//{
-	//	// if there are no loaded sequences or the current sequence is the last loaded
-	//	if (loaded_sequences.size() == 0 || current_sequence == loaded_sequences.size() - 1)
-	//	{
-	//		current_sequence = 0;
-	//		sm.geo_type = DEFAULT_GEOMETRY_TYPE;
-	//	}
-	//	else current_sequence++;
-	//}
+	else sm.point_sequence_index++;
 
-	else sm.geo_type = geometry_type(int(sm.geo_type) + 1);
-
-	sm.use_point_sequence = GEOMETRY_TYPE_SIZE != sm.geo_type;
+	sm.use_point_sequence = GEOMETRY_ENUM_COUNT != sm.point_sequence_index;
 
 	if (sm.use_point_sequence)
 	{
-		float random_width = mc.getRandomFloatInRange(0.2f, 1.0f);
-		float random_height = mc.getRandomFloatInRange(0.2f, 1.0f);
-		float random_depth = mc.getRandomFloatInRange(0.2f, 1.0f);
-
-		switch (sm.geo_type)
-		{
-		case TRIANGLE: sm.point_sequence = gm.getTriangleVertices(random_width); break;
-		case RECTANGLE: sm.point_sequence = gm.getRectangleVertices(random_width, random_height); break;
-		case SQUARE: sm.point_sequence = gm.getSquareVertices(random_width); break;
-		case CUBOID: sm.point_sequence = gm.getCuboidVertices(random_width, random_height, random_depth); break;
-		case CUBE: sm.point_sequence = gm.getCubeVertices(random_width); break;
-		case TETRAHEDRON: sm.point_sequence = gm.getTetrahedronVertices(random_width); break;
-		case OCTAHEDRON: sm.point_sequence = gm.getOctahedronVertices(random_width); break;
-		case DODECAHEDRON: sm.point_sequence = gm.getDodecahedronVertices(random_width); break;
-		case ICOSAHEDRON: sm.point_sequence = gm.getIcosahedronVertices(random_width); break;
-		//case LOADED_SEQUENCE: sm.point_sequence = loaded_sequences.at(current_sequence).second; break;
-		case GEOMETRY_TYPE_SIZE: break;
-		default: break;
-		}
-
-		sm.line_indices = gm.getIndices(sm.geo_type,LINE_INDICES);
-		sm.triangle_indices = gm.getIndices(sm.geo_type, TRIANGLE_INDICES);
+		sm.setPointSequenceGeometry(sm.point_sequence_index, rg);
 	}
 
-	cout << "geometry type: " << getStringFromGeometryType(sm.geo_type) << endl;
+	cout << "point sequence index: " << sm.point_sequence_index << endl;
 }
 
 void fractal_generator::cycleBackgroundColorIndex()
@@ -1683,9 +1674,6 @@ string fractal_generator::getStringFromGeometryType(geometry_type gt) const
 {
 	switch (gt)
 	{
-	case TRIANGLE: return "triangle";
-	case RECTANGLE: return "rectangle";
-	case SQUARE: return "square";
 	case CUBOID: return "cuboid";
 	case CUBE: return "cube";
 	case TETRAHEDRON: return "tetrahedron";
