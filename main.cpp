@@ -249,6 +249,7 @@ int main()
 					batchRender(*generator, context, BMP, 6, 4, 4, 1800, mix_background, camera);	// 24x24
 					batchRender(*generator, context, BMP, 6, 2, 2, 2400, mix_background, camera);	// 16x16
 					batchRender(*generator, context, BMP, 6, 2, 2, 1800, mix_background, camera);	// 12x12
+					batchRender(*generator, context, BMP, 6, 1, 1, 2048, mix_background, camera);	// preview
 				}
 
 				else if (keys->checkAltHold())

@@ -141,10 +141,16 @@ bool saveImage(const fractal_generator &fg, const shared_ptr<ogl_context> &conte
 
 	FILE *file_check;
 
+	string seed = fg.getSeed();
+	if (seed.length() > 32)
+	{
+		seed = seed.substr(0, 32);
+	}
+
 	int image_count = 0;
 	while (image_count < 256)
 	{
-		filename = fg.getSeed() + "_g" + paddedValue(fg.getGeneration(), 3) + "_" + paddedValue(image_count, 3) + file_extension;
+		filename = seed + "_g" + paddedValue(fg.getGeneration(), 3) + "_" + paddedValue(image_count, 3) + file_extension;
 		file_check = fopen(filename.c_str(), "rb");
 		if (file_check == NULL) break;
 		else fclose(file_check);
@@ -360,10 +366,17 @@ bool batchRender(fractal_generator &fg, const shared_ptr<ogl_context> &context, 
 		FILE *file_check;
 
 		int image_count = 0;
+
+		string seed = fg.getSeed();
+		if (seed.length() > 32)
+		{
+			seed = seed.substr(0, 32);
+		}
+
 		while (image_count < 256)
 		{
 			string dimension_string = std::to_string(y_count * quadrant_size) + "x" + std::to_string(x_count * quadrant_size);
-			filename = fg.getSeed() + "_g" + paddedValue(fg.getGeneration(), 3) + "_" + dimension_string + "_" + paddedValue(image_count, 3) + "_q" + paddedValue(quadrant_index, 2) + file_extension;
+			filename = seed + "_g" + paddedValue(fg.getGeneration(), 3) + "_" + dimension_string + "_" + paddedValue(image_count, 3) + "_q" + paddedValue(quadrant_index, 2) + file_extension;
 			file_check = fopen(filename.c_str(), "rb");
 			if (file_check == NULL) break;
 			else fclose(file_check);
