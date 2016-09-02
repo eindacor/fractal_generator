@@ -159,6 +159,7 @@ int main()
 			vec3 camera_pos = camera->getPosition();
 			glUniform3fv(context->getShaderGLint("camera_position"), 1, &camera_pos[0]);
 			camera->setMVP(context, mat4(1.0f), jep::NORMAL);
+			glUniform1i(context->getShaderGLint("max_point_size"), generator->getMaxPointSize());
 
 			generator->drawFractal(camera);
 
@@ -186,6 +187,8 @@ int main()
 			{
 				camera->setPosition(vec3(0.0f, eye_level, 5.0f));
 				camera->setFocus(vec3(0.0f, 0.0f, 0.0f));
+				camera->setCameraTilt(0.0f);
+				camera->setCameraRotation(0.0f);
 			}
 
 			if (keys->checkPress(GLFW_KEY_INSERT, true))

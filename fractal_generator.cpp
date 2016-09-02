@@ -20,7 +20,7 @@ fractal_generator::fractal_generator(
 	glEnable(GL_PROGRAM_POINT_SIZE);
 	glGetIntegerv(GL_ALIASED_POINT_SIZE_RANGE, range);
 	max_point_size = min(min(context->getWindowHeight(), context->getWindowWidth()), range[1]);
-	glUniform1i(con->getShaderGLint("max_point_size"), max_point_size);
+	glUniform1i(context->getShaderGLint("max_point_size"), max_point_size);
 	cout << "max point size: " << max_point_size << endl;
 
 	glEnable(GL_DEPTH_CLAMP);

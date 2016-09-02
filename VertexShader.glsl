@@ -31,6 +31,21 @@ uniform vec4 light_positions[LIGHT_COUNT];
 uniform vec4 light_colors[LIGHT_COUNT];
 uniform int max_point_size;
 
+vec4 clampColor(vec4 color)
+{
+	return vec4(clamp(color.r, 0.0f, 1.0f), clamp(color.g, 0.0f, 1.0f), clamp(color.b, 0.0f, 1.0f), clamp(color.a, 0.0f, 1.0f));
+}
+
+vec4 getDiffusedColor(vec4 diffuse_color, vec4 light_color)
+{
+	diffuse_color = clampColor(diffuse_color);
+	light_color = clampColor(light_color);
+
+	vec4 absorbed_color = vec4(1.0f) - diffuse_color;
+
+	return clampColor(light_color - absorbed_color);
+}
+
 vec4 getReflectedColor(vec4 diffuse_color, vec4 light_pos, vec4 vertex_pos, vec4 light_color, float light_intensity)
 {
 	vec4 L = light_pos - vertex_pos;
@@ -50,33 +65,6 @@ vec4 getReflectedColor(vec4 diffuse_color, vec4 light_pos, vec4 vertex_pos, vec4
 	reflected_color.a = attenuation;
 
 	return reflected_color;
-}
-
-float getAttenuationFromLight(float illumination_dist, vec4 light_pos, vec4 light_color, vec4 vertex_pos, float cutoff)
-{
-	float attenuation;
-	vec4 L = light_pos - vertex_pos;
-	float distance = length(L);
-	float d = max(distance - illumination_dist, 0);
-	L /= distance;
-	float denom = d / (illumination_dist) + 1.0f;
-	attenuation = 1.0f / (denom * denom);
-	attenuation = (attenuation - cutoff) / (1.0f - cutoff);
-	
-	return max(attenuation, 0);
-}
-
-vec4 getReflectedLight(vec4 diffuse_color, float illumination_dis, vec4 light_pos, vec4 light_color, vec4 vertex_pos, float cutoff)
-{
-	float attenuation = getAttenuationFromLight(illumination_dis, light_pos, light_color, vertex_pos, cutoff);
-
-	float new_r = light_color.r * diffuse_color.r;
-	float new_g = light_color.g * diffuse_color.g;
-	float new_b = light_color.b * diffuse_color.b;
-
-	vec4 new_color = vec4(new_r, new_g, new_b, diffuse_color.a);
-
-	return new_color * attenuation;
 }
 
 vec4 getAmbientReflection(vec4 diffuse_color, vec4 background_color)
@@ -130,11 +118,6 @@ float getAttenuation(vec4 scaled_position)
 	return clamp(global_attenuation, 0.0f, 1.0f);
 }
 
-vec4 clampColor(vec4 color)
-{
-	return vec4(clamp(color.r, 0.0f, 1.0f), clamp(color.g, 0.0f, 1.0f), clamp(color.b, 0.0f, 1.0f), clamp(color.a, 0.0f, 1.0f));
-}
-
 void main()
 {
 	vec4 scaled_position = fractal_scale * position;
@@ -182,18 +165,27 @@ void main()
 
 		else
 		{
-			float total_attenuation = 0.0f;
-			vec4 final_color = vec4(0.0f);
+			vec4 total_light = vec4(0.0f);
 			for (int i = 0; i < LIGHT_COUNT; i++)
 			{
 				if (light_positions[i].w < .001f)
 					continue;
 
-				final_color += getReflectedLight(fragment_color, illumination_distance, light_positions[i], light_colors[i], scaled_position, light_cutoff);
+				float attenuation = getAttenuationFromPosition(illumination_distance, light_positions[i], scaled_position, light_cutoff);
+
+				if (attenuation <= .001f)
+					continue;
+
+				total_light += (light_colors[i] * attenuation);
+
+				if (total_light.r >= 1.0f && total_light.g >= 1.0f && total_light.b >= 1.0f)
+					break;
 			}
 			
-			final_color += getAmbientReflection(fragment_color, background_color);
-			fragment_color = clampColor(final_color);
+			total_light += background_color * 0.2f;
+
+			fragment_color = getDiffusedColor(fragment_color, clampColor(total_light));
+			fragment_color.a = alpha_value;
 		}
 	}
 
