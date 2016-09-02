@@ -68,7 +68,7 @@ int main()
 
 	float camera_fov = 45.0f;
 
-	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 5.0f), camera_fov));
+	shared_ptr<ogl_camera_flying> camera(new ogl_camera_flying(keys, context, vec3(0.0f, eye_level, 10.0f), camera_fov));
 	camera->setStepDistance(0.02f);
 	camera->setStrafeDistance(0.02f);
 	camera->setRotateAngle(1.0f);
@@ -160,7 +160,6 @@ int main()
 			glUniform3fv(context->getShaderGLint("camera_position"), 1, &camera_pos[0]);
 			camera->setMVP(context, mat4(1.0f), jep::NORMAL);
 			glUniform1i(context->getShaderGLint("max_point_size"), generator->getMaxPointSize());
-
 			generator->drawFractal(camera);
 
 			generator->checkKeys(keys);
@@ -305,6 +304,10 @@ int main()
 				growth_paused = false;
 				camera_fov = 45.0f;
 				camera->setFOV(camera_fov);
+
+				glUniform1i(context->getShaderGLint("override_line_color_enabled"), 0);
+				glUniform1i(context->getShaderGLint("override_triangle_color_enabled"), 0);
+				glUniform1i(context->getShaderGLint("override_point_color_enabled"), 0);
 			}
 
 			if (keys->checkPress(GLFW_KEY_R, false))
@@ -319,6 +322,10 @@ int main()
 				growth_paused = false;
 				camera_fov = 45.0f;
 				camera->setFOV(camera_fov);
+
+				glUniform1i(context->getShaderGLint("override_line_color_enabled"), 0);
+				glUniform1i(context->getShaderGLint("override_triangle_color_enabled"), 0);
+				glUniform1i(context->getShaderGLint("override_point_color_enabled"), 0);
 			}
 
 			glfwSetTime(0.0f);

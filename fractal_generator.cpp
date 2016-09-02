@@ -19,9 +19,7 @@ fractal_generator::fractal_generator(
 	GLint range[2];
 	glEnable(GL_PROGRAM_POINT_SIZE);
 	glGetIntegerv(GL_ALIASED_POINT_SIZE_RANGE, range);
-	max_point_size = min(min(context->getWindowHeight(), context->getWindowWidth()), range[1]);
-	glUniform1i(context->getShaderGLint("max_point_size"), max_point_size);
-	cout << "max point size: " << max_point_size << endl;
+	max_point_size = range[1] < 1 ? min(context->getWindowHeight(), context->getWindowWidth()) : min(min(context->getWindowHeight(), context->getWindowWidth()), range[1]);
 
 	glEnable(GL_DEPTH_CLAMP);
 	glDepthRange(0.0, 1.0);
@@ -1138,10 +1136,24 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 	if (keys->checkPress(GLFW_KEY_M, false))
 	{
-		if (keys->checkShiftHold())
-			cycleLineOverride();
+		if (keys->checkShiftHold() && keys->checkCtrlHold())
+			cycleLightColorOverride();
 
-		else newColors();
+		else if (keys->checkShiftHold())
+			cycleLineColorOverride();
+
+		else if (keys->checkCtrlHold())
+			cycleTriangleColorOverride();
+
+		else if (keys->checkAltHold())
+			cyclePointColorOverride();
+
+		else {
+			newColors();
+			updatePointColorOverride();
+			updateLineColorOverride();
+			updateTriangleColorOverride();
+		}
 	}
 
 	if (keys->checkPress(GLFW_KEY_P, false))
@@ -1185,18 +1197,36 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 	if (keys->checkPress(GLFW_KEY_PERIOD, false))
 	{
-		sm.line_width = glm::clamp(sm.line_width + 0.1f, 0.1f, 1.0f);
-		GLfloat width_range[2];
-		glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, width_range);
-		glLineWidth(GLfloat(sm.line_width) * width_range[1]);
+		if (keys->checkShiftHold())
+		{
+			point_size_modifier = glm::clamp(point_size_modifier + 0.1f, 0.0f, 2.0f);
+			glUniform1f(context->getShaderGLint("point_size_modifier"), point_size_modifier);
+		}
+
+		else
+		{
+			sm.line_width = glm::clamp(sm.line_width + 0.1f, 0.1f, 1.0f);
+			GLfloat width_range[2];
+			glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, width_range);
+			glLineWidth(GLfloat(sm.line_width) * width_range[1]);
+		}
 	}
 
 	if (keys->checkPress(GLFW_KEY_COMMA, false))
 	{
-		sm.line_width = glm::clamp(sm.line_width - 0.1f, 0.1f, 1.0f);
-		GLfloat width_range[2];
-		glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, width_range);
-		glLineWidth(GLfloat(sm.line_width) * width_range[1]);
+		if (keys->checkShiftHold())
+		{
+			point_size_modifier = glm::clamp(point_size_modifier - 0.1f, 0.0f, 2.0f);
+			glUniform1f(context->getShaderGLint("point_size_modifier"), point_size_modifier);
+		}
+
+		else
+		{
+			sm.line_width = glm::clamp(sm.line_width - 0.1f, 0.1f, 1.0f);
+			GLfloat width_range[2];
+			glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, width_range);
+			glLineWidth(GLfloat(sm.line_width) * width_range[1]);
+		}
 	}
 
 	if (keys->checkPress(GLFW_KEY_B))
@@ -1420,25 +1450,77 @@ void fractal_generator::regenerateFractal()
 	glUniform1i(context->getShaderGLint("lighting_mode"), sm.lm);
 	glUniform3fv(context->getShaderGLint("centerpoint"), 1, &focal_point[0]);
 	glUniform1f(context->getShaderGLint("illumination_distance"), sm.lm == CAMERA ? sm.illumination_distance * 10.0f : sm.illumination_distance);
+	glUniform1f(context->getShaderGLint("point_size_modifier"), point_size_modifier);
 
 	updateLineColorOverride();
 }
 
+void fractal_generator::updateLightColorOverride()
+{
+	glUniform1i(context->getShaderGLint("override_light_color_enabled"), light_color_override_index != -3);
+
+	vec4 light_color;
+	switch (light_color_override_index)
+	{
+	case -3: break;
+	case -2: light_color = vec4(0.0f, 0.0f, 0.0f, 1.0f); break;
+	case -1: light_color = vec4(1.0f, 1.0f, 1.0f, 1.0f); break;
+	default: light_color = influenceElement<vec4>(colors_back.at(light_color_override_index), colors_front.at(light_color_override_index), sm.interpolation_state); break;
+	}
+
+	if (light_color_override_index != -3)
+		glUniform4fv(context->getShaderGLint("light_override_color"), 1, &light_color[0]);
+}
+
 void fractal_generator::updateLineColorOverride()
 {
-	glUniform1i(context->getShaderGLint("override_line_color_enabled"), color_override_index != -3);
+	glUniform1i(context->getShaderGLint("override_line_color_enabled"), line_color_override_index != -3);
 
 	vec4 line_color;
-	switch (color_override_index)
+	switch (line_color_override_index)
 	{
 	case -3: break;
 	case -2: line_color = vec4(0.0f, 0.0f, 0.0f, 1.0f); break;
 	case -1: line_color = vec4(1.0f, 1.0f, 1.0f, 1.0f); break;
-	default: line_color = influenceElement<vec4>(colors_back.at(color_override_index), colors_front.at(color_override_index), sm.interpolation_state); break;
+	default: line_color = influenceElement<vec4>(colors_back.at(line_color_override_index), colors_front.at(line_color_override_index), sm.interpolation_state); break;
 	}
 
-	if (color_override_index != -3)
+	if (line_color_override_index != -3)
 		glUniform4fv(context->getShaderGLint("line_override_color"), 1, &line_color[0]);
+}
+
+void fractal_generator::updateTriangleColorOverride()
+{
+	glUniform1i(context->getShaderGLint("override_triangle_color_enabled"), triangle_color_override_index != -3);
+
+	vec4 triangle_color;
+	switch (triangle_color_override_index)
+	{
+	case -3: break;
+	case -2: triangle_color = vec4(0.0f, 0.0f, 0.0f, 1.0f); break;
+	case -1: triangle_color = vec4(1.0f, 1.0f, 1.0f, 1.0f); break;
+	default: triangle_color = influenceElement<vec4>(colors_back.at(triangle_color_override_index), colors_front.at(triangle_color_override_index), sm.interpolation_state); break;
+	}
+
+	if (triangle_color_override_index != -3)
+		glUniform4fv(context->getShaderGLint("triangle_override_color"), 1, &triangle_color[0]);
+}
+
+void fractal_generator::updatePointColorOverride()
+{
+	glUniform1i(context->getShaderGLint("override_point_color_enabled"), point_color_override_index != -3);
+
+	vec4 point_color;
+	switch (point_color_override_index)
+	{
+	case -3: break;
+	case -2: point_color = vec4(0.0f, 0.0f, 0.0f, 1.0f); break;
+	case -1: point_color = vec4(1.0f, 1.0f, 1.0f, 1.0f); break;
+	default: point_color = influenceElement<vec4>(colors_back.at(point_color_override_index), colors_front.at(point_color_override_index), sm.interpolation_state); break;
+	}
+
+	if (point_color_override_index != -3)
+		glUniform4fv(context->getShaderGLint("point_override_color"), 1, &point_color[0]);
 }
 
 void fractal_generator::applyBackground(const int &num_samples)
@@ -1650,14 +1732,52 @@ void fractal_generator::cycleBackgroundColorIndex()
 	updateBackground();
 }
 
-void fractal_generator::cycleLineOverride()
+void fractal_generator::cycleLightColorOverride()
 {
-	if (color_override_index == colors_front.size() - 1)
-		color_override_index = -3;
+	if (light_color_override_index == colors_front.size() - 1)
+		light_color_override_index = -3;
 
-	else color_override_index++;
+	else light_color_override_index++;
+
+	cout << "light color override index: " << light_color_override_index << endl;
+
+	updateLightColorOverride();
+}
+
+void fractal_generator::cycleLineColorOverride()
+{
+	if (line_color_override_index == colors_front.size() - 1)
+		line_color_override_index = -3;
+
+	else line_color_override_index++;
+
+	cout << "line color override index: " << line_color_override_index << endl;
 
 	updateLineColorOverride();
+}
+
+void fractal_generator::cycleTriangleColorOverride()
+{
+	if (triangle_color_override_index == colors_front.size() - 1)
+		triangle_color_override_index = -3;
+
+	else triangle_color_override_index++;
+
+	cout << "triangle color override index: " << triangle_color_override_index << endl;
+
+	updateTriangleColorOverride();
+}
+
+void fractal_generator::cyclePointColorOverride()
+{
+	if (point_color_override_index == colors_front.size() - 1)
+		point_color_override_index = -3;
+
+	else point_color_override_index++;
+
+	cout << "point color override index: " << point_color_override_index << endl;
+
+	updatePointColorOverride();
 }
 
 void fractal_generator::setBackgroundColorIndex(int index)

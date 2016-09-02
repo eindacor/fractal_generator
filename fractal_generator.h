@@ -48,7 +48,10 @@ public:
 	//vector<mat4> generateMatrixSequence(const vector<int> &matrix_indices) const;
 	vector<mat4> generateMatrixSequence(const int &sequence_size) const;
 
+	void updateLightColorOverride();
 	void updateLineColorOverride();
+	void updateTriangleColorOverride();
+	void updatePointColorOverride();
 	void applyBackground(const int &num_samples);
 	void checkKeys(const shared_ptr<key_handler> &keys);
 	void drawFractal(shared_ptr<ogl_camera_flying> &cam) const;
@@ -78,7 +81,10 @@ public:
 	void printContext();
 	void cycleGeometryType();
 	void cycleBackgroundColorIndex();
-	void cycleLineOverride();
+	void cycleLightColorOverride();
+	void cycleLineColorOverride();
+	void cycleTriangleColorOverride();
+	void cyclePointColorOverride();
 	void setBackgroundColorIndex(int index);
 	int getBackgroundColorIndex() const { return sm.background_front_index; }
 
@@ -122,12 +128,16 @@ private:
 	vec3 focal_point;
 	float average_delta, max_x, max_y, max_z;
 	// -3 = no override, -2 = black, -1 = white, 0 - n for each interpolated matrix_color
-	int color_override_index = -3;
+	int light_color_override_index = -3;
+	int line_color_override_index = -3;
+	int triangle_color_override_index = -3;
+	int point_color_override_index = -3;
 	bool dof_enabled = false;
 	int dof_passes = 10;
 	float dof_aperture = 0.005;
 	int max_point_size;
 	bool matrix_geometry_uses_solid_geometry = false;
+	float point_size_modifier = 1.0f;
 
 	unsigned int current_frame = 0;
 	unsigned int frame_increment = 1;

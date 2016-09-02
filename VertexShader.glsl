@@ -27,9 +27,16 @@ uniform int render_palette;
 uniform int geometry_type; //0 = vertices, 1 = lines, 2 = triangles
 uniform int override_line_color_enabled;
 uniform vec4 line_override_color;
+uniform int override_triangle_color_enabled;
+uniform vec4 triangle_override_color;
+uniform int override_point_color_enabled;
+uniform vec4 point_override_color;
+uniform int override_light_color_enabled;
+uniform vec4 light_override_color;
 uniform vec4 light_positions[LIGHT_COUNT];
 uniform vec4 light_colors[LIGHT_COUNT];
 uniform int max_point_size;
+uniform float point_size_modifier;
 
 vec4 clampColor(vec4 color)
 {
@@ -92,6 +99,14 @@ float getAttenuationFromPosition(float illumination_dist, vec4 light_pos, vec4 v
 	return max(attenuation, 0);
 }
 
+vec4 combineLights(vec4 light_a, vec4 light_b)
+{
+	vec3 actual_a = vec3(light_a.rgb * light_a.a);
+	vec3 actual_b = vec3(light_b.rgb * light_b.a);
+
+	return vec4(max(actual_a.r, actual_b.r), max(actual_a.g, actual_b.g), max(actual_a.b, actual_b.b), 1.0f);
+}
+
 float getAttenuation(vec4 scaled_position)
 {
 	vec4 light_position;
@@ -133,8 +148,6 @@ void main()
 		return;
 	}
 
-	//gl_PointSize = int(10.0f * float(gl_PointSize));
-	//gl_PointSize = int(point_size * float(gl_PointSize));
 	gl_Position = MVP * scaled_position;
 
 	float alpha_value;
@@ -142,6 +155,18 @@ void main()
 	{
 		alpha_value = 1.0f;
 		fragment_color = line_override_color;
+	}
+
+	else if (override_triangle_color_enabled == 1 && geometry_type == 2)
+	{
+		alpha_value = 1.0f;
+		fragment_color = triangle_override_color;
+	}
+
+	else if (override_point_color_enabled == 1 && geometry_type == 0)
+	{
+		alpha_value = 1.0f;
+		fragment_color = point_override_color;
 	}
 
 	else
@@ -160,7 +185,9 @@ void main()
 		if (lighting_mode < 4)
 		{
 			float attenuation = getAttenuation(scaled_position);
-			fragment_color = (fragment_color * attenuation) + (background_color * (1.0f - attenuation));
+			fragment_color = getDiffusedColor(fragment_color, (override_light_color_enabled == 1 ? light_override_color : vec4(1.0f)) * attenuation);
+			fragment_color += background_color * 0.2f;
+			fragment_color = clampColor(fragment_color);
 		}
 
 		else
@@ -176,16 +203,16 @@ void main()
 				if (attenuation <= .001f)
 					continue;
 
-				total_light += (light_colors[i] * attenuation);
+				total_light = combineLights(total_light, (override_light_color_enabled == 1 ? light_override_color : light_colors[i]) * attenuation);
 
 				if (total_light.r >= 1.0f && total_light.g >= 1.0f && total_light.b >= 1.0f)
 					break;
 			}
-			
-			total_light += background_color * 0.2f;
 
-			fragment_color = getDiffusedColor(fragment_color, clampColor(total_light));
-			fragment_color.a = alpha_value;
+			vec4 ambient_light = background_color;
+			ambient_light.a = 0.2f;
+
+			fragment_color = getDiffusedColor(fragment_color, combineLights(clampColor(total_light), ambient_light));
 		}
 	}
 
@@ -195,5 +222,5 @@ void main()
 	}
 
 	float distance = length(position - vec4(camera_position, 1.0f));
-	gl_PointSize = int(point_size * float(max_point_size) * clamp(1.0f / distance, 0.1f, float(max_point_size)));
+	gl_PointSize = int(point_size * float(max_point_size) * point_size_modifier * clamp(1.0f / distance, 0.1f, float(max_point_size)));
 }
