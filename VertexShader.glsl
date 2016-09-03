@@ -186,10 +186,11 @@ void main()
 		{
 			float attenuation = getAttenuation(scaled_position);
 			fragment_color = getDiffusedColor(fragment_color, (override_light_color_enabled == 1 ? light_override_color : vec4(1.0f)) * attenuation);
-			fragment_color += background_color * 0.2f;
+			fragment_color += background_color * 0.5f;
 			fragment_color = clampColor(fragment_color);
 		}
 
+		//dynamic lighting calcs
 		else
 		{
 			vec4 total_light = vec4(0.0f);
@@ -210,9 +211,10 @@ void main()
 			}
 
 			vec4 ambient_light = background_color;
-			ambient_light.a = 0.2f;
+			ambient_light.a = 0.5f;
 
 			fragment_color = getDiffusedColor(fragment_color, combineLights(clampColor(total_light), ambient_light));
+			fragment_color.a = alpha_value;
 		}
 	}
 

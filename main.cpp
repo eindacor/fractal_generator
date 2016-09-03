@@ -305,6 +305,7 @@ int main()
 				camera_fov = 45.0f;
 				camera->setFOV(camera_fov);
 
+				glUniform1i(context->getShaderGLint("override_light_color_enabled"), 0);
 				glUniform1i(context->getShaderGLint("override_line_color_enabled"), 0);
 				glUniform1i(context->getShaderGLint("override_triangle_color_enabled"), 0);
 				glUniform1i(context->getShaderGLint("override_point_color_enabled"), 0);

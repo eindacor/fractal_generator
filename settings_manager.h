@@ -39,7 +39,7 @@ public:
 	int num_lights = 4;
 	int point_sequence_index = 0;
 
-	float line_width = 1.0f;
+	float line_width = 0.1f;
 	float interpolation_state = 0.0f;
 	float interpolation_increment = 0.02f;
 	float alpha_min = 0.0f;

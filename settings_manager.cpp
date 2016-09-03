@@ -75,7 +75,6 @@ void settings_manager::randomize(const random_generator &rg)
 	// END OF CALL RESERVATIONS
 
 	matrix_geometry_coefficient = rg.getRandomFloat();
-	line_width = rg.getRandomFloat();
 	alpha_min = rg.getRandomFloatInRange(0.0f, 0.5f);
 	alpha_max = rg.getRandomFloatInRange(0.5f, 1.0f);
 	bias_coefficient = rg.getRandomFloatInRange(0.1f, 0.3f);

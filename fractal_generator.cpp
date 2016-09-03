@@ -104,10 +104,6 @@ void fractal_generator::bufferPalette(const vector<float> &vertex_data)
 
 void fractal_generator::bufferLightData(const vector<float> &vertex_data)
 {
-	// only buffer lighting data if light mode is set to "dynamic"
-	if (sm.lm != 4)
-		return;
-
 	for (int i = 0; i < LIGHT_COUNT; i++)
 	{
 		if (i < light_indices.size())
@@ -115,8 +111,8 @@ void fractal_generator::bufferLightData(const vector<float> &vertex_data)
 			int light_index = light_indices.at(i);
 			int data_index = light_index * vertex_size;
 
-			vec4 light_position(vertex_data.at(data_index), vertex_data.at(data_index + 1), vertex_data.at(data_index + 2), vertex_data.at(data_index + 3));
-			vec4 light_color(vertex_data.at(data_index + 4), vertex_data.at(data_index + 5), vertex_data.at(data_index + 6), vertex_data.at(data_index + 7));
+			vec4 light_position(vertex_data.at(data_index), vertex_data.at(data_index + 1), vertex_data.at(data_index + 2), 1.0f);
+			vec4 light_color(vertex_data.at(data_index + 4), vertex_data.at(data_index + 5), vertex_data.at(data_index + 6), 1.0f);
 
 			light_positions[i] = light_position;
 			light_colors[i] = light_color;
