@@ -17,11 +17,14 @@ uniform mat4 fractal_scale = mat4(1.0f);
 uniform int light_effects_transparency; 
 uniform int lighting_mode; 
 out vec4 fragment_color; 
+flat out int discard_fragment;
 uniform float point_size_scale = 1.0f; 
 uniform float illumination_distance; 
 uniform int invert_colors; 
 uniform float light_cutoff = float(0.3f);
 uniform mat4 quadrant_matrix; 
+uniform int kaleidoscope_enabled;
+uniform int kaleidoscope_quadrant;
 uniform int render_quadrant; 
 uniform int render_palette; 
 uniform int geometry_type; //0 = vertices, 1 = lines, 2 = triangles
@@ -221,6 +224,14 @@ void main()
 	if (render_quadrant > 0)
 	{
 		gl_Position = quadrant_matrix * gl_Position;
+	}
+
+	discard_fragment = 0;
+
+	if (kaleidoscope_enabled == 1)
+	{
+		gl_Position.x = kaleidoscope_quadrant % 2 == 1 ? gl_Position.x * -1.0f : gl_Position.x;
+		gl_Position.y = kaleidoscope_quadrant > 1 ? gl_Position.y * -1.0f : gl_Position.y;
 	}
 
 	float distance = length(position - vec4(camera_position, 1.0f));

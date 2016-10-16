@@ -16,11 +16,22 @@ bool saveImage(
 	shared_ptr<ogl_camera_flying> &camera);
 
 bool batchRender(
-	fractal_generator &fg, 
-	const shared_ptr<ogl_context> &context, 
-	image_extension ie, 
-	int multisample_count, 
-	int x_count, 
+	fractal_generator &fg,
+	const shared_ptr<ogl_context> &context,
+	image_extension ie,
+	int multisample_count,
+	int x_count,
+	int y_count,
+	int quadrant_size,
+	bool mix_background,
+	shared_ptr<ogl_camera_flying> &camera);
+
+bool batchRenderKaleidoscope(
+	fractal_generator &fg,
+	const shared_ptr<ogl_context> &context,
+	image_extension ie,
+	int multisample_count,
+	int x_count,
 	int y_count,
 	int quadrant_size,
 	bool mix_background,

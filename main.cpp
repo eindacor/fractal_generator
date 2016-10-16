@@ -102,6 +102,7 @@ int main()
 	bool recording = false;
 	int gif_frame_count = 150;
 	int current_gif_frame = 0;
+	bool kaleidoscope_enabled = false;
 
 	generator->printContext();
 
@@ -160,7 +161,16 @@ int main()
 			glUniform3fv(context->getShaderGLint("camera_position"), 1, &camera_pos[0]);
 			camera->setMVP(context, mat4(1.0f), jep::NORMAL);
 			glUniform1i(context->getShaderGLint("max_point_size"), generator->getMaxPointSize());
-			generator->drawFractal(camera);
+
+			if (kaleidoscope_enabled)
+			{
+				generator->drawFractalKaleidoscope(camera);
+			}
+
+			else 
+			{
+				generator->drawFractal(camera);
+			}
 
 			generator->checkKeys(keys);
 
@@ -210,6 +220,9 @@ int main()
 
 			if (keys->checkPress(GLFW_KEY_T, false))
 				paused = !paused;
+
+			if (keys->checkPress(GLFW_KEY_O, false))
+				kaleidoscope_enabled = !kaleidoscope_enabled;
 
 			context->swapBuffers();
 
@@ -309,6 +322,8 @@ int main()
 				glUniform1i(context->getShaderGLint("override_line_color_enabled"), 0);
 				glUniform1i(context->getShaderGLint("override_triangle_color_enabled"), 0);
 				glUniform1i(context->getShaderGLint("override_point_color_enabled"), 0);
+				glUniform1i(context->getShaderGLint("kaleidoscope_enabled"), 0);
+				kaleidoscope_enabled = false;
 			}
 
 			if (keys->checkPress(GLFW_KEY_R, false))
@@ -324,9 +339,12 @@ int main()
 				camera_fov = 45.0f;
 				camera->setFOV(camera_fov);
 
+				glUniform1i(context->getShaderGLint("override_light_color_enabled"), 0);
 				glUniform1i(context->getShaderGLint("override_line_color_enabled"), 0);
 				glUniform1i(context->getShaderGLint("override_triangle_color_enabled"), 0);
 				glUniform1i(context->getShaderGLint("override_point_color_enabled"), 0);
+				glUniform1i(context->getShaderGLint("kaleidoscope_enabled"), 0);
+				kaleidoscope_enabled = false;
 			}
 
 			glfwSetTime(0.0f);

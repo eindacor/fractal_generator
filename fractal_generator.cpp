@@ -142,7 +142,7 @@ void fractal_generator::drawFractal(shared_ptr<ogl_camera_flying> &camera) const
 	if (dof_enabled)
 	{
 		vec3 camera_vector = glm::normalize(camera->getFocus() - camera->getPosition());
-		vec3 camera_right =  glm::normalize(glm::cross(vec3(camera_vector.x, 0.0f, camera_vector.z), vec3(0.0f, 1.0f, 0.0f)));
+		vec3 camera_right = glm::normalize(glm::cross(vec3(camera_vector.x, 0.0f, camera_vector.z), vec3(0.0f, 1.0f, 0.0f)));
 		vec3 camera_up = -1.0f * glm::normalize(glm::cross(camera_vector, camera_right));
 
 		int geometry_passes = 0;
@@ -215,6 +215,131 @@ void fractal_generator::drawFractal(shared_ptr<ogl_camera_flying> &camera) const
 		if (geometry_passes != 0)
 			glAccum(GL_RETURN, 1.0f / float(geometry_passes));
 	}
+
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	if (sm.show_palette)
+	{
+		glBindVertexArray(VAO);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(3);
+
+		glBindBuffer(GL_ARRAY_BUFFER, palette_vbo);
+		drawPalette();
+
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(3);
+	}
+
+	glBindVertexArray(0);
+}
+
+void fractal_generator::drawFractalKaleidoscope(shared_ptr<ogl_camera_flying> &camera) const
+{
+	// bind target VAO
+	glBindVertexArray(VAO);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo);
+
+	glUniform1i(context->getShaderGLint("kaleidoscope_enabled"), 1);
+	if (dof_enabled)
+	{
+		vec3 camera_vector = glm::normalize(camera->getFocus() - camera->getPosition());
+		vec3 camera_right = glm::normalize(glm::cross(vec3(camera_vector.x, 0.0f, camera_vector.z), vec3(0.0f, 1.0f, 0.0f)));
+		vec3 camera_up = -1.0f * glm::normalize(glm::cross(camera_vector, camera_right));
+
+		int geometry_passes = 0;
+		geometry_passes = int(sm.enable_triangles && sm.triangle_mode != 0) + int(sm.enable_lines && sm.line_mode != 0) + int(sm.show_points);
+
+		float total_passes = float(dof_passes * geometry_passes * 4);
+		bool accum_loaded = false;
+
+		for (int i = 0; i < dof_passes; i++)
+		{
+			vec3 bokeh = camera_right * cos((float)i * 2.0f * PI / (float)dof_passes) + camera_up * sinf((float)i * 2.0f * PI / (float)dof_passes);
+			glm::mat4 modelview = glm::lookAt(camera->getPosition() + dof_aperture * bokeh, camera->getFocus(), camera_up);
+			glm::mat4 mvp = camera->getProjectionMatrix() * modelview;
+
+			glUniformMatrix4fv(context->getShaderGLint("MVP"), 1, GL_FALSE, &mvp[0][0]);
+
+			if (sm.show_points)
+			{
+				drawVertices();
+				glAccum(accum_loaded ? GL_ACCUM : GL_LOAD, 1.0f / total_passes);
+				accum_loaded = true;
+			}
+
+			if (sm.enable_lines && sm.line_mode != 0)
+			{
+				drawLines();
+				glAccum(accum_loaded ? GL_ACCUM : GL_LOAD, 1.0f / total_passes);
+				accum_loaded = true;
+			}
+
+			if (sm.enable_triangles && sm.triangle_mode != 0)
+			{
+				drawTriangles();
+				glAccum(accum_loaded ? GL_ACCUM : GL_LOAD, 1.0f / total_passes);
+				accum_loaded = true;
+			}
+		}
+
+		if (total_passes > 0.5f)
+			glAccum(GL_RETURN, 1.0f / total_passes);
+	}
+
+	else
+	{
+		int geometry_passes = 0;
+		geometry_passes = int(sm.enable_triangles && sm.triangle_mode != 0) + int(sm.enable_lines && sm.line_mode != 0) + int(sm.show_points);
+
+		bool accum_loaded = false;
+
+		GLint window_half_width = context->getWindowWidth() / 2;
+		GLint window_half_height = context->getWindowHeight() / 2;
+
+		for (int k = 0; k < 4; k++)
+		{
+			glUniform1i(context->getShaderGLint("kaleidoscope_quadrant"), k);
+		
+			glViewport((k % 2) * window_half_width , (k / 2) * window_half_height, window_half_width, window_half_height);
+			glLoadIdentity();
+
+			if (sm.show_points)
+			{
+				drawVertices();
+				glAccum(accum_loaded ? GL_ACCUM : GL_LOAD, 1.0f / float(geometry_passes));
+				accum_loaded = true;
+			}
+
+			if (sm.enable_lines && sm.line_mode != 0)
+			{
+				drawLines();
+				glAccum(accum_loaded ? GL_ACCUM : GL_LOAD, 1.0f / float(geometry_passes));
+				accum_loaded = true;
+			}
+
+			if (sm.enable_triangles && sm.triangle_mode != 0)
+			{
+				drawTriangles();
+				glAccum(accum_loaded ? GL_ACCUM : GL_LOAD, 1.0f / float(geometry_passes));
+				accum_loaded = true;
+			}
+
+			if (geometry_passes != 0)
+				glAccum(GL_RETURN, 1.0f / float(geometry_passes));
+		}
+	}
+
+	glViewport(0, 0, context->getWindowWidth(), context->getWindowHeight());
+
+	glUniform1i(context->getShaderGLint("kaleidoscope_enabled"), 0);
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
@@ -1062,11 +1187,6 @@ vec4 fractal_generator::getSampleColor(const int &samples, const vector<vec4> &c
 
 void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 {
-	if (keys->checkPress(GLFW_KEY_O, false))
-	{
-		//available
-	}
-
 	if (keys->checkPress(GLFW_KEY_J, false))
 		show_growth = !show_growth;
 
@@ -1201,7 +1321,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 		else
 		{
-			sm.line_width = glm::clamp(sm.line_width + 0.1f, 0.1f, 1.0f);
+			sm.line_width = glm::clamp(sm.line_width + 0.01f, 0.01f, 1.0f);
 			GLfloat width_range[2];
 			glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, width_range);
 			glLineWidth(GLfloat(sm.line_width) * width_range[1]);
@@ -1218,7 +1338,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 		else
 		{
-			sm.line_width = glm::clamp(sm.line_width - 0.1f, 0.1f, 1.0f);
+			sm.line_width = glm::clamp(sm.line_width - 0.01f, 0.01f, 1.0f);
 			GLfloat width_range[2];
 			glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, width_range);
 			glLineWidth(GLfloat(sm.line_width) * width_range[1]);
