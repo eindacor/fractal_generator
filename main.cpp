@@ -53,6 +53,8 @@ void getSettings(settings_manager &settings)
 
 int main()
 {
+	glEnable(GL_DEBUG_OUTPUT);
+
 	settings_manager settings;
 	getSettings(settings);
 	random_generator mc;
@@ -73,24 +75,6 @@ int main()
 	camera->setStrafeDistance(0.02f);
 	camera->setRotateAngle(1.0f);
 	camera->setTiltAngle(1.0f);
-
-	/*jep::obj_contents torus("torus.obj");
-	jep::obj_contents helix("helix.obj");
-	jep::obj_contents sphere("sphere.obj");
-	generator->loadPointSequence("torus", torus.getAllVerticesOfAllMeshes());
-	generator->loadPointSequence("helix", helix.getAllVerticesOfAllMeshes());
-	generator->loadPointSequence("sphere", sphere.getAllVerticesOfAllMeshes());*/
-
-	/*
-	SEEDS
-	f6ujfV4rTtvN991MBr5gOCiaQ6TrAPaJ
-	3LE1GoVEb1W9jV1GwrTyfMLVMYs8ipYT
-	bdUUhVCQm5hLMzy85HPY30Ipzjv3S9uN
-	fiUppj1hoBZyIZ2Vzq0NlGkdNUUKvcOM
-	DeOBqMmyPGjnqXzxyCXyOD0mMt8QMkFn	<-animated
-	TwolaeAd6aG4scUaEZcKpbctGn6t1HMz	<-animated
-	X2u1ZkbGw00mdWSK1ZRktRluL9y0H9CH	<-animated (disable lines)
-	*/
 
 	glfwSetTime(0);
 	float render_fps = 60.0f;
