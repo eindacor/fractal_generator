@@ -28,7 +28,7 @@ bool saveImage(const fractal_generator &fg, const shared_ptr<ogl_context> &conte
 
 	float render_scale = float(image_height) / float(context->getWindowHeight());
 	int render_max_point_size = int(float(fg.getMaxPointSize()) * render_scale) * 2;
-	glUniform1i(context->getShaderGLint("max_point_size"), render_max_point_size);
+	context->setUniform1i("max_point_size", render_max_point_size);
 
 	GLsizei width(image_width);
 	GLsizei height(image_height);
@@ -195,7 +195,7 @@ bool saveImage(const fractal_generator &fg, const shared_ptr<ogl_context> &conte
 	delete[] pixels;
 
 	context->setBackgroundColor(background_color);
-	glUniform1i(context->getShaderGLint("max_point_size"), fg.getMaxPointSize());
+	context->setUniform1i("max_point_size", fg.getMaxPointSize());
 
 	glViewport(0, 0, context->getWindowWidth(), context->getWindowHeight());
 
@@ -235,9 +235,9 @@ bool batchRender(fractal_generator &fg, const shared_ptr<ogl_context> &context, 
 
 	float render_scale = max(x_count, y_count);
 	int render_max_point_size = int(float(fg.getMaxPointSize()) * render_scale) * 2;
-	glUniform1i(context->getShaderGLint("max_point_size"), render_max_point_size);
+	context->setUniform1i("max_point_size", render_max_point_size);
 
-	glUniform1i(context->getShaderGLint("render_quadrant"), 1);
+	context->setUniform1i("render_quadrant", 1);
 	for (int quadrant_index = 0; quadrant_index < x_count * y_count; quadrant_index++)
 	{
 		if (mix_background)
@@ -288,7 +288,7 @@ bool batchRender(fractal_generator &fg, const shared_ptr<ogl_context> &context, 
 		mat4 quadrant_translation = glm::translate(mat4(1.0f), vec3(x_translation, y_translation, 0.0f));
 		mat4 quadrant_scale = glm::scale(mat4(1.0f), vec3(render_scale, render_scale, 1.0f));
 		mat4 quadrant_matrix = quadrant_scale * quadrant_translation;
-		glUniformMatrix4fv(context->getShaderGLint("quadrant_matrix"), 1, GL_FALSE, &quadrant_matrix[0][0]);
+		context->setUniformMatrix4fv("quadrant_matrix", 1, GL_FALSE, quadrant_matrix);
 
 		glClearDepth(1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -426,8 +426,8 @@ bool batchRender(fractal_generator &fg, const shared_ptr<ogl_context> &context, 
 		fg.setBackgroundColorIndex(initial_background_index);
 
 	glViewport(0, 0, context->getWindowWidth(), context->getWindowHeight());
-	glUniform1i(context->getShaderGLint("max_point_size"), fg.getMaxPointSize());
-	glUniform1i(context->getShaderGLint("render_quadrant"), 0);
+	context->setUniform1i("max_point_size", fg.getMaxPointSize());
+	context->setUniform1i("render_quadrant", 0);
 
 	return true;
 }

@@ -98,6 +98,7 @@ void settings_manager::randomize(const random_generator &rg)
 	GLfloat width_range[2];
 	glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, width_range);
 	glLineWidth(GLfloat(line_width) * width_range[1]);
+	glLineWidth(width_range[0]);
 
 	if (rg.getRandomFloat() < 0.8f)
 	{

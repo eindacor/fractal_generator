@@ -40,14 +40,14 @@ void getSettings(settings_manager &settings)
 	cout << "window width: ";
 	std::getline(std::cin, window_width_input);
 	cout << endl;
-	int window_width = (window_width_input == "" || window_width_input == "\n") ? 800 : std::stoi(window_width_input);
+	int window_width = (window_width_input == "" || window_width_input == "\n") ? 1024 : std::stoi(window_width_input);
 	settings.window_width = glm::clamp(window_width, 300, 4096);
 
 	string window_height_input;
 	cout << "window height: ";
 	std::getline(std::cin, window_height_input);
 	cout << endl;
-	int window_height = (window_height_input == "" || window_height_input == "\n") ? 800 : std::stoi(window_height_input);
+	int window_height = (window_height_input == "" || window_height_input == "\n") ? 1024 : std::stoi(window_height_input);
 	settings.window_height = glm::clamp(window_height, 300, 4096);
 }
 
@@ -62,6 +62,19 @@ int main()
 
 	float eye_level = 0.0f;
 	shared_ptr<ogl_context> context(new ogl_context("Fractal Generator", "VertexShader.glsl", "PixelShader.glsl", settings.window_width, settings.window_height, false));
+	
+	/*
+	shared_ptr<ogl_context> context(new ogl_context(
+		"Fractal Generator",
+		"#version 430\n"
+		"layout(location = 0) in vec4 position; layout(location = 1) in vec4 color; out vec3 fragment_color; void main() { gl_Position = position; fragment_color = color.rgb; }",
+		"#version 430\n"
+		"in vec4 fragment_color; out vec3 output_color; void main() {output_color = vec3(0, 0, 0);}",
+		settings.window_width, 
+		settings.window_height, 
+		true));
+	*/
+	
 
 	shared_ptr<fractal_generator> generator(new fractal_generator(settings.base_seed, context, settings.num_points));
 	shared_ptr<key_handler> keys(new key_handler(context));
@@ -105,9 +118,11 @@ int main()
 
 	generator->printContext();
 
+	bool errors_found = false;
+
 	while (!finished)
 	{
-		if (glfwGetTime() > 1.0f / render_fps)
+		if (glfwGetTime() > 1.0f / render_fps && !errors_found)
 		{
 			if ((clock() - start) / CLOCKS_PER_SEC > 2.0f)
 				start = clock();
@@ -157,9 +172,9 @@ int main()
 
 			camera->updateCamera();
 			vec3 camera_pos = camera->getPosition();
-			glUniform3fv(context->getShaderGLint("camera_position"), 1, &camera_pos[0]);
+			context->setUniform3fv("camera_position", 1, camera_pos);
 			camera->setMVP(context, mat4(1.0f), jep::NORMAL);
-			glUniform1i(context->getShaderGLint("max_point_size"), generator->getMaxPointSize());
+			context->setUniform1i("max_point_size", generator->getMaxPointSize());
 			generator->drawFractal(camera);
 
 			generator->checkKeys(keys);
@@ -210,6 +225,12 @@ int main()
 
 			if (keys->checkPress(GLFW_KEY_T, false))
 				paused = !paused;
+
+			/*GLenum err;
+			while ((err = glGetError()) != GL_NO_ERROR) {
+				cout << "OpenGL error: " << err << endl;
+				errors_found = true;
+			}*/
 
 			context->swapBuffers();
 
@@ -305,10 +326,10 @@ int main()
 				camera_fov = 45.0f;
 				camera->setFOV(camera_fov);
 
-				glUniform1i(context->getShaderGLint("override_light_color_enabled"), 0);
-				glUniform1i(context->getShaderGLint("override_line_color_enabled"), 0);
-				glUniform1i(context->getShaderGLint("override_triangle_color_enabled"), 0);
-				glUniform1i(context->getShaderGLint("override_point_color_enabled"), 0);
+				context->setUniform1i("override_light_color_enabled", 0);
+				context->setUniform1i("override_line_color_enabled", 0);
+				context->setUniform1i("override_triangle_color_enabled", 0);
+				context->setUniform1i("override_point_color_enabled", 0);
 			}
 
 			if (keys->checkPress(GLFW_KEY_R, false))
@@ -324,9 +345,9 @@ int main()
 				camera_fov = 45.0f;
 				camera->setFOV(camera_fov);
 
-				glUniform1i(context->getShaderGLint("override_line_color_enabled"), 0);
-				glUniform1i(context->getShaderGLint("override_triangle_color_enabled"), 0);
-				glUniform1i(context->getShaderGLint("override_point_color_enabled"), 0);
+				context->setUniform1i("override_line_color_enabled", 0);
+				context->setUniform1i("override_triangle_color_enabled", 0);
+				context->setUniform1i("override_point_color_enabled", 0);
 			}
 
 			glfwSetTime(0.0f);

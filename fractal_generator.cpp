@@ -125,8 +125,8 @@ void fractal_generator::bufferLightData(const vector<float> &vertex_data)
 		}
 	}
 
-	glUniform4fv(context->getShaderGLint("light_positions"), LIGHT_COUNT, &light_positions[0][0]);
-	glUniform4fv(context->getShaderGLint("light_colors"), LIGHT_COUNT, &light_colors[0][0]);
+	context->setUniform4fv("light_positions", LIGHT_COUNT, light_positions[0]);
+	context->setUniform4fv("light_colors", LIGHT_COUNT, light_colors[0]);
 }
 
 void fractal_generator::drawFractal(shared_ptr<ogl_camera_flying> &camera) const
@@ -157,7 +157,7 @@ void fractal_generator::drawFractal(shared_ptr<ogl_camera_flying> &camera) const
 			glm::mat4 modelview = glm::lookAt(camera->getPosition() + dof_aperture * bokeh, camera->getFocus(), camera_up);
 			glm::mat4 mvp = camera->getProjectionMatrix() * modelview;
 
-			glUniformMatrix4fv(context->getShaderGLint("MVP"), 1, GL_FALSE, &mvp[0][0]);
+			context->setUniformMatrix4fv("MVP", 1, GL_FALSE, mvp);
 
 			if (sm.show_points)
 			{
@@ -239,13 +239,13 @@ void fractal_generator::drawFractal(shared_ptr<ogl_camera_flying> &camera) const
 
 void fractal_generator::drawVertices() const
 {
-	glUniform1i(context->getShaderGLint("geometry_type"), 0);
+	context->setUniform1i("geometry_type", 0);
 	glDrawArrays(GL_POINTS, 0, show_growth ? glm::clamp(vertices_to_render, 0, vertex_count) : vertex_count);
 }
 
 void fractal_generator::drawLines() const
 {
-	glUniform1i(context->getShaderGLint("geometry_type"), 1);
+	context->setUniform1i("geometry_type", 1);
 	if (sm.line_mode == GL_LINES)
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, line_indices);
@@ -260,7 +260,7 @@ void fractal_generator::drawLines() const
 
 void fractal_generator::drawTriangles() const
 {
-	glUniform1i(context->getShaderGLint("geometry_type"), 2);
+	context->setUniform1i("geometry_type", 2);
 	if (sm.triangle_mode == GL_TRIANGLES)
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, triangle_indices);
@@ -1170,7 +1170,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 	if (keys->checkPress(GLFW_KEY_4, false))
 	{
 		sm.light_effects_transparency = !sm.light_effects_transparency;
-		glUniform1i(context->getShaderGLint("light_effects_transparency"), sm.light_effects_transparency);
+		context->setUniform1i("light_effects_transparency", sm.light_effects_transparency);
 	}
 
 	if (keys->checkPress(GLFW_KEY_Q, false)) 
@@ -1196,7 +1196,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		if (keys->checkShiftHold())
 		{
 			point_size_modifier = glm::clamp(point_size_modifier + 0.1f, 0.0f, 2.0f);
-			glUniform1f(context->getShaderGLint("point_size_modifier"), point_size_modifier);
+			context->setUniform1f("point_size_modifier", point_size_modifier);
 		}
 
 		else
@@ -1213,7 +1213,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		if (keys->checkShiftHold())
 		{
 			point_size_modifier = glm::clamp(point_size_modifier - 0.1f, 0.0f, 2.0f);
-			glUniform1f(context->getShaderGLint("point_size_modifier"), point_size_modifier);
+			context->setUniform1f("point_size_modifier", point_size_modifier);
 		}
 
 		else
@@ -1229,7 +1229,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 	{
 		sm.fractal_scale *= 1.1f;
 		fractal_scale_matrix = glm::scale(mat4(1.0f), vec3(sm.fractal_scale, sm.fractal_scale, sm.fractal_scale));
-		glUniformMatrix4fv(context->getShaderGLint("fractal_scale"), 1, GL_FALSE, &fractal_scale_matrix[0][0]);
+		context->setUniformMatrix4fv("fractal_scale", 1, GL_FALSE, fractal_scale_matrix);
 		cout << "scale: " << sm.fractal_scale << endl;
 	}
 
@@ -1237,7 +1237,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 	{
 		sm.fractal_scale /= 1.1f;
 		fractal_scale_matrix = glm::scale(mat4(1.0f), vec3(sm.fractal_scale, sm.fractal_scale, sm.fractal_scale));
-		glUniformMatrix4fv(context->getShaderGLint("fractal_scale"), 1, GL_FALSE, &fractal_scale_matrix[0][0]);
+		context->setUniformMatrix4fv("fractal_scale", 1, GL_FALSE, fractal_scale_matrix);
 		cout << "scale: " << sm.fractal_scale << endl;
 	}
 
@@ -1269,7 +1269,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 	if (keys->checkPress(GLFW_KEY_E, false))
 	{
 		sm.show_palette = !sm.show_palette;
-		glUniform1i(context->getShaderGLint("render_palette"), sm.show_palette ? 1 : 0);
+		context->setUniform1i("render_palette", sm.show_palette ? 1 : 0);
 	}
 
 	if (keys->checkPress(GLFW_KEY_RIGHT_BRACKET, true) || keys->checkPress(GLFW_KEY_LEFT_BRACKET, true)) 
@@ -1281,7 +1281,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 			else sm.illumination_distance = glm::clamp(sm.illumination_distance - 0.01f, 0.01f, 10.0f);
 
-			glUniform1f(context->getShaderGLint("illumination_distance"), sm.lm == CAMERA ? sm.illumination_distance * 10.0f : sm.illumination_distance);
+			context->setUniform1f("illumination_distance", sm.lm == CAMERA ? sm.illumination_distance * 10.0f : sm.illumination_distance);
 		}
 
 		else
@@ -1310,8 +1310,8 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 
 		cout << "lighting mode: " << getStringFromLightingMode(sm.lm) << endl;
 
-		glUniform1i(context->getShaderGLint("lighting_mode"), int(sm.lm));
-		glUniform1f(context->getShaderGLint("illumination_distance"), sm.lm == CAMERA ? sm.illumination_distance * 10.0f : sm.illumination_distance);
+		context->setUniform1i("lighting_mode", int(sm.lm));
+		context->setUniform1i("illumination_distance", sm.lm == CAMERA ? sm.illumination_distance * 10.0f : sm.illumination_distance);
 	}
 
 	if (sm.refresh_value != -1 && keys->checkPress(GLFW_KEY_6, false))
@@ -1392,13 +1392,13 @@ void fractal_generator::updateBackground()
 	}
 
 	context->setBackgroundColor(actual_background);
-	glUniform4fv(context->getShaderGLint("background_color"), 1, &actual_background[0]);
+	context->setUniform4fv("background_color", 1, actual_background);
 }
 
 void fractal_generator::invertColors()
 {
 	sm.inverted = !sm.inverted;
-	glUniform1i(context->getShaderGLint("invert_colors"), sm.inverted ? 1 : 0);
+	context->setUniform1i("invert_colors", sm.inverted ? 1 : 0);
 	updateBackground();
 }
 
@@ -1442,18 +1442,18 @@ void fractal_generator::regenerateFractal()
 		else generateFractal();
 	}
 
-	glUniform1i(context->getShaderGLint("invert_colors"), sm.inverted ? 1 : 0);
-	glUniform1i(context->getShaderGLint("lighting_mode"), sm.lm);
-	glUniform3fv(context->getShaderGLint("centerpoint"), 1, &focal_point[0]);
-	glUniform1f(context->getShaderGLint("illumination_distance"), sm.lm == CAMERA ? sm.illumination_distance * 10.0f : sm.illumination_distance);
-	glUniform1f(context->getShaderGLint("point_size_modifier"), point_size_modifier);
+	context->setUniform1i("invert_colors", sm.inverted ? 1 : 0);
+	context->setUniform1i("lighting_mode", sm.lm);
+	context->setUniform3fv("centerpoint", 1, focal_point);
+	context->setUniform1f("illumination_distance", sm.lm == CAMERA ? sm.illumination_distance * 10.0f : sm.illumination_distance);
+	context->setUniform1f("point_size_modifier", point_size_modifier);
 
 	updateLineColorOverride();
 }
 
 void fractal_generator::updateLightColorOverride()
 {
-	glUniform1i(context->getShaderGLint("override_light_color_enabled"), light_color_override_index != -3);
+	context->setUniform1i("override_light_color_enabled", light_color_override_index != -3);
 
 	vec4 light_color;
 	switch (light_color_override_index)
@@ -1465,12 +1465,12 @@ void fractal_generator::updateLightColorOverride()
 	}
 
 	if (light_color_override_index != -3)
-		glUniform4fv(context->getShaderGLint("light_override_color"), 1, &light_color[0]);
+		context->setUniform4fv("light_override_color", 1, light_color);
 }
 
 void fractal_generator::updateLineColorOverride()
 {
-	glUniform1i(context->getShaderGLint("override_line_color_enabled"), line_color_override_index != -3);
+	context->setUniform1i("override_line_color_enabled", line_color_override_index != -3);
 
 	vec4 line_color;
 	switch (line_color_override_index)
@@ -1482,12 +1482,12 @@ void fractal_generator::updateLineColorOverride()
 	}
 
 	if (line_color_override_index != -3)
-		glUniform4fv(context->getShaderGLint("line_override_color"), 1, &line_color[0]);
+		context->setUniform4fv("line_override_color", 1, line_color);
 }
 
 void fractal_generator::updateTriangleColorOverride()
 {
-	glUniform1i(context->getShaderGLint("override_triangle_color_enabled"), triangle_color_override_index != -3);
+	context->setUniform1i("override_triangle_color_enabled", triangle_color_override_index != -3);
 
 	vec4 triangle_color;
 	switch (triangle_color_override_index)
@@ -1499,12 +1499,12 @@ void fractal_generator::updateTriangleColorOverride()
 	}
 
 	if (triangle_color_override_index != -3)
-		glUniform4fv(context->getShaderGLint("triangle_override_color"), 1, &triangle_color[0]);
+		context->setUniform4fv("triangle_override_color", 1, triangle_color);
 }
 
 void fractal_generator::updatePointColorOverride()
 {
-	glUniform1i(context->getShaderGLint("override_point_color_enabled"), point_color_override_index != -3);
+	context->setUniform1i("override_point_color_enabled", point_color_override_index != -3);
 
 	vec4 point_color;
 	switch (point_color_override_index)
@@ -1516,7 +1516,7 @@ void fractal_generator::updatePointColorOverride()
 	}
 
 	if (point_color_override_index != -3)
-		glUniform4fv(context->getShaderGLint("point_override_color"), 1, &point_color[0]);
+		context->setUniform4fv("point_override_color", 1, point_color);
 }
 
 void fractal_generator::applyBackground(const int &num_samples)
