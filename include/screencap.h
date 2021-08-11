@@ -3,10 +3,11 @@
 #include "header.h"
 #include "fractal_generator.h"
 
-#using <system.drawing.dll>
-using namespace System;
-using namespace System::Drawing;
-using namespace System::Drawing::Imaging;
+//#include "System.Drawing.dll"
+
+//using namespace System;
+//using namespace System::Drawing;
+//using namespace System::Drawing::Imaging;
 
 bool saveImage(
 	const fractal_generator &fg,

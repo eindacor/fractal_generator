@@ -1,4 +1,8 @@
 #include "settings_manager.h"
+#include <algorithm>
+#include <random>
+#include <vector>
+#include <chrono>
 
 // TODO now that settings have access to fg, remove dependency on mc
 // this method is run for each new fractal_generator object that is created. it does NOT run for every generation iteration of the fractal set
@@ -45,13 +49,14 @@ void settings_manager::randomize(const random_generator &rg)
 	int standard_matrix_weight_proportion = 100;
 	int matrix_geometry_weight_pool = rg.getRandomIntInRange(standard_matrix_weight_proportion, standard_matrix_weight_proportion * GEOMETRY_ENUM_COUNT);
 
-	vector<int> indexed_enumerated_geometry_types;
+	std::vector<int> indexed_enumerated_geometry_types;
 	for (int i = 0; i < GEOMETRY_ENUM_COUNT; i++)
 	{
 		indexed_enumerated_geometry_types.push_back(i);
 	}
 
-	std::random_shuffle(indexed_enumerated_geometry_types.begin(), indexed_enumerated_geometry_types.end());
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::shuffle(indexed_enumerated_geometry_types.begin(), indexed_enumerated_geometry_types.end(), std::default_random_engine(seed));
 
 	for (const int &index : indexed_enumerated_geometry_types)
 	{
@@ -221,11 +226,6 @@ string settings_manager::toString() const
 	encoded_string += std::to_string(light_effects_transparency);
 
 	return encoded_string;
-}
-
-void settings_manager::setWithString(string settings)
-{
-
 }
 
 string settings_manager::parseFloat(float f) const

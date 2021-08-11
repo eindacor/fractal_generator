@@ -11,32 +11,38 @@ class random_generator
 public:
 
 	random_generator();
-	random_generator(const string &seed_string);
+	random_generator(const std::string &seed_string);
 	~random_generator() { delete uniform_generator; }
 
-	mat4 getRandomTranslation() const;
-	mat4 getRandomTranslation2D() const;
-	mat4 getRandomTranslation(const random_switch &x, const random_switch &y, const random_switch &z) const;
-	mat4 getRandomTranslation2D(const random_switch &x, const random_switch &y) const;
+	glm::mat4 getRandomTranslation() const;
+	glm::mat4 getRandomTranslation2D() const;
+	glm::mat4 getRandomTranslation(const random_switch &x, const random_switch &y, const random_switch &z) const;
+	glm::mat4 getRandomTranslation2D(const random_switch &x, const random_switch &y) const;
 
-	mat4 getRandomRotation() const;
-	mat4 getRandomRotation2D() const;
-	mat4 getRandomRotation(const random_switch &x, const random_switch &y, const random_switch &z, const random_switch &rotation_radians) const;
-	mat4 getRandomRotation2D(const random_switch &z, const random_switch &rotation_radians) const;
+	glm::mat4 getRandomRotation() const;
+	glm::mat4 getRandomRotation2D() const;
+	glm::mat4 getRandomRotation(const random_switch &x, const random_switch &y, const random_switch &z, const random_switch &rotation_radians) const;
+	glm::mat4 getRandomRotation2D(const random_switch &z, const random_switch &rotation_radians) const;
 
-	mat4 getRandomScale() const;
-	mat4 getRandomScale2D() const;
-	mat4 getRandomScale(const random_switch &x, const random_switch &y, const random_switch &z) const;
-	mat4 getRandomScale2D(const random_switch &x, const random_switch &y) const;
+	glm::mat4 getRandomScale() const;
+	glm::mat4 getRandomScale2D() const;
+	glm::mat4 getRandomScale(const random_switch &x, const random_switch &y, const random_switch &z) const;
+	glm::mat4 getRandomScale2D(const random_switch &x, const random_switch &y) const;
 
 	float getRandomFloat() const { return (*uniform_generator)(); }
 	float getRandomFloatInScope() const { return ((*uniform_generator)() * 2.0f) - 1.0f; }
 	float getRandomFloatInRange(const float &min, const float &max) const;
 	float getRandomUniform() const;
-	vec4 getRandomVec4() const { return vec4(getRandomFloat(), getRandomFloat(), getRandomFloat(), 1.0f); }
-	vec4 getRandomVec4AlphaClamp(float alpha_min, float alpha_max) const { return vec4(getRandomFloat(), getRandomFloat(), getRandomFloat(), getRandomFloatInRange(alpha_min, alpha_max)); }
-	vec4 getRandomVec4FromColorRanges(float r_min, float r_max, float g_min, float g_max, float b_min, float b_max, float a_min, float a_max) const 
-		{ return vec4(getRandomFloatInRange(r_min, r_max), getRandomFloatInRange(g_min, g_max), getRandomFloatInRange(b_min, b_max), getRandomFloatInRange(a_min, a_max)); }
+	glm::vec4 getRandomVec4() const { return glm::vec4(getRandomFloat(), getRandomFloat(), getRandomFloat(), 1.0f); }
+	glm::vec4 getRandomVec4AlphaClamp(float alpha_min, float alpha_max) const { return glm::vec4(getRandomFloat(), getRandomFloat(), getRandomFloat(), getRandomFloatInRange(alpha_min, alpha_max)); }
+	glm::vec4 getRandomVec4FromColorRanges(float r_min, float r_max, float g_min, float g_max, float b_min, float b_max, float a_min, float a_max) const
+	{
+	    return glm::vec4(getRandomFloatInRange(r_min, r_max),
+                         getRandomFloatInRange(g_min, g_max),
+                         getRandomFloatInRange(b_min, b_max),
+                         getRandomFloatInRange(a_min, a_max));
+	}
+
 	string generateAlphanumericString(int num_chars);
 
 	unsigned int getRandomIntInRange(const unsigned int &min, const unsigned int &max) const;
@@ -44,13 +50,13 @@ public:
 
 	void seed(const string &seed_string);
 
-	vector<mat4> getMatricesFromPointSequence(const vector<vec4> &vertices, int count) const;
+	std::vector<glm::mat4> getMatricesFromPointSequence(const std::vector<glm::vec4> &vertices, int count) const;
 
 	template <typename T>
-	void shuffleVector(vector<T> &vec) const
+	void shuffleVector(std::vector<T> &vec) const
 	{
 		int original_size = vec.size();
-		vector<T> shuffled;
+		std::vector<T> shuffled;
 
 		while (shuffled.size() < original_size)
 		{
@@ -89,12 +95,12 @@ public:
 		return false;
 	}
 
-	vec4 getSinusoidal(const vec4 &vertex) const { return vec4(sin(vertex.x), sin(vertex.y), sin(vertex.z), vertex.w); }
-	vec4 getSpherical(const vec4 &vertex) const { return (1.0f / pow(getR(vertex), 2)) * vertex; }
-	vec4 getSwirl(const vec4 &vertex) const;
-	vec4 getHorseShoe(const vec4 &vertex) const;
+	glm::vec4 getSinusoidal(const glm::vec4 &vertex) const { return vec4(sin(vertex.x), sin(vertex.y), sin(vertex.z), vertex.w); }
+	glm::vec4 getSpherical(const glm::vec4 &vertex) const { return glm::vec4(1.0f / pow(getR(vertex), 2)) * vertex; }
+	glm::vec4 getSwirl(const glm::vec4 &vertex) const;
+	glm::vec4 getHorseShoe(const glm::vec4 &vertex) const;
 
-	vec4 getNonlinear(nonlinear_transformation nt, const vec4 &vertex) const;
+	glm::vec4 getNonlinear(nonlinear_transformation nt, const vec4 &vertex) const;
 
 private:
 	boost::mt19937 rng;

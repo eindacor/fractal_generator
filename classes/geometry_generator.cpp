@@ -27,9 +27,9 @@ string getStringFromAttributeIndexMethod(attribute_index_method aim)
 	}
 }
 
-vector<vec4> geometry_generator::getNgonVertices(float size, int sides) const
+std::vector<vec4> geometry_generator::getNgonVertices(float size, int sides) const
 {
-	vector<vec4> ngon_vertices;
+	std::vector<vec4> ngon_vertices;
 
 	// if sides are even, rotate additionally to ensure bottom of ngon is a flat line
 	float even_side_offset = sides % 2 == 0 && sides != 0 ? PI / (float)sides : 0.0f;
@@ -45,16 +45,16 @@ vector<vec4> geometry_generator::getNgonVertices(float size, int sides) const
 	return ngon_vertices;
 }
 
-vector<vec4> geometry_generator::getNgonVerticesWithOrientation(float size, int sides, vec4 normal) const
+std::vector<vec4> geometry_generator::getNgonVerticesWithOrientation(float size, int sides, vec4 normal) const
 {
-	vector<vec4> ngon_vertices;
+	std::vector<vec4> ngon_vertices;
 	return ngon_vertices;
 }
 
 
-vector<int> geometry_generator::getNgonPointIndices(int sides) const
+std::vector<int> geometry_generator::getNgonPointIndices(int sides) const
 {
-	vector<int> indices;
+	std::vector<int> indices;
 	for (int i = 0; i < sides; i++)
 	{
 		indices.push_back(i);
@@ -62,9 +62,9 @@ vector<int> geometry_generator::getNgonPointIndices(int sides) const
 	return indices;
 }
 
-vector<int> geometry_generator::getNgonLineIndices(int sides) const
+std::vector<int> geometry_generator::getNgonLineIndices(int sides) const
 {
-	vector<int> indices;
+	std::vector<int> indices;
 	for (int i = 0; i < sides && sides > 2; i++)
 	{
 		indices.push_back(i);
@@ -73,9 +73,9 @@ vector<int> geometry_generator::getNgonLineIndices(int sides) const
 	return indices;
 }
 
-vector<int> geometry_generator::getNgonTriangleIndices(int sides) const
+std::vector<int> geometry_generator::getNgonTriangleIndices(int sides) const
 {
-	vector<int> indices;
+	std::vector<int> indices;
 
 	// there are n-2 triangles for each ngon
 	for (int i = 0; i < sides - 2; i++)
@@ -88,13 +88,13 @@ vector<int> geometry_generator::getNgonTriangleIndices(int sides) const
 	return indices;
 }
 
-vector<vec4> geometry_generator::getCuboidVertices(float width, float height, float depth) const
+std::vector<vec4> geometry_generator::getCuboidVertices(float width, float height, float depth) const
 {
 	float half_width = width / 2.0f;
 	float half_height = height / 2.0f;
 	float half_depth = depth / 2.0f;
 
-	vector<vec4> point_sequence;
+	std::vector<vec4> point_sequence;
 
 	point_sequence.push_back(vec4(-1.0f * half_width, -1.0f * half_height, half_depth, 1.0f));
 	point_sequence.push_back(vec4(-1.0f * half_width, half_height, half_depth, 1.0f));
@@ -108,9 +108,9 @@ vector<vec4> geometry_generator::getCuboidVertices(float width, float height, fl
 	return point_sequence;
 }
 
-vector<int> geometry_generator::getCuboidPointIndices() const
+std::vector<int> geometry_generator::getCuboidPointIndices() const
 {
-	vector<int> indices;
+	std::vector<int> indices;
 	for (int i = 0; i < 8; i++)
 	{
 		indices.push_back(i);
@@ -118,14 +118,14 @@ vector<int> geometry_generator::getCuboidPointIndices() const
 	return indices;
 }
 
-vector<int> geometry_generator::getCuboidLineIndices() const
+std::vector<int> geometry_generator::getCuboidLineIndices() const
 {
-	return vector<int>{ 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 1, 0, 4, 7, 6, 6, 5, 4, 7, 2, 6, 7, 3 };
+	return std::vector<int>{ 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 1, 0, 4, 7, 6, 6, 5, 4, 7, 2, 6, 7, 3 };
 }
 
-vector<int> geometry_generator::getCuboidTriangleIndices() const
+std::vector<int> geometry_generator::getCuboidTriangleIndices() const
 {
-	return vector<int>{ 
+	return std::vector<int>{ 
 		0, 1, 2,  
 		0, 2, 3,
 		4, 5, 1, 
@@ -141,10 +141,10 @@ vector<int> geometry_generator::getCuboidTriangleIndices() const
 	};
 }
 
-vector<vec4> geometry_generator::getTetrahedronVertices(float size) const
+std::vector<vec4> geometry_generator::getTetrahedronVertices(float size) const
 {
 	float half_height = size / 2.0f;
-	vector<vec4> point_sequence;
+	std::vector<vec4> point_sequence;
 
 	point_sequence.push_back(vec4(-1.0f * half_height, half_height, half_height, 1.0f));	//A
 	point_sequence.push_back(vec4(-1.0f * half_height, -1.0f * half_height, -1.0f * half_height, 1.0f));	//B
@@ -154,9 +154,9 @@ vector<vec4> geometry_generator::getTetrahedronVertices(float size) const
 	return point_sequence;
 }
 
-vector<int> geometry_generator::getTetrahedronPointIndices() const
+std::vector<int> geometry_generator::getTetrahedronPointIndices() const
 {
-	vector<int> indices;
+	std::vector<int> indices;
 	for (int i = 0; i < 4; i++)
 	{
 		indices.push_back(i);
@@ -164,9 +164,9 @@ vector<int> geometry_generator::getTetrahedronPointIndices() const
 	return indices;
 }
 
-vector<int> geometry_generator::getTetrahedronLineIndices() const
+std::vector<int> geometry_generator::getTetrahedronLineIndices() const
 {
-	return vector<int>{
+	return std::vector<int>{
 		0, 1,
 		1, 2,
 		2, 0,
@@ -176,9 +176,9 @@ vector<int> geometry_generator::getTetrahedronLineIndices() const
 	};
 }
 
-vector<int> geometry_generator::getTetrahedronTriangleIndices() const
+std::vector<int> geometry_generator::getTetrahedronTriangleIndices() const
 {
-	return vector<int>{
+	return std::vector<int>{
 		0, 1, 2,
 		2, 0, 3,
 		3, 0, 1,
@@ -186,10 +186,10 @@ vector<int> geometry_generator::getTetrahedronTriangleIndices() const
 	};
 }
 
-vector<vec4> geometry_generator::getOctahedronVertices(float size) const
+std::vector<vec4> geometry_generator::getOctahedronVertices(float size) const
 {
 	float half_height = size / 2.0f;
-	vector<vec4> point_sequence;
+	std::vector<vec4> point_sequence;
 
 	point_sequence.push_back(vec4(0.0f, half_height, 0.0f, 1.0f));	//A
 	point_sequence.push_back(vec4(0.0f, 0.0f, half_height, 1.0f));	//B
@@ -201,9 +201,9 @@ vector<vec4> geometry_generator::getOctahedronVertices(float size) const
 	return point_sequence;
 }
 
-vector<int> geometry_generator::getOctahedronPointIndices() const
+std::vector<int> geometry_generator::getOctahedronPointIndices() const
 {
-	vector<int> indices;
+	std::vector<int> indices;
 	for (int i = 0; i < 6; i++)
 	{
 		indices.push_back(i);
@@ -211,9 +211,9 @@ vector<int> geometry_generator::getOctahedronPointIndices() const
 	return indices;
 }
 
-vector<int> geometry_generator::getOctahedronLineIndices() const
+std::vector<int> geometry_generator::getOctahedronLineIndices() const
 {
-	return vector<int>{
+	return std::vector<int>{
 		0, 4,
 		0, 1,
 		4, 1,
@@ -229,9 +229,9 @@ vector<int> geometry_generator::getOctahedronLineIndices() const
 	};
 }
 
-vector<int> geometry_generator::getOctahedronTriangleIndices() const
+std::vector<int> geometry_generator::getOctahedronTriangleIndices() const
 {
-	return vector<int>{
+	return std::vector<int>{
 		0, 4, 1,
 		0, 1, 2,
 		0, 2, 3,
@@ -243,9 +243,9 @@ vector<int> geometry_generator::getOctahedronTriangleIndices() const
 	};
 }
 
-vector<vec4> geometry_generator::getIcosahedronVertices(float size) const
+std::vector<vec4> geometry_generator::getIcosahedronVertices(float size) const
 {
-	vector<vec4> unordered_sequence;
+	std::vector<vec4> unordered_sequence;
 
 	//calcs derived from http://math.wikia.com/wiki/Icosahedron
 	for (int i = 0; i < 4; i++)
@@ -278,9 +278,9 @@ vector<vec4> geometry_generator::getIcosahedronVertices(float size) const
 	return unordered_sequence;
 }
 
-vector<int> geometry_generator::getIcosahedronPointIndices() const
+std::vector<int> geometry_generator::getIcosahedronPointIndices() const
 {
-	vector<int> indices;
+	std::vector<int> indices;
 	for (int i = 0; i < 12; i++)
 	{
 		indices.push_back(i);
@@ -288,11 +288,11 @@ vector<int> geometry_generator::getIcosahedronPointIndices() const
 	return indices;
 }
 
-vector<int> geometry_generator::getIcosahedronLineIndices() const
+std::vector<int> geometry_generator::getIcosahedronLineIndices() const
 {
-	vector<int> index_sequence;
-	vector<vec4> vertices = getIcosahedronVertices(1.0f);
-	vector< vector<int> > identified_lines;
+	std::vector<int> index_sequence;
+	std::vector<vec4> vertices = getIcosahedronVertices(1.0f);
+	std::vector< std::vector<int> > identified_lines;
 
 	for (int i = 0; i < vertices.size(); i++)
 	{
@@ -302,11 +302,11 @@ vector<int> geometry_generator::getIcosahedronLineIndices() const
 	return index_sequence;
 }
 
-vector<int> geometry_generator::getIcosahedronTriangleIndices() const
+std::vector<int> geometry_generator::getIcosahedronTriangleIndices() const
 {
-	vector<int> index_sequence;
-	vector<vec4> vertices = getIcosahedronVertices(1.0f);
-	vector< vector<int> > identified_pentagons;
+	std::vector<int> index_sequence;
+	std::vector<vec4> vertices = getIcosahedronVertices(1.0f);
+	std::vector< std::vector<int> > identified_pentagons;
 
 	for (int i = 0; i < vertices.size(); i++)
 	{
@@ -316,7 +316,7 @@ vector<int> geometry_generator::getIcosahedronTriangleIndices() const
 	return index_sequence;
 }
 
-void geometry_generator::addAllTriangleGeometryToIcosahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_triangles, vector<int> &sequence) const
+void geometry_generator::addAllTriangleGeometryToIcosahedronSequence(int point_index, const std::vector<vec4> &vertices, std::vector< std::vector<int> > &identified_triangles, std::vector<int> &sequence) const
 {
 	int neighbor_count = 0;
 
@@ -332,7 +332,7 @@ void geometry_generator::addAllTriangleGeometryToIcosahedronSequence(int point_i
 		{
 			neighbor_count++;
 			int third_point = findThirdIcosahedronTrianglePoint(point_index, i, vertices);
-			vector<int> triangle = { point_index, i, third_point };
+			std::vector<int> triangle = { point_index, i, third_point };
 			if (geometryAlreadyIdentified(triangle, identified_triangles))
 				continue;
 
@@ -345,7 +345,7 @@ void geometry_generator::addAllTriangleGeometryToIcosahedronSequence(int point_i
 	}
 }
 
-void geometry_generator::addAllLineGeometryToIcosahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_lines, vector<int> &sequence) const
+void geometry_generator::addAllLineGeometryToIcosahedronSequence(int point_index, const std::vector<vec4> &vertices, std::vector< std::vector<int> > &identified_lines, std::vector<int> &sequence) const
 {
 	int neighbor_count = 0;
 
@@ -360,7 +360,7 @@ void geometry_generator::addAllLineGeometryToIcosahedronSequence(int point_index
 		if (abs(dist - 2.0f) < .0001f)
 		{
 			neighbor_count++;
-			vector<int> line = { point_index, i };
+			std::vector<int> line = { point_index, i };
 			if (geometryAlreadyIdentified(line, identified_lines))
 				continue;
 
@@ -373,9 +373,9 @@ void geometry_generator::addAllLineGeometryToIcosahedronSequence(int point_index
 	}
 }
 
-vector<vec4> geometry_generator::getDodecahedronVertices(float size) const
+std::vector<vec4> geometry_generator::getDodecahedronVertices(float size) const
 {
-	vector<vec4> unordered_sequence;
+	std::vector<vec4> unordered_sequence;
 
 	//calcs derived from https://en.wikipedia.org/wiki/Regular_dodecahedron
 	for (int i = 0; i < 8; i++)
@@ -417,9 +417,9 @@ vector<vec4> geometry_generator::getDodecahedronVertices(float size) const
 	return unordered_sequence;
 }
 
-vector<int> geometry_generator::getDodecahedronPointIndices() const
+std::vector<int> geometry_generator::getDodecahedronPointIndices() const
 {
-	vector<int> indices;
+	std::vector<int> indices;
 	for (int i = 0; i < 20; i++)
 	{
 		indices.push_back(i);
@@ -427,11 +427,11 @@ vector<int> geometry_generator::getDodecahedronPointIndices() const
 	return indices;
 }
 
-vector<int> geometry_generator::getDodecahedronLineIndices() const
+std::vector<int> geometry_generator::getDodecahedronLineIndices() const
 {
-	vector<int> index_sequence;
-	vector<vec4> vertices = getDodecahedronVertices(1.0f);
-	vector< vector<int> > identified_lines;
+	std::vector<int> index_sequence;
+	std::vector<vec4> vertices = getDodecahedronVertices(1.0f);
+	std::vector< std::vector<int> > identified_lines;
 
 	for (int i = 0; i < vertices.size(); i++)
 	{
@@ -441,11 +441,11 @@ vector<int> geometry_generator::getDodecahedronLineIndices() const
 	return index_sequence;
 }
 
-vector<int> geometry_generator::getDodecahedronTriangleIndices() const
+std::vector<int> geometry_generator::getDodecahedronTriangleIndices() const
 {
-	vector<int> index_sequence;
-	vector<vec4> vertices = getDodecahedronVertices(1.0f);
-	vector< vector<int> > identified_pentagons;
+	std::vector<int> index_sequence;
+	std::vector<vec4> vertices = getDodecahedronVertices(1.0f);
+	std::vector< std::vector<int> > identified_pentagons;
 
 	for (int i = 0; i < vertices.size(); i++)
 	{
@@ -455,9 +455,9 @@ vector<int> geometry_generator::getDodecahedronTriangleIndices() const
 	return index_sequence;
 }
 
-bool geometry_generator::geometryAlreadyIdentified(const vector<int> &geometry, const vector< vector<int> > &identified_geometry) const
+bool geometry_generator::geometryAlreadyIdentified(const std::vector<int> &geometry, const std::vector< std::vector<int> > &identified_geometry) const
 {
-	for (const vector<int> &identified : identified_geometry)
+	for (const std::vector<int> &identified : identified_geometry)
 	{
 		if (geometry.size() != identified.size())
 			continue;
@@ -480,7 +480,7 @@ bool geometry_generator::geometryAlreadyIdentified(const vector<int> &geometry, 
 	return false;
 }
 
-void geometry_generator::addGeometryToSequence(const vector<int> &geometry_indices, vector<int> &sequence) const
+void geometry_generator::addGeometryToSequence(const std::vector<int> &geometry_indices, std::vector<int> &sequence) const
 {
 	for (const int &index : geometry_indices)
 	{
@@ -488,7 +488,7 @@ void geometry_generator::addGeometryToSequence(const vector<int> &geometry_indic
 	}
 }
 
-void geometry_generator::addAllLineGeometryToDodecahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_lines, vector<int> &sequence) const
+void geometry_generator::addAllLineGeometryToDodecahedronSequence(int point_index, const std::vector<vec4> &vertices, std::vector< std::vector<int> > &identified_lines, std::vector<int> &sequence) const
 {
 	int neighbor_count = 0;
 
@@ -504,7 +504,7 @@ void geometry_generator::addAllLineGeometryToDodecahedronSequence(int point_inde
 		{
 			neighbor_count++;
 
-			vector<int> line = { point_index, i };
+			std::vector<int> line = { point_index, i };
 			if (geometryAlreadyIdentified(line, identified_lines))
 				continue;
 
@@ -513,7 +513,7 @@ void geometry_generator::addAllLineGeometryToDodecahedronSequence(int point_inde
 	}
 }
 
-void geometry_generator::addAllTriangleGeometryToDodecahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_pentagons, vector<int> &sequence) const
+void geometry_generator::addAllTriangleGeometryToDodecahedronSequence(int point_index, const std::vector<vec4> &vertices, std::vector< std::vector<int> > &identified_pentagons, std::vector<int> &sequence) const
 {
 	int hypotenuse_count = 0;
 
@@ -536,22 +536,22 @@ void geometry_generator::addAllTriangleGeometryToDodecahedronSequence(int point_
 			int hyp_b = findOtherHypotenuseFromTargetAndHypotenuse(point_index, i, vertices);
 			int side_b = findSideFromTargetAndHypotenuse(point_index, hyp_b, vertices);
 
-			vector<int> pentagon = { point_index, side_a, i, hyp_b, side_b };
+			std::vector<int> pentagon = { point_index, side_a, i, hyp_b, side_b };
 			identified_pentagons.push_back(pentagon);
 
-			vector<int> triangle_a = { point_index, side_a, i };
+			std::vector<int> triangle_a = { point_index, side_a, i };
 			addGeometryToSequence(triangle_a, sequence);
-			vector<int> triangle_b = { point_index, i, hyp_b };
+			std::vector<int> triangle_b = { point_index, i, hyp_b };
 			addGeometryToSequence(triangle_b, sequence);
-			vector<int> triangle_c = { point_index, hyp_b, side_b };
+			std::vector<int> triangle_c = { point_index, hyp_b, side_b };
 			addGeometryToSequence(triangle_c, sequence);
 		}
 	}
 }
 
-bool geometry_generator::pentagonAlreadyIdentified(int index_a, int index_b, vector< vector<int> > &identified_pentagons) const
+bool geometry_generator::pentagonAlreadyIdentified(int index_a, int index_b, std::vector< std::vector<int> > &identified_pentagons) const
 {
-	for (const vector<int> &pentagon : identified_pentagons)
+	for (const std::vector<int> &pentagon : identified_pentagons)
 	{
 		if (std::find(pentagon.cbegin(), pentagon.cend(), index_a) != pentagon.cend() && std::find(pentagon.cbegin(), pentagon.cend(), index_b) != pentagon.cend())
 			return true;
@@ -560,7 +560,7 @@ bool geometry_generator::pentagonAlreadyIdentified(int index_a, int index_b, vec
 	return false;
 }
 
-int geometry_generator::findThirdIcosahedronTrianglePoint(int first, int second, const vector<vec4> &vertices) const
+int geometry_generator::findThirdIcosahedronTrianglePoint(int first, int second, const std::vector<vec4> &vertices) const
 {
 	for (int i = 0; i < vertices.size(); i++)
 	{
@@ -574,7 +574,7 @@ int geometry_generator::findThirdIcosahedronTrianglePoint(int first, int second,
 	return 0;
 }
 
-int geometry_generator::findSideFromTargetAndHypotenuse(int target, int hypotenuse, const vector<vec4> &vertices) const
+int geometry_generator::findSideFromTargetAndHypotenuse(int target, int hypotenuse, const std::vector<vec4> &vertices) const
 {
 	for (int i = 0; i < vertices.size(); i++)
 	{
@@ -588,7 +588,7 @@ int geometry_generator::findSideFromTargetAndHypotenuse(int target, int hypotenu
 	return 0;
 }
 
-int geometry_generator::findOtherHypotenuseFromTargetAndHypotenuse(int target, int hypotenuse, const vector<vec4> &vertices) const
+int geometry_generator::findOtherHypotenuseFromTargetAndHypotenuse(int target, int hypotenuse, const std::vector<vec4> &vertices) const
 {
 	for (int i = 0; i < vertices.size(); i++)
 	{
@@ -602,7 +602,7 @@ int geometry_generator::findOtherHypotenuseFromTargetAndHypotenuse(int target, i
 	return 0;
 }
 
-vector<int> geometry_generator::getSolidGeometryIndices(geometry_type gt, attribute_index_method aim) const
+std::vector<int> geometry_generator::getSolidGeometryIndices(geometry_type gt, attribute_index_method aim) const
 {
 	switch (gt)
 	{
@@ -615,16 +615,16 @@ vector<int> geometry_generator::getSolidGeometryIndices(geometry_type gt, attrib
 	//case LOADED_SEQUENCE:
 	case GEOMETRY_TYPE_SIZE:
 	default: 
-		cout << "unable to generate indices for specified geometry type" << endl;
+		std::cout << "unable to generate indices for specified geometry type" << std::endl;
 		throw;
 	}
 }
 
-vector<int> geometry_generator::getNgonIndices(ngon_type nt, attribute_index_method aim) const
+std::vector<int> geometry_generator::getNgonIndices(ngon_type nt, attribute_index_method aim) const
 {
 	if (nt == NGON_TYPE_SIZE)
 	{
-		cout << "unable to generate indices for specified ngon type" << endl;
+		std::cout << "unable to generate indices for specified ngon type" << std::endl;
 		throw;
 	}
 
@@ -632,11 +632,11 @@ vector<int> geometry_generator::getNgonIndices(ngon_type nt, attribute_index_met
 	return getNgonIndicesBySideCount(side_count, aim);
 }
 
-vector<int> geometry_generator::getNgonIndicesBySideCount(int sides, attribute_index_method aim) const
+std::vector<int> geometry_generator::getNgonIndicesBySideCount(int sides, attribute_index_method aim) const
 {
 	if (sides < 3)
 	{
-		cout << "unable to generate indices for specified ngon sides" << endl;
+		std::cout << "unable to generate indices for specified ngon sides" << std::endl;
 		throw;
 	}
 
@@ -649,7 +649,7 @@ vector<int> geometry_generator::getNgonIndicesBySideCount(int sides, attribute_i
 	}
 }
 
-vector<int> geometry_generator::getCuboidIndices(attribute_index_method aim) const
+std::vector<int> geometry_generator::getCuboidIndices(attribute_index_method aim) const
 {
 	switch (aim)
 	{
@@ -660,7 +660,7 @@ vector<int> geometry_generator::getCuboidIndices(attribute_index_method aim) con
 	}
 }
 
-vector<int> geometry_generator::getTetrahedronIndices(attribute_index_method aim) const
+std::vector<int> geometry_generator::getTetrahedronIndices(attribute_index_method aim) const
 {
 	switch (aim)
 	{
@@ -671,7 +671,7 @@ vector<int> geometry_generator::getTetrahedronIndices(attribute_index_method aim
 	}
 }
 
-vector<int> geometry_generator::getOctahedronIndices(attribute_index_method aim) const
+std::vector<int> geometry_generator::getOctahedronIndices(attribute_index_method aim) const
 {
 	switch (aim)
 	{
@@ -682,7 +682,7 @@ vector<int> geometry_generator::getOctahedronIndices(attribute_index_method aim)
 	}
 }
 
-vector<int> geometry_generator::getDodecahedronIndices(attribute_index_method aim) const
+std::vector<int> geometry_generator::getDodecahedronIndices(attribute_index_method aim) const
 {
 	switch (aim)
 	{
@@ -693,7 +693,7 @@ vector<int> geometry_generator::getDodecahedronIndices(attribute_index_method ai
 	}
 }
 
-vector<int> geometry_generator::getIcosahedronIndices(attribute_index_method aim) const
+std::vector<int> geometry_generator::getIcosahedronIndices(attribute_index_method aim) const
 {
 	switch (aim)
 	{

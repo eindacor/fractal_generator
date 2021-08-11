@@ -19,63 +19,63 @@ string getStringFromAttributeIndexMethod(attribute_index_method aim);
 class geometry_generator
 {
 public:
-	vector<vec4> getNgonVertices(float size, int sides) const;
-	vector<vec4> getNgonVerticesWithOrientation(float size, int sides, vec4 normal) const;
+	std::vector<vec4> getNgonVertices(float size, int sides) const;
+	std::vector<vec4> getNgonVerticesWithOrientation(float size, int sides, vec4 normal) const;
 
-	vector<vec4> getCuboidVertices(float width, float height, float depth) const;
-	vector<vec4> getCubeVertices(float size) const { return getCuboidVertices(size, size, size); }
-	vector<vec4> getTetrahedronVertices(float size) const;
-	vector<vec4> getOctahedronVertices(float size) const;
-	vector<vec4> getDodecahedronVertices(float size) const;
-	vector<vec4> getIcosahedronVertices(float size) const;
+	std::vector<vec4> getCuboidVertices(float width, float height, float depth) const;
+	std::vector<vec4> getCubeVertices(float size) const { return getCuboidVertices(size, size, size); }
+	std::vector<vec4> getTetrahedronVertices(float size) const;
+	std::vector<vec4> getOctahedronVertices(float size) const;
+	std::vector<vec4> getDodecahedronVertices(float size) const;
+	std::vector<vec4> getIcosahedronVertices(float size) const;
 
-	vector<int> getSolidGeometryIndices(geometry_type gt, attribute_index_method aim) const;
-	vector<int> getNgonIndices(ngon_type nt, attribute_index_method aim) const;
-	vector<int> getNgonIndicesBySideCount(int sides, attribute_index_method aim) const;
+	std::vector<int> getSolidGeometryIndices(geometry_type gt, attribute_index_method aim) const;
+	std::vector<int> getNgonIndices(ngon_type nt, attribute_index_method aim) const;
+	std::vector<int> getNgonIndicesBySideCount(int sides, attribute_index_method aim) const;
 
 private:
-	vector<int> getNgonPointIndices(int sides) const;
-	vector<int> getNgonLineIndices(int sides) const;
-	vector<int> getNgonTriangleIndices(int sides) const;
+	std::vector<int> getNgonPointIndices(int sides) const;
+	std::vector<int> getNgonLineIndices(int sides) const;
+	std::vector<int> getNgonTriangleIndices(int sides) const;
 
-	vector<int> getCuboidIndices(attribute_index_method aim) const;
-	vector<int> getCuboidPointIndices() const;
-	vector<int> getCuboidLineIndices() const;
-	vector<int> getCuboidTriangleIndices() const;
+	std::vector<int> getCuboidIndices(attribute_index_method aim) const;
+	std::vector<int> getCuboidPointIndices() const;
+	std::vector<int> getCuboidLineIndices() const;
+	std::vector<int> getCuboidTriangleIndices() const;
 
-	vector<int> getTetrahedronIndices(attribute_index_method aim) const;
-	vector<int> getTetrahedronPointIndices() const;
-	vector<int> getTetrahedronLineIndices() const;
-	vector<int> getTetrahedronTriangleIndices() const;
+	std::vector<int> getTetrahedronIndices(attribute_index_method aim) const;
+	std::vector<int> getTetrahedronPointIndices() const;
+	std::vector<int> getTetrahedronLineIndices() const;
+	std::vector<int> getTetrahedronTriangleIndices() const;
 
-	vector<int> getOctahedronIndices(attribute_index_method aim) const;
-	vector<int> getOctahedronPointIndices() const;
-	vector<int> getOctahedronLineIndices() const;
-	vector<int> getOctahedronTriangleIndices() const;
+	std::vector<int> getOctahedronIndices(attribute_index_method aim) const;
+	std::vector<int> getOctahedronPointIndices() const;
+	std::vector<int> getOctahedronLineIndices() const;
+	std::vector<int> getOctahedronTriangleIndices() const;
 
-	vector<int> getIcosahedronIndices(attribute_index_method aim) const;
-	vector<int> getIcosahedronPointIndices() const;
-	vector<int> getIcosahedronLineIndices() const;
-	vector<int> getIcosahedronTriangleIndices() const;
+	std::vector<int> getIcosahedronIndices(attribute_index_method aim) const;
+	std::vector<int> getIcosahedronPointIndices() const;
+	std::vector<int> getIcosahedronLineIndices() const;
+	std::vector<int> getIcosahedronTriangleIndices() const;
 
-	vector<int> getDodecahedronIndices(attribute_index_method aim) const;
-	vector<int> getDodecahedronPointIndices() const;
-	vector<int> getDodecahedronLineIndices() const;
-	vector<int> getDodecahedronTriangleIndices() const;
+	std::vector<int> getDodecahedronIndices(attribute_index_method aim) const;
+	std::vector<int> getDodecahedronPointIndices() const;
+	std::vector<int> getDodecahedronLineIndices() const;
+	std::vector<int> getDodecahedronTriangleIndices() const;
 
-	void addAllTriangleGeometryToIcosahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_pentagons, vector<int> &sequence) const;
-	void addAllLineGeometryToIcosahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_lines, vector<int> &sequence) const;
-	void addGeometryToSequence(const vector<int> &geometry_indices, vector<int> &sequence) const;
+	void addAllTriangleGeometryToIcosahedronSequence(int point_index, const std::vector<vec4> &vertices, std::vector< std::vector<int> > &identified_pentagons, std::vector<int> &sequence) const;
+	void addAllLineGeometryToIcosahedronSequence(int point_index, const std::vector<vec4> &vertices, std::vector< std::vector<int> > &identified_lines, std::vector<int> &sequence) const;
+	void addGeometryToSequence(const std::vector<int> &geometry_indices, std::vector<int> &sequence) const;
 
-	void addAllTriangleGeometryToDodecahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_pentagons, vector<int> &sequence) const;
-	void addAllLineGeometryToDodecahedronSequence(int point_index, const vector<vec4> &vertices, vector< vector<int> > &identified_lines, vector<int> &sequence) const;
+	void addAllTriangleGeometryToDodecahedronSequence(int point_index, const std::vector<vec4> &vertices, std::vector< std::vector<int> > &identified_pentagons, std::vector<int> &sequence) const;
+	void addAllLineGeometryToDodecahedronSequence(int point_index, const std::vector<vec4> &vertices, std::vector< std::vector<int> > &identified_lines, std::vector<int> &sequence) const;
 	
 	// used for dodecahedron methods
-	bool pentagonAlreadyIdentified(int index_a, int index_b, vector< vector<int> > &identified_pentagons) const;
+	bool pentagonAlreadyIdentified(int index_a, int index_b, std::vector< std::vector<int> > &identified_pentagons) const;
 
-	bool geometryAlreadyIdentified(const vector<int> &geometry, const vector< vector<int> > &identified_geometry) const;
+	bool geometryAlreadyIdentified(const std::vector<int> &geometry, const std::vector< std::vector<int> > &identified_geometry) const;
 	
-	int findThirdIcosahedronTrianglePoint(int first, int second, const vector<vec4> &vertices) const;
-	int findSideFromTargetAndHypotenuse(int target, int hypotenuse, const vector<vec4> &vertices) const;
-	int findOtherHypotenuseFromTargetAndHypotenuse(int target, int hypotenuse, const vector<vec4> &vertices) const;
+	int findThirdIcosahedronTrianglePoint(int first, int second, const std::vector<vec4> &vertices) const;
+	int findSideFromTargetAndHypotenuse(int target, int hypotenuse, const std::vector<vec4> &vertices) const;
+	int findOtherHypotenuseFromTargetAndHypotenuse(int target, int hypotenuse, const std::vector<vec4> &vertices) const;
 };

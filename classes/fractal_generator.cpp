@@ -25,7 +25,7 @@ fractal_generator::fractal_generator(
 	glDepthRange(0.0, 1.0);
 }
 
-void fractal_generator::bufferData(const vector<float> &vertex_data, const vector<unsigned short> &line_indices_to_buffer, const vector<unsigned short> &triangle_indices_to_buffer)
+void fractal_generator::bufferData(const std::vector<float> &vertex_data, const std::vector<unsigned short> &line_indices_to_buffer, const std::vector<unsigned short> &triangle_indices_to_buffer)
 {
 	vertex_count = (vertex_data.size() / vertex_size);
 	sm.enable_triangles = vertex_count >= 3;
@@ -74,7 +74,7 @@ void fractal_generator::bufferData(const vector<float> &vertex_data, const vecto
 	glBindVertexArray(0);
 }
 
-void fractal_generator::bufferPalette(const vector<float> &vertex_data)
+void fractal_generator::bufferPalette(const std::vector<float> &vertex_data)
 {
 	// create/bind Vertex Array Object
 	glGenVertexArrays(1, &palette_vao);
@@ -102,7 +102,7 @@ void fractal_generator::bufferPalette(const vector<float> &vertex_data)
 	glBindVertexArray(0);
 }
 
-void fractal_generator::bufferLightData(const vector<float> &vertex_data)
+void fractal_generator::bufferLightData(const std::vector<float> &vertex_data)
 {
 	for (int i = 0; i < LIGHT_COUNT; i++)
 	{
@@ -279,13 +279,13 @@ void fractal_generator::drawPalette() const
 	glDrawArrays(GL_TRIANGLES, 0, palette_vertex_count);
 }
 
-vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &count, geometry_type &geo_type)
+std::vector<std::pair<string, mat4>> fractal_generator::generateMatrixVector(const int &count, geometry_type &geo_type)
 {
-	vector< pair<string, mat4> > matrix_vector;
+    std::vector<std::pair<string, mat4>> matrix_vector;
 
 	if (rg.getRandomFloat() < sm.matrix_geometry_coefficient)
 	{
-		vector<vec4> point_sequence;
+		std::vector<vec4> point_sequence;
 		int matrix_geometry_index;
 		// TODO create mc exception class
 		/*if (loaded_sequences.size() > 0)
@@ -372,16 +372,16 @@ vector< pair<string, mat4> > fractal_generator::generateMatrixVector(const int &
 			default: break;
 			}
 
-			matrix_vector.push_back(pair<string, mat4>(matrix_category, matrix_to_add));
+			matrix_vector.push_back(std::pair<string, mat4>(matrix_category, matrix_to_add));
 		}
 	}
 
 	return matrix_vector;
 }
 
-vector<vec4> fractal_generator::generateColorVector(const vec4 &seed, color_palette palette, const int &count, color_palette &random_selection) const
+std::vector<vec4> fractal_generator::generateColorVector(const vec4 &seed, color_palette palette, const int &count, color_palette &random_selection) const
 {
-	vector<vec4> color_set;
+	std::vector<vec4> color_set;
 
 	color_set = color_man.generatePaletteFromSeed(seed, palette, count, random_selection);
 
@@ -394,9 +394,9 @@ vector<vec4> fractal_generator::generateColorVector(const vec4 &seed, color_pale
 	return color_set;
 }
 
-vector<float> fractal_generator::generateSizeVector(const int &count) const
+std::vector<float> fractal_generator::generateSizeVector(const int &count) const
 {
-	vector<float> size_vector;
+	std::vector<float> size_vector;
 
 	for (int i = 0; i < count; i++)
 	{
@@ -423,7 +423,7 @@ void fractal_generator::setMatrices()
 	sm.palette_front = color_palette(random_palette_index);
 	sm.palette_back = color_palette(random_palette_index);
 
-	//TODO add .reserve() for each vector
+	//TODO add .reserve() for each std::vector
 	matrices_front.clear();
 	colors_front.clear();
 	sizes_front.clear();
@@ -474,7 +474,7 @@ void fractal_generator::swapMatrices()
 	if (!sm.reverse)
 	{
 		matrices_back = matrices_front;
-		vector<unsigned int> matrix_sequence_temp(matrix_sequence_back);
+		std::vector<unsigned int> matrix_sequence_temp(matrix_sequence_back);
 		matrix_sequence_back = matrix_sequence_front;
 		matrix_sequence_front = matrix_sequence_temp;
 		colors_back = colors_front;
@@ -498,7 +498,7 @@ void fractal_generator::swapMatrices()
 	else
 	{
 		matrices_front = matrices_back;
-		vector<unsigned int> matrix_sequence_temp(matrix_sequence_front);
+		std::vector<unsigned int> matrix_sequence_temp(matrix_sequence_front);
 		matrix_sequence_front = matrix_sequence_back;
 		matrix_sequence_back = matrix_sequence_temp;
 		colors_front = colors_back;
@@ -539,30 +539,30 @@ void fractal_generator::cycleColorPalette()
 
 void fractal_generator::printMatrices() const
 {
-	cout << "-----matrices_front-----" << endl;
+	std::cout << "-----matrices_front-----" << std::endl;
 	for (const auto &matrix_pair : matrices_front)
 	{
-		cout << matrix_pair.first << endl;
-		cout << glm::to_string(matrix_pair.second) << endl;
-		cout << "----------" << endl;
+		std::cout << matrix_pair.first << std::endl;
+		std::cout << glm::to_string(matrix_pair.second) << std::endl;
+		std::cout << "----------" << std::endl;
 	}
 
-	cout << "-----matrices_back-----" << endl;
+	std::cout << "-----matrices_back-----" << std::endl;
 	for (const auto &matrix_pair : matrices_back)
 	{
-		cout << matrix_pair.first << endl;
-		cout << glm::to_string(matrix_pair.second) << endl;
-		cout << "----------" << endl;
+		std::cout << matrix_pair.first << std::endl;
+		std::cout << glm::to_string(matrix_pair.second) << std::endl;
+		std::cout << "----------" << std::endl;
 	}
 
-	cout << "------------------" << endl;
+	std::cout << "------------------" << std::endl;
 }
 
 void fractal_generator::generateFractalFromPointSequence()
 {
-	vector<float> points;
-	vector<unsigned short> line_indices_to_buffer;
-	vector<unsigned short> triangle_indices_to_buffer;
+	std::vector<float> points;
+	std::vector<unsigned short> line_indices_to_buffer;
+	std::vector<unsigned short> triangle_indices_to_buffer;
 	points.reserve(vertex_count * vertex_size);
 
 	int num_matrices = matrices_front.size();
@@ -590,9 +590,9 @@ void fractal_generator::generateFractalFromPointSequence()
 
 void fractal_generator::generateFractal()
 {
-	vector<float> points;
-	vector<unsigned short> line_indices_to_buffer;
-	vector<unsigned short> triangle_indices_to_buffer;
+	std::vector<float> points;
+	std::vector<unsigned short> line_indices_to_buffer;
+	std::vector<unsigned short> triangle_indices_to_buffer;
 	points.reserve(vertex_count * vertex_size);
 
 	int num_matrices = matrices_front.size();
@@ -616,9 +616,9 @@ void fractal_generator::generateFractal()
 
 void fractal_generator::generateFractalWithRefresh()
 {
-	vector<float> points;
-	vector<unsigned short> line_indices_to_buffer;
-	vector<unsigned short> triangle_indices_to_buffer;
+	std::vector<float> points;
+	std::vector<unsigned short> line_indices_to_buffer;
+	std::vector<unsigned short> triangle_indices_to_buffer;
 	points.reserve(vertex_count * vertex_size);
 
 	int num_matrices = matrices_front.size();
@@ -663,9 +663,9 @@ void fractal_generator::generateFractalWithRefresh()
 
 void fractal_generator::generateFractalFromPointSequenceWithRefresh()
 {
-	vector<float> points;
-	vector<unsigned short> line_indices_to_buffer;
-	vector<unsigned short> triangle_indices_to_buffer;
+	std::vector<float> points;
+	std::vector<unsigned short> line_indices_to_buffer;
+	std::vector<unsigned short> triangle_indices_to_buffer;
 	points.reserve(vertex_count * vertex_size);
 
 	int num_matrices = matrices_front.size();
@@ -704,14 +704,14 @@ void fractal_generator::generateFractalFromPointSequenceWithRefresh()
 
 		// determine where values should begin based on the used sequence and number of indices already added
 
-		vector<int>::iterator max_local_value_lines = std::max_element(sm.line_indices.begin(), sm.line_indices.end());
+		std::vector<int>::iterator max_local_value_lines = std::max_element(sm.line_indices.begin(), sm.line_indices.end());
 		int starting_index_lines = index_sequences_added * (*max_local_value_lines + 1);
 		for (const unsigned short index : sm.line_indices)
 		{
 			line_indices_to_buffer.push_back(starting_index_lines + index);
 		}
 
-		vector<int>::iterator max_local_value_triangles = std::max_element(sm.triangle_indices.begin(), sm.triangle_indices.end());
+		std::vector<int>::iterator max_local_value_triangles = std::max_element(sm.triangle_indices.begin(), sm.triangle_indices.end());
 		int starting_index_triangles = index_sequences_added * (*max_local_value_triangles + 1);
 		for (const unsigned short index : sm.triangle_indices)
 		{
@@ -750,15 +750,15 @@ void fractal_generator::renderFractal(const int &image_width, const int &image_h
 
 		if (nShot > 63)
 		{
-			cout << "Screenshot limit of 64 reached. Remove some shots if you want to take more." << endl;
+			std::cout << "Screenshot limit of 64 reached. Remove some shots if you want to take more." << std::endl;
 			return;
 		}
 	}
 
 	fScreenshot = fopen(cFileName, "wb");
 
-	vector<mat4> matrix_sequence = generateMatrixSequence(10);
-	map<int, int> calc_map;
+	std::vector<mat4> matrix_sequence = generateMatrixSequence(10);
+	std::map<int, int> calc_map;
 	vec4 white(1.0f, 1.0f, 1.0f, 1.0f);
 	mat4 scale_matrix = glm::scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f));
 
@@ -802,11 +802,17 @@ void fractal_generator::renderFractal(const int &image_width, const int &image_h
 
 	for (const auto &calc_pair : calc_map)
 	{
-		cout << calc_pair.first << " calcs: " << calc_pair.second << endl;
+		std::cout << calc_pair.first << " calcs: " << calc_pair.second << std::endl;
 	}
 
 	unsigned char TGAheader[12] = { 0,0,2,0,0,0,0,0,0,0,0,0 };
-	unsigned char header[6] = { image_width % 256,image_width / 256, image_height % 256,image_height / 256,24,0 };
+	unsigned char header[6] = {
+	        (unsigned char)(image_width % 256),
+	        (unsigned char)(image_width / 256),
+	        (unsigned char)(image_height % 256),
+	        (unsigned char)(image_height / 256),
+	        24,
+	        0 };
 
 	fwrite(TGAheader, sizeof(unsigned char), 12, fScreenshot);
 	fwrite(header, sizeof(unsigned char), 6, fScreenshot);
@@ -818,9 +824,9 @@ void fractal_generator::renderFractal(const int &image_width, const int &image_h
 	return;
 }
 
-vector<mat4> fractal_generator::generateMatrixSequence(const int &sequence_size) const
+std::vector<mat4> fractal_generator::generateMatrixSequence(const int &sequence_size) const
 {
-	vector<mat4> matrix_sequence;
+	std::vector<mat4> matrix_sequence;
 
 	for (int i = 0; i < sequence_size; i++)
 	{
@@ -830,7 +836,7 @@ vector<mat4> fractal_generator::generateMatrixSequence(const int &sequence_size)
 
 	//return matrix_sequence;
 
-	vector<mat4> dummy_sequence = {
+	std::vector<mat4> dummy_sequence = {
 		glm::translate(mat4(1.0f), vec3(0.01f, 0.01f, 0.0f)),
 		glm::rotate(mat4(1.0f), 0.05f, vec3(0.0f, 0.0f, 1.0f)),
 		glm::translate(mat4(1.0f), vec3(0.02f, -0.01f, 0.0f)),
@@ -847,7 +853,7 @@ void fractal_generator::addNewPointAndIterate(
 	float &starting_size,
 	int matrix_index_front,
 	int matrix_index_back,
-	vector<float> &points)
+	std::vector<float> &points)
 {
 	mat4 matrix_front = matrices_front.at(matrix_index_front).second;
 	mat4 matrix_back = matrices_back.at(matrix_index_back).second;
@@ -908,9 +914,9 @@ void fractal_generator::addPointSequenceAndIterate(
 	float &starting_size,
 	int matrix_index_front,
 	int matrix_index_back,
-	vector<float> &points,
-	vector<unsigned short> &line_indices,
-	vector<unsigned short> &triangle_indices,
+	std::vector<float> &points,
+	std::vector<unsigned short> &line_indices,
+	std::vector<unsigned short> &triangle_indices,
 	int &current_sequence_index_lines,
 	int &current_sequence_index_triangles)
 {
@@ -972,7 +978,7 @@ void fractal_generator::addPointSequenceAndIterate(
 	int index_sequences_added = points.size() / (sm.point_sequence.size() * vertex_size);
 
 	// determine where values should begin based on the used sequence and number of indices already added
-	vector<int>::iterator max_local_value_lines = std::max_element(sm.line_indices.begin(), sm.line_indices.end());
+	std::vector<int>::iterator max_local_value_lines = std::max_element(sm.line_indices.begin(), sm.line_indices.end());
 	int starting_index_lines = current_sequence_index_lines;
 	for (const unsigned short index : sm.line_indices)
 	{
@@ -981,7 +987,7 @@ void fractal_generator::addPointSequenceAndIterate(
 
 	current_sequence_index_lines += *max_local_value_lines;
 
-	vector<int>::iterator max_local_value_triangles = std::max_element(sm.triangle_indices.begin(), sm.triangle_indices.end());
+	std::vector<int>::iterator max_local_value_triangles = std::max_element(sm.triangle_indices.begin(), sm.triangle_indices.end());
 	int starting_index_triangles = current_sequence_index_triangles;
 	for (const unsigned short index : sm.triangle_indices)
 	{
@@ -997,7 +1003,7 @@ void fractal_generator::addNewPoint(
 	const vec4 &point,
 	const vec4 &color,
 	const float &size,
-	vector<float> &points)
+	std::vector<float> &points)
 {
 	vec4 point_to_add = point;
 
@@ -1037,11 +1043,11 @@ void fractal_generator::addNewPoint(
 	points.push_back(size);
 }
 
-vec4 fractal_generator::getSampleColor(const int &samples, const vector<vec4> &color_pool) const
+vec4 fractal_generator::getSampleColor(const int &samples, const std::vector<vec4> &color_pool) const
 {
 	if (samples > color_pool.size())
 	{
-		cout << "color samples requested are greater than the number of colors in the targeted generator" << endl;
+		std::cout << "color samples requested are greater than the number of colors in the targeted generator" << std::endl;
 		return vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 
@@ -1086,25 +1092,25 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 	if (keys->checkPress(GLFW_KEY_HOME, false) && keys->checkShiftHold())
 	{
 		dof_passes = glm::clamp(dof_passes + 1, 1, 50);
-		cout << "dof_passes: " << dof_passes << endl;
+		std::cout << "dof_passes: " << dof_passes << std::endl;
 	}
 
 	if (keys->checkPress(GLFW_KEY_END, false) && keys->checkShiftHold())
 	{
 		dof_passes = glm::clamp(dof_passes - 1, 1, 50);
-		cout << "dof_passes: " << dof_passes << endl;
+		std::cout << "dof_passes: " << dof_passes << std::endl;
 	}
 
 	if (keys->checkPress(GLFW_KEY_PAGE_UP, true))
 	{
 		dof_aperture = glm::clamp(dof_aperture + 0.001f, 0.001f, 0.5f);
-		cout << "dof_aperture: " << dof_passes << endl;
+		std::cout << "dof_aperture: " << dof_passes << std::endl;
 	}
 
 	if (keys->checkPress(GLFW_KEY_PAGE_DOWN, true))
 	{
 		dof_aperture = glm::clamp(dof_aperture - 0.001f, 0.001f, 0.5f);
-		cout << "dof_aperture: " << dof_aperture << endl;
+		std::cout << "dof_aperture: " << dof_aperture << std::endl;
 	}
 
 	if (keys->checkPress(GLFW_KEY_L, false) && sm.enable_lines)
@@ -1177,18 +1183,18 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 	{
 		sm.randomize_lightness = !sm.randomize_lightness;
 		if (sm.randomize_lightness)
-			cout << "randomize lightness enabled" << endl;
+			std::cout << "randomize lightness enabled" << std::endl;
 
-		else cout << "randomize lightness disabled" << endl;
+		else std::cout << "randomize lightness disabled" << std::endl;
 	}
 
 	if (keys->checkPress(GLFW_KEY_U, false))
 	{
 		sm.randomize_alpha = !sm.randomize_alpha;
 		if (sm.randomize_alpha)
-			cout << "randomize alpha enabled" << endl;
+			std::cout << "randomize alpha enabled" << std::endl;
 
-		else cout << "randomize alpha disabled" << endl;
+		else std::cout << "randomize alpha disabled" << std::endl;
 	}
 
 	if (keys->checkPress(GLFW_KEY_PERIOD, false))
@@ -1230,7 +1236,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		sm.fractal_scale *= 1.1f;
 		fractal_scale_matrix = glm::scale(mat4(1.0f), vec3(sm.fractal_scale, sm.fractal_scale, sm.fractal_scale));
 		context->setUniformMatrix4fv("fractal_scale", 1, GL_FALSE, fractal_scale_matrix);
-		cout << "scale: " << sm.fractal_scale << endl;
+		std::cout << "scale: " << sm.fractal_scale << std::endl;
 	}
 
 	if (keys->checkPress(GLFW_KEY_V))
@@ -1238,7 +1244,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		sm.fractal_scale /= 1.1f;
 		fractal_scale_matrix = glm::scale(mat4(1.0f), vec3(sm.fractal_scale, sm.fractal_scale, sm.fractal_scale));
 		context->setUniformMatrix4fv("fractal_scale", 1, GL_FALSE, fractal_scale_matrix);
-		cout << "scale: " << sm.fractal_scale << endl;
+		std::cout << "scale: " << sm.fractal_scale << std::endl;
 	}
 
 	if (keys->checkPress(GLFW_KEY_I, false))
@@ -1253,8 +1259,8 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 	if (keys->checkPress(GLFW_KEY_Y, false))
 	{
 		cycleColorPalette();
-		cout << "front palette: " + color_man.getPaletteName(sm.palette_front) << endl;
-		cout << "back palette: " + color_man.getPaletteName(sm.palette_back) << endl;
+		std::cout << "front palette: " + color_man.getPaletteName(sm.palette_front) << std::endl;
+		std::cout << "back palette: " + color_man.getPaletteName(sm.palette_back) << std::endl;
 	}
 
 	if (keys->checkPress(GLFW_KEY_SEMICOLON, false))
@@ -1297,7 +1303,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 			else sm.interpolation_increment -= step_amount;
 
 			sm.interpolation_increment = glm::clamp(sm.interpolation_increment, increment_min, increment_max);
-			cout << "transition speed: " << sm.interpolation_increment / increment_max << endl;
+			std::cout << "transition speed: " << sm.interpolation_increment / increment_max << std::endl;
 		}
 	}
 
@@ -1308,7 +1314,7 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 		if (sm.lm == LIGHTING_MODE_SIZE)
 			sm.lm = lighting_mode(0);
 
-		cout << "lighting mode: " << getStringFromLightingMode(sm.lm) << endl;
+		std::cout << "lighting mode: " << getStringFromLightingMode(sm.lm) << std::endl;
 
 		context->setUniform1i("lighting_mode", int(sm.lm));
 		context->setUniform1i("illumination_distance", sm.lm == CAMERA ? sm.illumination_distance * 10.0f : sm.illumination_distance);
@@ -1317,19 +1323,19 @@ void fractal_generator::checkKeys(const shared_ptr<key_handler> &keys)
 	if (sm.refresh_value != -1 && keys->checkPress(GLFW_KEY_6, false))
 	{
 		sm.refresh_value == sm.refresh_min ? sm.refresh_value = -1 : sm.refresh_value--;
-		cout << "refresh value: " << sm.refresh_value << endl;
+		std::cout << "refresh value: " << sm.refresh_value << std::endl;
 	}
 
 	if (sm.refresh_value != sm.refresh_max && keys->checkPress(GLFW_KEY_7, false))
 	{
 		sm.refresh_value == -1 ? sm.refresh_value = sm.refresh_min : sm.refresh_value++;
-		cout << "refresh value: " << sm.refresh_value << endl;
+		std::cout << "refresh value: " << sm.refresh_value << std::endl;
 	}
 
 	if (keys->checkPress(GLFW_KEY_MINUS, false))
 	{
 		sm.scale_matrices = !sm.scale_matrices;
-		sm.scale_matrices ? cout << "scale matrices enabled" << endl : cout << "scale matrices disabled" << endl;
+		sm.scale_matrices ? std::cout << "scale matrices enabled" << std::endl : std::cout << "scale matrices disabled" << std::endl;
 	}
 
 	if (keys->checkPress(GLFW_KEY_EQUAL, false))
@@ -1534,82 +1540,82 @@ void fractal_generator::adjustBackgroundBrightness(float adjustment)
 	context->setBackgroundColor(background_color);
 }
 
-void fractal_generator::loadPointSequence(string name, const vector<vec4> &sequence)
+void fractal_generator::loadPointSequence(string name, const std::vector<vec4> &sequence)
 {
 	if (sequence.size() == 0)
 		return;
 
-	loaded_sequences.push_back(pair<string, vector<vec4> >(name, sequence));
+	loaded_sequences.push_back(std::pair<string, std::vector<vec4> >(name, sequence));
 }
 
 void fractal_generator::printContext()
 {
-	cout << "------------------------------------------------" << endl;
-	cout << "base seed: " << base_seed << endl;
-	cout << "generation seed: " << generation_seed << endl;
-	cout << "current generation: " << sm.generation;
-	sm.reverse ? cout << " <-" << endl : cout << " ->" << endl;
+	std::cout << "------------------------------------------------" << std::endl;
+	std::cout << "base seed: " << base_seed << std::endl;
+	std::cout << "generation seed: " << generation_seed << std::endl;
+	std::cout << "current generation: " << sm.generation;
+	sm.reverse ? std::cout << " <-" << std::endl : std::cout << " ->" << std::endl;
 
 	printMatrices();
 
-	cout << "point count: " << vertex_count << endl;
-	sm.refresh_enabled ? cout << "refresh enabled (" << sm.refresh_value << ")" << endl : cout << "refresh disabled" << endl;
-	cout << "focal point: " + glm::to_string(focal_point) << endl;
-	cout << "max x: " << max_x << endl;
-	cout << "max y: " << max_y << endl;
-	cout << "max z: " << max_z << endl;
+	std::cout << "point count: " << vertex_count << std::endl;
+	sm.refresh_enabled ? std::cout << "refresh enabled (" << sm.refresh_value << ")" << std::endl : std::cout << "refresh disabled" << std::endl;
+	std::cout << "focal point: " + glm::to_string(focal_point) << std::endl;
+	std::cout << "max x: " << max_x << std::endl;
+	std::cout << "max y: " << max_y << std::endl;
+	std::cout << "max z: " << max_z << std::endl;
 
-	cout << "front palette: " + color_man.getPaletteName(sm.palette_front) << endl;
+	std::cout << "front palette: " + color_man.getPaletteName(sm.palette_front) << std::endl;
 	if (sm.palette_front == RANDOM_PALETTE)
-		cout << "current front palette: " + color_man.getPaletteName(sm.random_palette_front) << endl;
+		std::cout << "current front palette: " + color_man.getPaletteName(sm.random_palette_front) << std::endl;
 
-	cout << "front color set, seed = " + color_man.toRGBAString(seed_color_front) + ":" << endl;
+	std::cout << "front color set, seed = " + color_man.toRGBAString(seed_color_front) + ":" << std::endl;
 	color_man.printColorSet(colors_front);
-	cout << "front background index: " << sm.background_front_index << endl;
-	cout << endl;
+	std::cout << "front background index: " << sm.background_front_index << std::endl;
+	std::cout << std::endl;
 
-	cout << "back palette: " + color_man.getPaletteName(sm.palette_back) << endl;
+	std::cout << "back palette: " + color_man.getPaletteName(sm.palette_back) << std::endl;
 	if (sm.palette_back == RANDOM_PALETTE)
-		cout << "current back palette: " + color_man.getPaletteName(sm.random_palette_back) << endl;
+		std::cout << "current back palette: " + color_man.getPaletteName(sm.random_palette_back) << std::endl;
 
-	cout << "back color set, seed = " + color_man.toRGBAString(seed_color_back) + ":" << endl;
+	std::cout << "back color set, seed = " + color_man.toRGBAString(seed_color_back) + ":" << std::endl;
 	color_man.printColorSet(colors_back);
-	cout << "back background index: " << sm.background_back_index << endl;
-	cout << endl;
+	std::cout << "back background index: " << sm.background_back_index << std::endl;
+	std::cout << std::endl;
 
-	cout << "line width: " << sm.line_width << endl;
-	cout << "interpolation state: " << sm.interpolation_state << endl;
-	cout << "current scale: " << sm.fractal_scale << endl;
-	cout << "bias coefficient: " << sm.bias_coefficient << endl;
-	sm.smooth_render ? cout << "smooth rendering enabled" << endl : cout << "smooth rendering disabled" << endl;
-	sm.randomize_lightness ? cout << "lightness randomization enabled" << endl : cout << "lightness randomization disabled" << endl;
-	sm.randomize_alpha ? cout << "alpha randomization enabled (" << sm.alpha_min << ", " << sm.alpha_max << ")" << endl : cout << "alpha randomization disabled" << endl;
-	sm.refresh_enabled ? cout << "refresh mode enabled (" << sm.refresh_value << ")" << endl : cout << "refresh mode disabled" << endl;
-	sm.two_dimensional ? cout << "2D mode enabled" << endl : cout << "2D mode disabled" << endl;
-	sm.scale_matrices ? cout << "scale matrices enabled" << endl : cout << "scale matrices disabled" << endl;
+	std::cout << "line width: " << sm.line_width << std::endl;
+	std::cout << "interpolation state: " << sm.interpolation_state << std::endl;
+	std::cout << "current scale: " << sm.fractal_scale << std::endl;
+	std::cout << "bias coefficient: " << sm.bias_coefficient << std::endl;
+	sm.smooth_render ? std::cout << "smooth rendering enabled" << std::endl : std::cout << "smooth rendering disabled" << std::endl;
+	sm.randomize_lightness ? std::cout << "lightness randomization enabled" << std::endl : std::cout << "lightness randomization disabled" << std::endl;
+	sm.randomize_alpha ? std::cout << "alpha randomization enabled (" << sm.alpha_min << ", " << sm.alpha_max << ")" << std::endl : std::cout << "alpha randomization disabled" << std::endl;
+	sm.refresh_enabled ? std::cout << "refresh mode enabled (" << sm.refresh_value << ")" << std::endl : std::cout << "refresh mode disabled" << std::endl;
+	sm.two_dimensional ? std::cout << "2D mode enabled" << std::endl : std::cout << "2D mode disabled" << std::endl;
+	sm.scale_matrices ? std::cout << "scale matrices enabled" << std::endl : std::cout << "scale matrices disabled" << std::endl;
 	if (sm.inverted)
-		cout << "inverted colors" << endl;
-	//cout << "geometry draw type: " << getStringFromGeometryType(sm.geo_type) << endl;
-	cout << "lighting mode: " << getStringFromLightingMode(sm.lm) << endl;
-	cout << "front geometry matrix type: " << getStringFromGeometryType(geo_type_front) << endl;
-	cout << "back geometry matrix type: " << getStringFromGeometryType(geo_type_back) << endl;
-	cout << "matrix geometry coefficient: " << sm.matrix_geometry_coefficient << endl;
-	cout << "matrix geometry map: " << endl;
+		std::cout << "inverted colors" << std::endl;
+	//std::cout << "geometry draw type: " << getStringFromGeometryType(sm.geo_type) << std::endl;
+	std::cout << "lighting mode: " << getStringFromLightingMode(sm.lm) << std::endl;
+	std::cout << "front geometry matrix type: " << getStringFromGeometryType(geo_type_front) << std::endl;
+	std::cout << "back geometry matrix type: " << getStringFromGeometryType(geo_type_back) << std::endl;
+	std::cout << "matrix geometry coefficient: " << sm.matrix_geometry_coefficient << std::endl;
+	std::cout << "matrix geometry map: " << std::endl;
 	for (const auto &geo_pair : sm.matrix_geometry_weights)
 	{
-		cout << geo_pair.first << ": " << geo_pair.second << endl;
+		std::cout << geo_pair.first << ": " << geo_pair.second << std::endl;
 	}
 
-	cout << "-----------------------------------------------" << endl;
-	cout << sm.toString() << endl;
-	cout << "-----------------------------------------------" << endl;
+	std::cout << "-----------------------------------------------" << std::endl;
+	std::cout << sm.toString() << std::endl;
+	std::cout << "-----------------------------------------------" << std::endl;
 }
 
-vector<float> fractal_generator::getPalettePoints()
+std::vector<float> fractal_generator::getPalettePoints()
 {
 	float swatch_height = 2.0f / colors_front.size();
 
-	vector<float> point_data;
+	std::vector<float> point_data;
 
 	for (int i = 0; i < colors_front.size(); i++)
 	{
@@ -1621,7 +1627,7 @@ vector<float> fractal_generator::getPalettePoints()
 		float bottom_height = 1.0f - ((i * swatch_height) + swatch_height);
 		float swatch_width = 0.05f;
 
-		vector<vec2> front_points;
+		std::vector<vec2> front_points;
 		float front_left = 1.0f - (swatch_width * 3.0f);
 		float front_right = front_left + swatch_width;
 		front_points.push_back(vec2(front_left, top_height)); //front top left
@@ -1637,7 +1643,7 @@ vector<float> fractal_generator::getPalettePoints()
 			addDataToPalettePoints(point, current_color_front, point_data);
 		}
 
-		vector<vec2> interpolated_points;
+		std::vector<vec2> interpolated_points;
 		float interpolated_left = front_right;
 		float interpolated_right = interpolated_left + swatch_width;
 		interpolated_points.push_back(vec2(interpolated_left, top_height)); //interpolated top left
@@ -1653,7 +1659,7 @@ vector<float> fractal_generator::getPalettePoints()
 			addDataToPalettePoints(point, current_color_interpolated, point_data);
 		}
 
-		vector<vec2> back_points;
+		std::vector<vec2> back_points;
 		float back_left = interpolated_right;
 		float back_right = back_left + swatch_width;
 		back_points.push_back(vec2(back_left, top_height)); //back top left
@@ -1675,7 +1681,7 @@ vector<float> fractal_generator::getPalettePoints()
 	return point_data;
 }
 
-void fractal_generator::addDataToPalettePoints(const vec2 &point, const vec4 &color, vector<float> &points) const
+void fractal_generator::addDataToPalettePoints(const vec2 &point, const vec4 &color, std::vector<float> &points) const
 {
 	points.push_back(color.r);
 	points.push_back(color.g);
@@ -1685,7 +1691,7 @@ void fractal_generator::addDataToPalettePoints(const vec2 &point, const vec4 &co
 	points.push_back(point.y);
 }
 
-void fractal_generator::addPalettePointsAndBufferData(const vector<float> &vertex_data,  const vector<unsigned short> &line_indices_to_buffer, const vector<unsigned short> &triangle_indices_to_buffer)
+void fractal_generator::addPalettePointsAndBufferData(const std::vector<float> &vertex_data,  const std::vector<unsigned short> &line_indices_to_buffer, const std::vector<unsigned short> &triangle_indices_to_buffer)
 {
 	if (initialized)
 	{
@@ -1718,7 +1724,7 @@ void fractal_generator::cycleGeometryType()
 		sm.setPointSequenceGeometry(sm.point_sequence_index, rg);
 	}
 
-	cout << "point sequence index: " << sm.point_sequence_index << endl;
+	std::cout << "point sequence index: " << sm.point_sequence_index << std::endl;
 }
 
 void fractal_generator::cycleBackgroundColorIndex()
@@ -1735,7 +1741,7 @@ void fractal_generator::cycleLightColorOverride()
 
 	else light_color_override_index++;
 
-	cout << "light color override index: " << light_color_override_index << endl;
+	std::cout << "light color override index: " << light_color_override_index << std::endl;
 
 	updateLightColorOverride();
 }
@@ -1747,7 +1753,7 @@ void fractal_generator::cycleLineColorOverride()
 
 	else line_color_override_index++;
 
-	cout << "line color override index: " << line_color_override_index << endl;
+	std::cout << "line color override index: " << line_color_override_index << std::endl;
 
 	updateLineColorOverride();
 }
@@ -1759,7 +1765,7 @@ void fractal_generator::cycleTriangleColorOverride()
 
 	else triangle_color_override_index++;
 
-	cout << "triangle color override index: " << triangle_color_override_index << endl;
+	std::cout << "triangle color override index: " << triangle_color_override_index << std::endl;
 
 	updateTriangleColorOverride();
 }
@@ -1771,7 +1777,7 @@ void fractal_generator::cyclePointColorOverride()
 
 	else point_color_override_index++;
 
-	cout << "point color override index: " << point_color_override_index << endl;
+	std::cout << "point color override index: " << point_color_override_index << std::endl;
 
 	updatePointColorOverride();
 }

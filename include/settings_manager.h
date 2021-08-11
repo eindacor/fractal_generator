@@ -1,6 +1,5 @@
 #pragma once
 
-#include "header.h"
 #include "random_generator.h"
 #include "color_manager.h"
 #include "geometry_generator.h"
@@ -11,7 +10,7 @@ public:
 	settings_manager() {};
 	~settings_manager() {};
 
-	string base_seed = "";
+	std::string base_seed = "";
 
 	int refresh_value = 5;
 #ifdef _DEBUG
@@ -77,20 +76,19 @@ public:
 	color_palette random_palette_back = DEFAULT_COLOR_PALETTE;
 	GLenum line_mode = GL_LINES;
 	GLenum triangle_mode = 0;
-	vector<vec4> point_sequence;
-	vector<int> line_indices;
-	vector<int> triangle_indices;
+	std::vector<vec4> point_sequence;
+	std::vector<int> line_indices;
+	std::vector<int> triangle_indices;
 	lighting_mode lm;
 
 	std::map<int, unsigned int> matrix_geometry_weights;
 
-	string toString() const;
-	void settings_manager::setWithString(string settings);
+	std::string toString() const;
 
 	geometry_generator gm;
 
 	void setPointSequenceGeometry(int index, const random_generator &rg);
 
 private:
-	string parseFloat(float f) const;
+    std::string parseFloat(float f) const;
 };

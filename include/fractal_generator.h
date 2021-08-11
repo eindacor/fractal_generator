@@ -46,7 +46,7 @@ public:
 	void renderFractal(const int &image_width, const int &image_height, const int &matrix_sequence_count);
 
 	//vector<mat4> generateMatrixSequence(const vector<int> &matrix_indices) const;
-	vector<mat4> generateMatrixSequence(const int &sequence_size) const;
+	std::vector<mat4> generateMatrixSequence(const int &sequence_size) const;
 
 	void updateLightColorOverride();
 	void updateLineColorOverride();
@@ -66,7 +66,7 @@ public:
 	void updateBackground();
 	void regenerateFractal();
 
-	vec4 getSampleColor(const int &samples, const vector<vec4> &color_pool) const;
+	vec4 getSampleColor(const int &samples, const std::vector<vec4> &color_pool) const;
 	float getLineWidth() const { return sm.line_width; }
 
 	void printMatrices() const;
@@ -77,7 +77,7 @@ public:
 	void tickAnimation();
 	void swapMatrices();
 	void cycleColorPalette();
-	void loadPointSequence(string name, const vector<vec4> &sequence);
+	void loadPointSequence(string name, const std::vector<vec4> &sequence);
 	void printContext();
 	void cycleGeometryType();
 	void cycleBackgroundColorIndex();
@@ -93,8 +93,8 @@ public:
 
 	signed int getGeneration() const { return sm.generation; }
 
-	vector<vec4> getColorsFront() const { return colors_front; }
-	vector<vec4> getColorsBack() const { return colors_back; }
+	std::vector<vec4> getColorsFront() const { return colors_front; }
+	std::vector<vec4> getColorsBack() const { return colors_back; }
 	float getInterpolationState() const { return sm.interpolation_state; }
 
 	settings_manager getSettings() const { return sm; }
@@ -103,23 +103,23 @@ public:
 	string getStringFromGeometryType(geometry_type gt) const;
 	int getMaxPointSize() const { return max_point_size; }
 
-	vector < pair<string, vector<vec4> > > getLoadedSequences() const { return loaded_sequences; }
+	std::vector<std::pair<string, std::vector<vec4> > > getLoadedSequences() const { return loaded_sequences; }
 
 private:
 	settings_manager sm;
 	string base_seed;
 	string generation_seed;
-	vector<unsigned int> matrix_sequence_front;
-	vector<unsigned int> matrix_sequence_back;
-	vector< pair<string, mat4> > matrices_front;
-	vector< pair<string, mat4> > matrices_back;
-	vector<vec4> colors_front;
-	vector<vec4> colors_back;
+	std::vector<unsigned int> matrix_sequence_front;
+	std::vector<unsigned int> matrix_sequence_back;
+	std::vector<std::pair<string, mat4> > matrices_front;
+	std::vector<std::pair<string, mat4> > matrices_back;
+	std::vector<vec4> colors_front;
+	std::vector<vec4> colors_back;
 	vec4 background_color;
 	vec4 seed_color_front;
 	vec4 seed_color_back;
-	vector<float> sizes_front;
-	vector<float> sizes_back;
+	std::vector<float> sizes_front;
+	std::vector<float> sizes_back;
 	geometry_type geo_type_front = GEOMETRY_TYPE_SIZE;
 	geometry_type geo_type_back = GEOMETRY_TYPE_SIZE;
 	random_generator rg;
@@ -148,13 +148,13 @@ private:
 	// current gen parameters	
 	vec4 origin = vec4(0.0f, 0.0f, 0.0f, 1.0f);	
 	// vector instead of a map to make cycling easy
-	vector < pair<string, vector<vec4> > > loaded_sequences;
+	std::vector<std::pair<std::string, std::vector<vec4> > > loaded_sequences;
 	int current_sequence = 0;
 	mat4 fractal_scale_matrix;
 
 	vec4 light_positions[LIGHT_COUNT];
 	vec4 light_colors[LIGHT_COUNT];
-	vector<int> light_indices;
+	std::vector<int> light_indices;
 
 	bool initialized = false;
 
@@ -178,7 +178,7 @@ private:
 		float &starting_size,
 		int matrix_index_front,
 		int matrix_index_back,
-		vector<float> &points);
+		std::vector<float> &points);
 
 	void addPointSequenceAndIterate(
 		mat4 &origin_matrix,
@@ -186,9 +186,9 @@ private:
 		float &starting_size,
 		int matrix_index_front,
 		int matrix_index_back,
-		vector<float> &points,
-		vector<unsigned short> &line_indices,
-		vector<unsigned short> &triangle_indices,
+		std::vector<float> &points,
+		std::vector<unsigned short> &line_indices,
+		std::vector<unsigned short> &triangle_indices,
 		int &current_sequence_index_lines,
 		int &current_sequence_index_triangles);
 
@@ -196,18 +196,18 @@ private:
 		const vec4 &point,
 		const vec4 &color,
 		const float &size,
-		vector<float> &points);
+		std::vector<float> &points);
 
-	void bufferData(const vector<float> &vertex_data, const vector<unsigned short> &line_indices, const vector<unsigned short> &triangle_indices);
-	void bufferPalette(const vector<float> &vertex_data);
-	void bufferLightData(const vector<float> &vertex_data);
+	void bufferData(const std::vector<float> &vertex_data, const std::vector<unsigned short> &line_indices, const std::vector<unsigned short> &triangle_indices);
+	void bufferPalette(const std::vector<float> &vertex_data);
+	void bufferLightData(const std::vector<float> &vertex_data);
 
-	vector< pair<string, mat4> > generateMatrixVector(const int &count, geometry_type &geo_type);
-	vector<vec4> generateColorVector(const vec4 &seed, color_palette palette, const int &count, color_palette &random_selection) const;
-	vector<float> generateSizeVector(const int &count) const;
-	vector<float> getPalettePoints();
-	void addDataToPalettePoints(const vec2 &point, const vec4 &color, vector<float> &points) const;
-	void addPalettePointsAndBufferData(const vector<float> &vertex_data, const vector<unsigned short> &line_indices, const vector<unsigned short> &triangle_indices);
+	std::vector<std::pair<string, mat4> > generateMatrixVector(const int &count, geometry_type &geo_type);
+	std::vector<vec4> generateColorVector(const vec4 &seed, color_palette palette, const int &count, color_palette &random_selection) const;
+	std::vector<float> generateSizeVector(const int &count) const;
+	std::vector<float> getPalettePoints();
+	void addDataToPalettePoints(const vec2 &point, const vec4 &color, std::vector<float> &points) const;
+	void addPalettePointsAndBufferData(const std::vector<float> &vertex_data, const std::vector<unsigned short> &line_indices, const std::vector<unsigned short> &triangle_indices);
 
 	void drawVertices() const;
 	void drawLines() const;

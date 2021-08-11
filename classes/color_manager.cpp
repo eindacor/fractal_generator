@@ -114,9 +114,9 @@ vec4 color_manager::getComplementaryColor(const vec4 &color) const
 	return getRGBAFromHSL(hsl, color.a);
 }
 
-vector<vec4> color_manager::getSplitComplementarySet(const vec4 &color) const
+std::vector<vec4> color_manager::getSplitComplementarySet(const vec4 &color) const
 {
-	vector<vec4> split_comp;
+	std::vector<vec4> split_comp;
 
 	vec4 complementary = getComplementaryColor(color);
 	HSL comp_hsl = getHSLFromRGBA(complementary);
@@ -137,9 +137,9 @@ vec4 color_manager::getAnalogousColor(const vec4 &color, int steps) const
 	return getRGBAFromHSL(hsl, color.a);
 }
 
-vector<vec4> color_manager::getTriadSet(const vec4 &color) const
+std::vector<vec4> color_manager::getTriadSet(const vec4 &color) const
 {
-	vector<vec4> triad;
+	std::vector<vec4> triad;
 
 	HSL hsl = getHSLFromRGBA(color);
 
@@ -153,9 +153,9 @@ vector<vec4> color_manager::getTriadSet(const vec4 &color) const
 	return triad;
 }
 
-vector<vec4> color_manager::getTetradSet(const vec4 &color) const
+std::vector<vec4> color_manager::getTetradSet(const vec4 &color) const
 {
-	vector<vec4> tetrad;
+	std::vector<vec4> tetrad;
 
 	HSL hsl = getHSLFromRGBA(color);
 
@@ -171,9 +171,9 @@ vector<vec4> color_manager::getTetradSet(const vec4 &color) const
 	return tetrad;
 }
 
-vector<vec4> color_manager::getSquareSet(const vec4 &color) const
+std::vector<vec4> color_manager::getSquareSet(const vec4 &color) const
 {
-	vector<vec4> square;
+	std::vector<vec4> square;
 
 	HSL hsl = getHSLFromRGBA(color);
 
@@ -199,9 +199,9 @@ int color_manager::getNewHue(int hue, int dist) const
 	else return hue + dist > 360 ? hue - (360 - dist) : hue + dist;
 }
 
-vector<vec4> color_manager::getMonochromaticPalette(const vec4 &color, int count) const
+std::vector<vec4> color_manager::getMonochromaticPalette(const vec4 &color, int count) const
 {
-	vector<vec4> colors;
+	std::vector<vec4> colors;
 	HSL hsl = getHSLFromRGBA(color);
 
 	float lightness_increment = 1.0f / float(count);
@@ -217,21 +217,21 @@ vector<vec4> color_manager::getMonochromaticPalette(const vec4 &color, int count
 	return colors;
 }
 
-vector<vec4> color_manager::getComplementaryPalette(const vec4 &color, int count) const
+std::vector<vec4> color_manager::getComplementaryPalette(const vec4 &color, int count) const
 {
-	vector<vec4> complementary_set({ color, getComplementaryColor(color) });
+	std::vector<vec4> complementary_set({ color, getComplementaryColor(color) });
 	return getPaletteFromColorSet(complementary_set, count);
 }
 
-vector<vec4> color_manager::getSplitComplementaryPalette(const vec4 &color, int count) const
+std::vector<vec4> color_manager::getSplitComplementaryPalette(const vec4 &color, int count) const
 {
-	vector<vec4> split_complementary_set = getSplitComplementarySet(color);
+	std::vector<vec4> split_complementary_set = getSplitComplementarySet(color);
 	return getPaletteFromColorSet(split_complementary_set, count);
 }
 
-vector<vec4> color_manager::getAnalogousPalette(const vec4 &color, int count) const
+std::vector<vec4> color_manager::getAnalogousPalette(const vec4 &color, int count) const
 {
-	vector<vec4> colors;
+	std::vector<vec4> colors;
 	HSL seed_hsl = getHSLFromRGBA(color);
 	int original_hue = seed_hsl.H;
 	int increment_size = 90 / count;
@@ -245,24 +245,24 @@ vector<vec4> color_manager::getAnalogousPalette(const vec4 &color, int count) co
 	return colors;
 }
 
-vector<vec4> color_manager::getTriadPalette(const vec4 &color, int count) const
+std::vector<vec4> color_manager::getTriadPalette(const vec4 &color, int count) const
 {
 	return getPaletteFromColorSet(getTriadSet(color), count);
 }
 
-vector<vec4> color_manager::getTetradPalette(const vec4 &color, int count) const
+std::vector<vec4> color_manager::getTetradPalette(const vec4 &color, int count) const
 {
 	return getPaletteFromColorSet(getTetradSet(color), count);
 }
 
-vector<vec4> color_manager::getSquarePalette(const vec4 &color, int count) const
+std::vector<vec4> color_manager::getSquarePalette(const vec4 &color, int count) const
 {
 	return getPaletteFromColorSet(getSquareSet(color), count);
 }
 
-vector<vec4> color_manager::getRandomPalette(int count) const
+std::vector<vec4> color_manager::getRandomPalette(int count) const
 {
-	vector<vec4> palette;
+	std::vector<vec4> palette;
 	for (int i = 0; i < count; i++)
 	{
 		palette.push_back(mc.getRandomVec4());
@@ -271,9 +271,9 @@ vector<vec4> color_manager::getRandomPalette(int count) const
 	return palette;
 }
 
-vector<vec4> color_manager::getPrimaryPalette(int count) const
+std::vector<vec4> color_manager::getPrimaryPalette(int count) const
 {
-	vector<vec4> primaries({
+	std::vector<vec4> primaries({
 		vec4(1.0f, 0.0f, 0.0f, 1.0f),
 		vec4(1.0f, 1.0f, 0.0f, 1.0f),
 		vec4(0.0f, 0.0f, 1.0f, 1.0f),
@@ -283,27 +283,27 @@ vector<vec4> color_manager::getPrimaryPalette(int count) const
 
 }
 
-vector<vec4> color_manager::getSecondaryPalette(int count) const
+std::vector<vec4> color_manager::getSecondaryPalette(int count) const
 {
 	vec4 red(1.0f, 0.0f, 0.0f, 1.0f);
 	
-	vector<vec4> base_palette = getPaletteFromEqualHueDivisions(red, 6);
+	std::vector<vec4> base_palette = getPaletteFromEqualHueDivisions(red, 6);
 
 	return getPaletteFromColorSet(base_palette, count);
 }
 
-vector<vec4> color_manager::getTertiaryPalette(int count) const
+std::vector<vec4> color_manager::getTertiaryPalette(int count) const
 {
 	vec4 red(1.0f, 0.0f, 0.0f, 1.0f);
 
-	vector<vec4> base_palette = getPaletteFromEqualHueDivisions(red, 12);
+	std::vector<vec4> base_palette = getPaletteFromEqualHueDivisions(red, 12);
 
 	return getPaletteFromColorSet(base_palette, count);	
 }
 
-vector<vec4> color_manager::getPaletteFromColorSet(const vector<vec4> &base_set, int count) const
+std::vector<vec4> color_manager::getPaletteFromColorSet(const std::vector<vec4> &base_set, int count) const
 {
-	vector<vec4> palette;
+	std::vector<vec4> palette;
 
 	if (base_set.size() == count)
 		return base_set;
@@ -320,7 +320,7 @@ vector<vec4> color_manager::getPaletteFromColorSet(const vector<vec4> &base_set,
 	{
 		int required_monochrome_steps = (count / base_set.size()) + 1;
 
-		vector< vector<vec4> > mono_palettes;
+		std::vector< std::vector<vec4> > mono_palettes;
 
 		for (int i = 0; i < base_set.size(); i++)
 		{
@@ -338,9 +338,9 @@ vector<vec4> color_manager::getPaletteFromColorSet(const vector<vec4> &base_set,
 	return palette;
 }
 
-vector<vec4> color_manager::getPaletteFromEqualHueDivisions(const vec4 &color, int count) const
+std::vector<vec4> color_manager::getPaletteFromEqualHueDivisions(const vec4 &color, int count) const
 {
-	vector<vec4> colors;
+	std::vector<vec4> colors;
 
 	int hue_offset = 360 / count;
 	HSL hsl = getHSLFromRGBA(color);
@@ -354,7 +354,7 @@ vector<vec4> color_manager::getPaletteFromEqualHueDivisions(const vec4 &color, i
 	return colors;
 }
 
-void color_manager::modifySaturation(vector<vec4> &color_set, float saturation) const
+void color_manager::modifySaturation(std::vector<vec4> &color_set, float saturation) const
 {
 	float clamped_saturation = glm::clamp(saturation, 0.0f, 1.0f);
 	for (auto &color : color_set)
@@ -365,7 +365,7 @@ void color_manager::modifySaturation(vector<vec4> &color_set, float saturation) 
 	}
 }
 
-void color_manager::modifyLightness(vector<vec4> &color_set, float amplification) const
+void color_manager::modifyLightness(std::vector<vec4> &color_set, float amplification) const
 {
 	for (auto &color : color_set)
 	{
@@ -375,7 +375,7 @@ void color_manager::modifyLightness(vector<vec4> &color_set, float amplification
 	}
 }
 
-void color_manager::modifyAlpha(vector<vec4> &color_set, float alpha) const
+void color_manager::modifyAlpha(std::vector<vec4> &color_set, float alpha) const
 {
 	float clamped_alpha = glm::clamp(alpha, 0.0f, 1.0f);
 	for (auto &color : color_set)
@@ -384,7 +384,7 @@ void color_manager::modifyAlpha(vector<vec4> &color_set, float alpha) const
 	}
 }
 
-void color_manager::randomizeSaturation(vector<vec4> &color_set, float saturation_min, float saturation_max) const
+void color_manager::randomizeSaturation(std::vector<vec4> &color_set, float saturation_min, float saturation_max) const
 {
 	float clamped_min = glm::clamp(saturation_min, 0.0f, 1.0f);
 	float clamped_max = glm::clamp(saturation_max, 0.0f, 1.0f);
@@ -397,7 +397,7 @@ void color_manager::randomizeSaturation(vector<vec4> &color_set, float saturatio
 	}
 }
 
-void color_manager::randomizeLightness(vector<vec4> &color_set, float lightness_min, float lightness_max) const
+void color_manager::randomizeLightness(std::vector<vec4> &color_set, float lightness_min, float lightness_max) const
 {
 	float clamped_min = glm::clamp(lightness_min, 0.0f, 1.0f);
 	float clamped_max = glm::clamp(lightness_max, 0.0f, 1.0f);
@@ -410,7 +410,7 @@ void color_manager::randomizeLightness(vector<vec4> &color_set, float lightness_
 	}
 }
 
-void color_manager::randomizeAlpha(vector<vec4> &color_set, float alpha_min, float alpha_max) const
+void color_manager::randomizeAlpha(std::vector<vec4> &color_set, float alpha_min, float alpha_max) const
 {
 	float clamped_min = glm::clamp(alpha_min, 0.0f, 1.0f);
 	float clamped_max = glm::clamp(alpha_max, 0.0f, 1.0f);
@@ -442,9 +442,9 @@ string color_manager::getPaletteName(color_palette p) const
 	}
 }
 
-vector<vec4> color_manager::generatePaletteFromSeed(const vec4 &seed, color_palette palette_type, int count, color_palette &random_palette_selected) const
+std::vector<vec4> color_manager::generatePaletteFromSeed(const vec4 &seed, color_palette palette_type, int count, color_palette &random_palette_selected) const
 {
-	vector<vec4> color_vector;
+	std::vector<vec4> color_vector;
 
 	switch (palette_type)
 	{
@@ -484,10 +484,10 @@ vector<vec4> color_manager::generatePaletteFromSeed(const vec4 &seed, color_pale
 	mc.shuffleVector<vec4>(color_vector);
 	return color_vector;
 }
-void color_manager::printColorSet(const vector<vec4> &set) const
+void color_manager::printColorSet(const std::vector<vec4> &set) const
 {
 	for (const auto &color : set)
 	{
-		cout << toRGBAString(color) << endl;
+		std::cout << toRGBAString(color) << std::endl;
 	}
 }

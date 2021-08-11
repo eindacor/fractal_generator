@@ -3,3 +3,7 @@
 *.ipdb
 *.jpg
 /screens/*
+*.gitattributes
+*.vs
+/dependencies
+*Debug

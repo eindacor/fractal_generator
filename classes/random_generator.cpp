@@ -174,13 +174,13 @@ string random_generator::generateAlphanumericString(int num_chars)
 	return random_string;
 }
 
-vector<mat4> random_generator::getMatricesFromPointSequence(const vector<vec4> &vertices, int count) const
+std::vector<glm::mat4> random_generator::getMatricesFromPointSequence(const std::vector<vec4> &vertices, int count) const
 {
-	vector<mat4> matrices;
+    std::vector<glm::mat4> matrices;
 
 	for (int i = 0; i < count; i++)
 	{
-		matrices.push_back(glm::translate(mat4(1.0f), vec3(vertices.at(i % vertices.size()))));
+		matrices.push_back(glm::translate(glm::mat4(1.0f), vec3(vertices.at(i % vertices.size()))));
 	}
 
 	return matrices;
@@ -195,7 +195,7 @@ unsigned int random_generator::getRandomIntInRange(const unsigned int &min, cons
 		throw;
 
 	unsigned int range = max - min;
-	unsigned int span = unsigned int(getRandomFloat() * float(range));
+	unsigned int span = (unsigned int)(getRandomFloat() * float(range));
 	return min + span;
 }
 
